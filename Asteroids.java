@@ -60,17 +60,35 @@ class Vector2D {
     this.y = y;
   }
 
+  public Vector2D(Vector2D v) {
+    this.x = v.getX();
+    this.y = v.getY();
+  }
+
   // Distance to another point:
   // Finding a square-root is expensive so it is better to try to use the
   // squared-distance when possible.
   public double distanceSQ(Vector2D point) {
-    double a = this.x - point.getX();
-    double b = this.y - point.getY();
+    double a = x - point.getX();
+    double b = y - point.getY();
     return (a*a + b*b);
   }
 
-  public void setX(double x) { this.x = x; }
-  public void setY(double y) { this.y = y; }
+  public String toString() {
+    return String.format("X:%,5.2f, Y:%,5.2f", this.x, this.y);
+  }
+
+  public void setX(double x) { 
+    this.x = x;
+  }
+  public void setY(double x) {
+    this.y = y;
+  }
+
+  public void set(double x, double y) {
+    this.x = x;
+    this.y = y;
+  }
 
   public double getY() { return y; }
   public double getX() { return x; }
@@ -125,14 +143,9 @@ class GameState {
 
   }
 
-  public PhysicalEntity getCollider(int index) {
-    return colliders[index];
-  }
-
   public PhysicalEntity getShip() {
     return ship;
   }
-
 
   public java.util.List<PhysicalEntity> getActiveColliders() {
     java.util.List<PhysicalEntity> activeColliders = new ArrayList<PhysicalEntity>();
@@ -161,17 +174,23 @@ class PhysicalEntity {
   double radius;
 
   public PhysicalEntity(Vector2D v, Vector2D l, double r) {
-    velocity = v;
-    location = l;
+    velocity = new Vector2D(v);
+    location = new Vector2D(l);
     radius = r;
   }
 
+  public PhysicalEntity(PhysicalEntity p) {
+    velocity = new Vector2D(p.getVelocity());
+    location = new Vector2D(p.getLocation());
+    radius = p.getRadius();
+  }
+
   public void setVelocity(Vector2D v) {
-    velocity = v;
+    velocity.set(v.getX(), v.getY());
   }
 
   public void setLocation(Vector2D l) {
-    location = l;
+    location.set(l.getX(), l.getY());
   }
 
   public void setRadius(double r) {
@@ -179,11 +198,11 @@ class PhysicalEntity {
   }
 
   public Vector2D getLocation() {
-    return location;
+    return new Vector2D(location.x, location.y);
   }
 
   public Vector2D getVelocity() {
-    return velocity;
+    return new Vector2D(velocity.x, velocity.y);
   }
 
   public double getRadius() {
@@ -239,6 +258,7 @@ class Agent {
 }
 
 // Flees when anything gets too close:
+// A simple demonstration of the AI facilities.
 class Pheasant extends Agent {
   double comfortZone;
 
@@ -251,10 +271,12 @@ class Pheasant extends Agent {
     super.update();
     boolean comfortable = true;
 
-    for (PhysicalEntity p : world.getActiveColliders()) {
+
+    java.util.List<PhysicalEntity> t = world.getActiveColliders();
+    int i = 0;
+    for (PhysicalEntity p : t) {
       if (p.getLocation().distanceSQ(world.getShip().getLocation()) 
         < comfortZone) {
-        System.out.println(p.getLocation().distanceSQ(world.getShip().getLocation()));
         comfortable = false;
       }
 
@@ -421,7 +443,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     Math.round(1000 / DELAY);
 
   static final int MAX_SHOTS =  8;          // Maximum number of sprites
-  static final int MAX_ROCKS =  1;          // for photons, asteroids and
+  static final int MAX_ROCKS =  2;          // for photons, asteroids and
   static final int MAX_SCRAP = 40;          // explosions.
 
   static final int SCRAP_COUNT  = 2 * FPS;  // Timer counter starting values
@@ -558,7 +580,6 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   public void init() {
     // TODO: Correctly size screen...
     setSize(600, 600);
-    System.out.println(getSize());
 
     Dimension d = getSize();
     int i;
@@ -735,7 +756,6 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     // This is the main loop.
     while (Thread.currentThread() == loopThread) {
       debugInfo.clear();
-      debugInfo.add(String.format("Loc: X: %,5.1f, Y: %,5.1f", ship.x, ship.y));
 
 
       if (!paused) {
@@ -772,35 +792,28 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
         // Only Update the CurrentState && Agent while the game is playing:
         if (playing) {
-          Vector2D v = new Vector2D(0,0);
-          Vector2D l = new Vector2D(0,0);
-          double r = 0.0f;
 
           if (ship.active) {
-              l.setY(ship.y);
-              l.setX(ship.x);
+            Vector2D shipV = new Vector2D(ship.deltaX, ship.deltaY);
+            Vector2D shipL = new Vector2D(ship.x, ship.y);
+            double shipR = Math.sqrt(Math.pow(ship.width/2, 2.0) + 
+              Math.pow(ship.height/2, 2.0));
 
-              v.setX(ship.deltaX);
-              v.setY(ship.deltaY);
-
-              r = Math.sqrt(Math.pow(ship.width/2, 2.0) + 
-                Math.pow(ship.height/2, 2.0));
-            currentState.updateShip(v, l, r);
+            debugInfo.add(String.format("Ship loc: %s", shipL));
+            currentState.updateShip(shipV, shipL, shipR);
           }
 
+
           // Update each collider corresponding to an asteroid:
-          for (int h = 0; h < MAX_ROCKS; h++) {
+          for (int h = 0; h != MAX_ROCKS; h++) {
             if (asteroids[h].active) {
               // Update the corresponding collider.
-              l.setY(asteroids[h].y);
-              l.setX(asteroids[h].x);
-
-              v.setX(asteroids[h].deltaX);
-              v.setY(asteroids[h].deltaY);
-
-              r = Math.sqrt(Math.pow(asteroids[h].width/2, 2.0) + 
+              Vector2D v = new Vector2D(asteroids[h].deltaX, asteroids[h].deltaY);
+              Vector2D l = new Vector2D(asteroids[h].x, asteroids[h].y);
+              double r = Math.sqrt(Math.pow(asteroids[h].width/2, 2.0) + 
                 Math.pow(asteroids[h].height/2, 2.0));
 
+              debugInfo.add(String.format("Asteroid %d loc: %s", h, l));
               currentState.updateCollider(h, v, l, r);
               
               /*
@@ -815,9 +828,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
               currentState.disableCollider(h);
             }
           }
-
-
-
+          debugInfo.add(String.format("Active Colliders: %s", 
+            currentState.getActiveColliders().size()));
           drifter.update();
           debugInfo.add(String.format("Lifetime: %,10d", drifter.getLifetime()));
         }
@@ -864,7 +876,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
     // Initialize Pilot Agent:
 
-    drifter = new Pheasant(currentState, 40);
+    drifter = new Pheasant(currentState, 20000);
   }
 
   public void updateShip() {
@@ -1363,7 +1375,6 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     // Toggle debug display:
     if (e.getKeyCode() == KeyEvent.VK_SLASH) {
       debugging = !debugging;
-      System.out.println("Toggled");
     }
 
     // Check if any cursor keys have been pressed and set flags.
