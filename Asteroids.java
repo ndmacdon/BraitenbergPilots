@@ -55,41 +55,38 @@ import java.applet.AudioClip;
 class Vector2D {
   double x, y;
 
+  // Constructor
   public Vector2D(double x, double y) {
     this.x = x;
     this.y = y;
   }
 
+  // Copy Constructor
   public Vector2D(Vector2D v) {
     this.x = v.getX();
     this.y = v.getY();
   }
 
-  // Distance to another point:
-  // Finding a square-root is expensive so it is better to try to use the
-  // squared-distance when possible.
-  public double distanceSQ(Vector2D point) {
-    double a = x - point.getX();
-    double b = y - point.getY();
-    return (a*a + b*b);
+  // Distance-sqaured between a and b:
+  public static double distanceSQ(Vector2D a, Vector2D b) {
+    double cX = a.getX() - b.getX();
+    double cY = a.getY() - b.getY();
+    return (cX*cX + cY*cY);
   }
 
   public String toString() {
     return String.format("X:%,5.2f, Y:%,5.2f", this.x, this.y);
   }
 
-  public void setX(double x) { 
-    this.x = x;
-  }
-  public void setY(double x) {
-    this.y = y;
-  }
-
+  // Mutators:
+  public void setX(double x) { this.x = x; }
+  public void setY(double x) { this.y = y; }
   public void set(double x, double y) {
     this.x = x;
     this.y = y;
   }
 
+  // Accessors:
   public double getY() { return y; }
   public double getX() { return x; }
 }
@@ -101,8 +98,11 @@ class GameState {
 
   PhysicalEntity ship = null;
   PhysicalEntity[] shipProjectiles = null;
+
+  // Anything which may collide with the Ship is a collider.
   PhysicalEntity[] colliders = null;
 
+  // Constructor
   public GameState(int maxProjectiles, int maxColliders) {
     shipProjectiles = new PhysicalEntity[maxProjectiles];
     colliders = new PhysicalEntity[maxColliders];
@@ -114,15 +114,21 @@ class GameState {
     ship = p;
   }
 
+  // Add <p> to the state:
   public void addCollider(int index, PhysicalEntity p) {
     colliders[index] = p;
   }
 
-  public void disableCollider(int index) {
+  // Remove the collider at <index> from the state:
+  public void removeCollider(int index) {
     colliders[index] = null;
   }
 
+  // Mutators
+
+  // Update the physical properties of the ship
   public void updateShip(Vector2D v, Vector2D l, double r) {
+    // If the ship exists: update it. Else: make a new ship with <v,l,r>
     if (ship != null) {
       ship.setLocation(l);
       ship.setVelocity(v);
@@ -132,24 +138,28 @@ class GameState {
     }
   }
 
+  // Update the physical properties of the collider at <index>
   public void updateCollider(int index, Vector2D v, Vector2D l, double r) {
-    if (colliders[index] == null) {
-      this.addCollider(index, new PhysicalEntity(v, l, r));
-    } 
-    else {
+    // If the collider exists: update it. Else: make a new collider with <v,l,r>
+    if (colliders[index] != null) {
       colliders[index].setLocation(l);
       colliders[index].setVelocity(v);
+    } 
+    else {
+      this.addCollider(index, new PhysicalEntity(v, l, r));
     }
 
   }
 
-  public PhysicalEntity getShip() {
-    return ship;
-  }
+  // Accessors
+  public PhysicalEntity getShip() { return new PhysicalEntity(ship); }
+  public int getColliderCount() { return colliders.length; }
 
+  // Return an ArrayList of all active colliders:
   public java.util.List<PhysicalEntity> getActiveColliders() {
     java.util.List<PhysicalEntity> activeColliders = new ArrayList<PhysicalEntity>();
 
+    // Add all active colliders to <activeColliders>:
     for (int i = 0; i != colliders.length; i++) {
       if (colliders[i] != null) {
         activeColliders.add(colliders[i]);
@@ -158,68 +168,54 @@ class GameState {
 
     return activeColliders;
   }
-
-  public int getColliderCount() {
-    return colliders.length;
-  }
 }
 
 /*
-  Encapsulates the basic elements of a physical object in the Asteroids domain.
-  Includes everything required to observe and predict the objects location.
+  Encapsulates the basic attributes of a physical object in the Asteroids domain.
+  Includes everything required to observe the objects physical behavior.
 */
 class PhysicalEntity {
   Vector2D velocity;
   Vector2D location;
   double radius;
 
+  // Constructor
   public PhysicalEntity(Vector2D v, Vector2D l, double r) {
     velocity = new Vector2D(v);
     location = new Vector2D(l);
     radius = r;
   }
 
+  // Copy constructor
   public PhysicalEntity(PhysicalEntity p) {
     velocity = new Vector2D(p.getVelocity());
     location = new Vector2D(p.getLocation());
     radius = p.getRadius();
   }
 
-  public void setVelocity(Vector2D v) {
-    velocity.set(v.getX(), v.getY());
-  }
+  // Mutators
+  public void setVelocity(Vector2D v) { velocity.set(v.getX(), v.getY()); }
+  public void setLocation(Vector2D l) { location.set(l.getX(), l.getY()); }
+  public void setRadius(double r) { radius = r; }
 
-  public void setLocation(Vector2D l) {
-    location.set(l.getX(), l.getY());
-  }
-
-  public void setRadius(double r) {
-    radius = r;
-  }
-
-  public Vector2D getLocation() {
-    return new Vector2D(location.x, location.y);
-  }
-
-  public Vector2D getVelocity() {
-    return new Vector2D(velocity.x, velocity.y);
-  }
-
-  public double getRadius() {
-    return radius;
-  }
+  // Accessors
+  public Vector2D getLocation() { return new Vector2D(location.x, location.y); }
+  public Vector2D getVelocity() { return new Vector2D(velocity.x, velocity.y); }
+  public double getRadius() { return radius; }
 }
 
 /*
   Provides the basic facilities necessary for an Agent.
-  Able to send keyboard commands and sense the gamestate.
+  Can send keyboard commands and sense the gamestate.
 */
 class Agent {
-  Robot keyPresser;
-  long lifetime = 0;
-  GameState world = null;
+  Robot keyPresser;       // Simulates keyboard and mouse inputs.
+  long lifetime;      // Number of updates this agent has survived.
+  GameState world = null; // Gamestate representing this agent's environment.
 
+  // Constructor
   public Agent(GameState world) {
+    this.lifetime = 0;
     this.world = world;
 
     try {
@@ -252,40 +248,42 @@ class Agent {
     keyPresser.keyRelease(KeyEvent.VK_S);
   }
 
-  long getLifetime() {
-    return lifetime;
-  }
+  // Accessors
+  long getLifetime() { return lifetime; }
 }
 
-// Flees when anything gets too close:
-// A simple demonstration of the AI facilities.
+/*
+  An extremely simple reactive agent.
+  Flees when a collider comes too close to the ship
+*/
+// 
 class Pheasant extends Agent {
-  double comfortZone;
+  double sightRange;  // How far can this agent see?
 
-  public Pheasant(GameState world, double comfortZone) {
+  public Pheasant(GameState world, double sightRange) {
     super(world);
-    this.comfortZone = comfortZone;
+    this.sightRange = sightRange;
   }
 
+  // Analyze the gamestate and generate commands:
   public void update() {
-    super.update();
-    boolean comfortable = true;
+    lifetime++;
+    boolean colliderDetected = false;
 
-
-    java.util.List<PhysicalEntity> t = world.getActiveColliders();
-    int i = 0;
-    for (PhysicalEntity p : t) {
-      if (p.getLocation().distanceSQ(world.getShip().getLocation()) 
-        < comfortZone) {
-        comfortable = false;
+    // Detect any collider within <sightRange> units from the ship:
+    java.util.List<PhysicalEntity> colliders = world.getActiveColliders();
+    for (PhysicalEntity p : colliders) {
+      double dist = Vector2D.distanceSQ(world.getShip().getLocation(), p.getLocation());
+      if (dist < sightRange) {
+        colliderDetected = true;
       }
-
-
     }
 
-    if (!comfortable) {
+    // Press engine-thrust key if a collider is near:
+    if (colliderDetected) {
       keyPresser.keyPress(KeyEvent.VK_UP);
     } 
+    // Release engine-thrust key if nothing is near:
     else {
       keyPresser.keyRelease(KeyEvent.VK_UP);
     }
@@ -825,7 +823,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
               
             } else {
               // Disable the corresponding collider.
-              currentState.disableCollider(h);
+              currentState.removeCollider(h);
             }
           }
           debugInfo.add(String.format("Active Colliders: %s", 
