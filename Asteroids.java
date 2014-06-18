@@ -47,6 +47,7 @@ import java.math.*;
 import java.util.*;
 import java.applet.Applet;
 import java.applet.AudioClip;
+import java.io.*;
 
 
 /*
@@ -67,11 +68,46 @@ class Vector2D {
     this.y = v.getY();
   }
 
-  // Distance-sqaured between a and b:
+  // Distance-Squared between a and b:
   public static double distanceSQ(Vector2D a, Vector2D b) {
     double cX = a.getX() - b.getX();
     double cY = a.getY() - b.getY();
     return (cX*cX + cY*cY);
+  }
+
+  // Distance between v1 and v2:
+  public static double distance(Vector2D v1, Vector2D v2) {
+    return Math.sqrt(distanceSQ(v1, v2));
+  }
+
+  // Euclidean Norm of <v>:
+  public static double norm(Vector2D v) {
+    return Math.sqrt(v.getX()*v.getX() + v.getY()*v.getY());
+  }
+
+  // Unit vector of <v>:
+  public static Vector2D unit(Vector2D v) {
+    double vNorm = Vector2D.norm(v);
+    double xNorm = v.getX() / vNorm;
+    double yNorm = v.getY() / vNorm;
+    return new Vector2D(xNorm, yNorm);
+  }
+
+  // Dot-Product of v1 and v2:
+  public static double dot(Vector2D v1, Vector2D v2) {
+    return (v1.getX()*v2.getX() + v1.getY()*v2.getY());
+  }
+
+  // Return the angle, in radians, from <v1> to <v2>:
+  public static double angleFromTo(Vector2D v1, Vector2D v2) {
+    double r1 = Math.atan2(v1.getY(), v1.getX());
+    double r2 = Math.atan2(v2.getY(), v2.getX());
+    return (r2 - r1);
+  }
+
+  // Difference between v1 and v2:
+  public static Vector2D difference(Vector2D v1, Vector2D v2) {
+    return new Vector2D(v1.getX() - v2.getX(), v1.getY() - v2.getY());
   }
 
   public String toString() {
@@ -127,26 +163,35 @@ class GameState {
   // Mutators
 
   // Update the physical properties of the ship
-  public void updateShip(Vector2D v, Vector2D l, double r) {
-    // If the ship exists: update it. Else: make a new ship with <v,l,r>
+  public void updateShip(Vector2D v, Vector2D l, double t, double r) {
+    // If the ship exists: update it. Else: make a new ship with <v,l,t,r>
     if (ship != null) {
       ship.setLocation(l);
       ship.setVelocity(v);
+      ship.setRotation(t);
+      ship.setRadius(r);
     }
     else {
-      ship = new PhysicalEntity(v, l, r);
+      ship = new PhysicalEntity(v, l, t, r);
     }
   }
 
   // Update the physical properties of the collider at <index>
-  public void updateCollider(int index, Vector2D v, Vector2D l, double r) {
-    // If the collider exists: update it. Else: make a new collider with <v,l,r>
+  public void updateCollider(
+      int index, 
+      Vector2D v, 
+      Vector2D l, 
+      double t,
+      double r) {
+    // If collider exists: update it. Else: make a new collider with <v,l,t,r>
     if (colliders[index] != null) {
       colliders[index].setLocation(l);
       colliders[index].setVelocity(v);
+      colliders[index].setRotation(t);
+      colliders[index].setRadius(r);
     } 
     else {
-      this.addCollider(index, new PhysicalEntity(v, l, r));
+      this.addCollider(index, new PhysicalEntity(v, l, t, r));
     }
 
   }
@@ -177,12 +222,14 @@ class GameState {
 class PhysicalEntity {
   Vector2D velocity;
   Vector2D location;
+  double rotation;
   double radius;
 
   // Constructor
-  public PhysicalEntity(Vector2D v, Vector2D l, double r) {
+  public PhysicalEntity(Vector2D v, Vector2D l, double t, double r) {
     velocity = new Vector2D(v);
     location = new Vector2D(l);
+    rotation = t;
     radius = r;
   }
 
@@ -190,17 +237,20 @@ class PhysicalEntity {
   public PhysicalEntity(PhysicalEntity p) {
     velocity = new Vector2D(p.getVelocity());
     location = new Vector2D(p.getLocation());
+    rotation = p.getRotation();
     radius = p.getRadius();
   }
 
   // Mutators
   public void setVelocity(Vector2D v) { velocity.set(v.getX(), v.getY()); }
   public void setLocation(Vector2D l) { location.set(l.getX(), l.getY()); }
+  public void setRotation(double r) { rotation = r; }
   public void setRadius(double r) { radius = r; }
 
   // Accessors
   public Vector2D getLocation() { return new Vector2D(location.x, location.y); }
   public Vector2D getVelocity() { return new Vector2D(velocity.x, velocity.y); }
+  public double getRotation() { return rotation; }
   public double getRadius() { return radius; }
 }
 
@@ -232,7 +282,7 @@ class Agent {
   }
 
   // Analyze the gamestate and generate commands:
-  void update(){
+  void update() {
     lifetime++;
   }
 
@@ -253,22 +303,29 @@ class Agent {
 }
 
 /*
-  An extremely simple reactive agent.
-  Flees when a collider comes too close to the ship
+  An extremely simple reactive agent similar to a Braitenberg vehicle.
+  Fires engines when a collider comes too close to the ship.
 */
-// 
-class Pheasant extends Agent {
-  double sightRange;  // How far can this agent see?
+class BraitenbergPheasant extends Agent {
+  double sightRange;        // How far can this agent see?
+  boolean colliderDetected; // Is a collider within sightRange?
 
-  public Pheasant(GameState world, double sightRange) {
+  public BraitenbergPheasant(GameState world, double sightRange) {
     super(world);
     this.sightRange = sightRange;
+    colliderDetected = false;
   }
 
   // Analyze the gamestate and generate commands:
   public void update() {
     lifetime++;
-    boolean colliderDetected = false;
+    this.sense();
+    this.act();
+  }
+
+  // Analyze the gamestate and store conditions:
+  private void sense() {
+    colliderDetected = false;
 
     // Detect any collider within <sightRange> units from the ship:
     java.util.List<PhysicalEntity> colliders = world.getActiveColliders();
@@ -278,7 +335,10 @@ class Pheasant extends Agent {
         colliderDetected = true;
       }
     }
+  }
 
+  // Generate commands based on stored conditions:
+  private void act() {
     // Press engine-thrust key if a collider is near:
     if (colliderDetected) {
       keyPresser.keyPress(KeyEvent.VK_UP);
@@ -287,6 +347,142 @@ class Pheasant extends Agent {
     else {
       keyPresser.keyRelease(KeyEvent.VK_UP);
     }
+  }
+}
+
+/*
+  An extremely simple reactive agent similar to a Braitenberg vehicle.
+  Turns away from the closest collider.
+  Fires engines when a collider comes too close to the ship.
+*/
+class BraitenbergSpaceCockroach extends Agent {
+  double sightRange;        // How far can this agent see?
+  boolean colliderDetected; // Is a collider within sightRange?
+  int awayFromNearest;      // Relative to the ship's heading, indicates the 
+                            // direction turning away from the nearest collider.
+  static final double slack = .5; // Allows leeway in agent's facing direction.
+
+  public BraitenbergSpaceCockroach(GameState world, double sightRange) {
+    super(world);
+    this.sightRange = sightRange;
+    colliderDetected = false;
+    awayFromNearest = 0;
+  }
+
+  // Analyze the gamestate and generate commands:
+  public void update() {
+    lifetime++;
+    this.sense();
+    this.act();
+  }
+
+  // Analyze the gamestate and store conditions:
+  private void sense() {
+    colliderDetected = proximitySensor(sightRange);
+    PhysicalEntity nearestCollider = proximityTracker();
+    awayFromNearest = 0;
+
+    // Compute a rotation away from the nearest collider:
+    if (nearestCollider != null) {
+      // Create a vector along the ships heading called <shipHeading>.
+      // Create a vector from the ship to <nearestCollider>: <colliderHeading>.
+      double shipRot = world.getShip().getRotation();
+      Vector2D shipHeading = new Vector2D(-Math.sin(shipRot), -Math.cos(shipRot));
+      Vector2D colliderHeading = Vector2D.difference(
+                                                nearestCollider.getLocation(),
+                                                world.getShip().getLocation());
+
+      // Determine angle between <shipHeading> and <colliderHeading>: <theta>.
+      double theta = Vector2D.angleFromTo(colliderHeading, shipHeading);
+
+      // Take the Minor-arc of the unit circle if theta is > PI:
+      // Avoids rotating the 'long way around' the circle.
+      if (theta  > Math.PI) {
+        theta = theta - (2*Math.PI);
+      }
+      else if (theta < -Math.PI) {
+        theta = theta + (2*Math.PI);
+      }
+      
+      // If <theta> is close to -+PI, <shipHeading> is almost opposite
+      // <colliderHeading>, otherwise ship needs to rotate further to face away
+      if (theta < 0 && theta > -Math.PI - slack) {
+        awayFromNearest = -1;
+      }
+      else if (theta >= 0 && theta < Math.PI - slack) {
+        awayFromNearest = 1;
+      }
+      else {
+        awayFromNearest = 0;
+      }
+    }
+  }
+
+  // Generate commands based on stored conditions:
+  private void act() {
+    // Press engine-thrust key if a collider is near:
+    if (colliderDetected) {
+      keyPresser.keyPress(KeyEvent.VK_UP);
+    }
+    // Release engine-thrust key if nothing is near:
+    else {
+      keyPresser.keyRelease(KeyEvent.VK_UP);
+    }
+
+    // Turn the ship <awayFromNearest>:
+    switch (awayFromNearest) {
+
+      case -1:
+        keyPresser.keyRelease(KeyEvent.VK_RIGHT); // Stop turning in the opposite direction
+        keyPresser.keyPress(KeyEvent.VK_LEFT);    // Turn <awayFromNearest>
+        break;
+
+      case 1:
+        keyPresser.keyRelease(KeyEvent.VK_LEFT);  // Stop turning in the opposite direction
+        keyPresser.keyPress(KeyEvent.VK_RIGHT);   // Turn <awayFromNearest>
+        break;
+
+      case  0:
+      default:
+        keyPresser.keyRelease(KeyEvent.VK_LEFT);  // Stop all turning.
+        keyPresser.keyRelease(KeyEvent.VK_RIGHT);
+        break;
+    }
+  }
+
+  // Return true when any collider is within <range> units of the ship:
+  private boolean proximitySensor(double range) {
+    boolean triggered = false;
+
+    // Detect any collider within <range> units from the ship:
+    java.util.List<PhysicalEntity> colliders = world.getActiveColliders();
+    for (PhysicalEntity p : colliders) {
+      double dist = Vector2D.distanceSQ(world.getShip().getLocation(), p.getLocation());
+      // Detect nearby colliders:
+      if (dist < range) {
+        triggered = true;
+      }
+    }
+    return triggered;
+  }
+
+  // Return the PhysicalEntity of the collider nearest to the ship:
+  private PhysicalEntity proximityTracker() {
+    PhysicalEntity nearestCollider = null;
+    double distanceToNearest = Double.MAX_VALUE;
+
+    java.util.List<PhysicalEntity> colliders = world.getActiveColliders();
+    for (PhysicalEntity p : colliders) {
+      // Calculate distance to <p>
+      double dist = Vector2D.distance(world.getShip().getLocation(), p.getLocation());
+      // Replace <nearestCollider> if <p> is nearer:
+      if (dist < distanceToNearest) {
+        nearestCollider = p;
+        distanceToNearest = dist;
+      }
+    }
+
+    return nearestCollider;
   }
 }
 
@@ -409,10 +605,14 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   // MAXCOLLIDERS = MAX_ROCKS + 1 UFO + 1 MISSILE
   GameState currentState = new GameState(MAX_SHOTS, MAX_ROCKS + 2);
 
+  // Statistics list.
+  // Records details of an agent's life.
+  // TODO: Consider writing JSON instead...
+  private java.util.List<String> lifeStatistics = new ArrayList<String>();
 
   // Agent Variables.
 
-  Pheasant drifter;
+  BraitenbergSpaceCockroach pilot;
 
   // Debug
   static final int MAX_DEBUG_LINES = 10;
@@ -441,7 +641,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     Math.round(1000 / DELAY);
 
   static final int MAX_SHOTS =  8;          // Maximum number of sprites
-  static final int MAX_ROCKS =  2;          // for photons, asteroids and
+  static final int MAX_ROCKS =  6;          // for photons, asteroids and
   static final int MAX_SCRAP = 40;          // explosions.
 
   static final int SCRAP_COUNT  = 2 * FPS;  // Timer counter starting values
@@ -457,7 +657,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   static final double MAX_ROCK_SPEED = 240.0 / FPS;
   static final double MAX_ROCK_SPIN  = Math.PI / FPS;
 
-  static final int MAX_SHIPS = 5;           // Starting number of ships for
+  static final int MAX_SHIPS = 20;           // Starting number of ships for
                                             // each game.
   static final int UFO_PASSES = 3;          // Number of passes for flying
                                             // saucer per appearance.
@@ -484,7 +684,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   // Number of points the must be scored to earn a new ship or to cause the
   // flying saucer to appear.
 
-  static final int NEW_SHIP_POINTS = 5000;
+  static final int NEW_SHIP_POINTS = Integer.MAX_VALUE;
   static final int NEW_UFO_POINTS  = 2750;
 
   // Background stars.
@@ -578,6 +778,9 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   public void init() {
     // TODO: Correctly size screen...
     setSize(600, 600);
+
+    // Add a header to our data:
+    lifeStatistics.add("Agent-Class,Lifespan,Points,Asteroid-Count\n");
 
     Dimension d = getSize();
     int i;
@@ -755,7 +958,6 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     while (Thread.currentThread() == loopThread) {
       debugInfo.clear();
 
-
       if (!paused) {
 
         // Move and process all sprites.
@@ -796,9 +998,10 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
             Vector2D shipL = new Vector2D(ship.x, ship.y);
             double shipR = Math.sqrt(Math.pow(ship.width/2, 2.0) + 
               Math.pow(ship.height/2, 2.0));
+            double shipT = ship.angle;
 
-            debugInfo.add(String.format("Ship loc: %s", shipL));
-            currentState.updateShip(shipV, shipL, shipR);
+            debugInfo.add(String.format("Ship rot: %4.2f loc: %s", shipT, shipL));
+            currentState.updateShip(shipV, shipL, shipT, shipR);
           }
 
 
@@ -810,9 +1013,10 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
               Vector2D l = new Vector2D(asteroids[h].x, asteroids[h].y);
               double r = Math.sqrt(Math.pow(asteroids[h].width/2, 2.0) + 
                 Math.pow(asteroids[h].height/2, 2.0));
+              double t = asteroids[h].angle;
 
-              debugInfo.add(String.format("Asteroid %d loc: %s", h, l));
-              currentState.updateCollider(h, v, l, r);
+              debugInfo.add(String.format("Asteroid %d rot: %,3.2f loc: %s", h, t, l));
+              currentState.updateCollider(h, v, l, t, r);
               
               /*
               // DEBUG: ensure currentState is synchronized...
@@ -828,8 +1032,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
           }
           debugInfo.add(String.format("Active Colliders: %s", 
             currentState.getActiveColliders().size()));
-          drifter.update();
-          debugInfo.add(String.format("Lifetime: %,10d", drifter.getLifetime()));
+          pilot.update();
+          debugInfo.add(String.format("Lifetime: %,10d", pilot.getLifetime()));
         }
       }
 
@@ -874,7 +1078,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
     // Initialize Pilot Agent:
 
-    drifter = new Pheasant(currentState, 20000);
+    pilot = new BraitenbergSpaceCockroach(currentState, 20000);
   }
 
   public void updateShip() {
@@ -965,8 +1169,18 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   public void stopShip() {
 
-    // TODO: record lifespan...
-    drifter.expire();
+    // Avoid recording erroneous data:
+    if (playing == true && pilot.getLifetime() > 0) {
+      String lifeRecord = String.format(
+      "%s,%d,%d,%d\n", 
+      pilot.getClass().getSimpleName(), 
+      pilot.expire(),
+      this.score,
+      MAX_ROCKS);
+
+      lifeStatistics.add(lifeRecord);
+      System.out.println(lifeRecord);
+    }
 
     ship.active = false;
     shipCounter = SCRAP_COUNT;
@@ -1429,6 +1643,13 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
     if (c == 's' && loaded && !playing)
       initGame();
+
+    // Release all keys and quit the game:
+    if (c == 'q') {
+      recordLifeData("results.txt");
+      pilot.releaseKeys();
+      System.exit(0);
+    }
   }
 
   public void keyReleased(KeyEvent e) {
@@ -1452,6 +1673,29 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     paint(g);
   }
 
+  private void recordLifeData(String fileName) {
+    BufferedWriter writer = null;
+    try {
+        writer = new BufferedWriter(new FileWriter("./" + fileName) );
+        for (String str : lifeStatistics) {
+          writer.write(str);
+        }
+
+
+    } catch (IOException e) {
+        System.err.println(e);
+    } finally {
+        if (writer != null) {
+            try {
+                writer.close();
+            } catch (IOException e) {
+                System.err.println(e);
+            }
+        }
+    }
+  }
+
+  // TODO: Remove countlines and trimTo?
   // Count the lines in a string:
   public static int countLines(String str){
      String[] lines = str.split("\r\n|\r|\n");

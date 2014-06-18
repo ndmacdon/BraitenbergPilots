@@ -13,6 +13,5 @@ public class FlotsamApp {
     f.add(applet, BorderLayout.CENTER);
     f.setVisible(true); // usual step to make frame visible
     applet.start();
-
   }
 }
