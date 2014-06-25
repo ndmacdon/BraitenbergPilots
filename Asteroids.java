@@ -1673,6 +1673,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     paint(g);
   }
 
+  // Record the strings in <lifeStatistics> into a file called '<fileName>':
   private void recordLifeData(String fileName) {
     BufferedWriter writer = null;
     try {
