@@ -57,6 +57,7 @@ import java.awt.geom.*;
 import java.net.*;
 import java.math.*;
 import java.util.*;
+import java.util.List;
 import java.applet.Applet;
 import java.applet.AudioClip;
 import java.io.*;
@@ -153,69 +154,96 @@ interface DoubleSensor {
   double sense(Vector2D l, double r, GameState world);
 }
 
+
 /*
-  Casts a ray from <l> in direction <r> and returns the distance to the nearest
-  intersected object:
+  A collection of intersection functions.
+  Each returns a list of AsteroidsSprites intersected by a given shape.
 */
-class SensorMinRayDist implements DoubleSensor {
-  public double sense(Vector2D l, double r, GameState world) {
-    // A list of the colliders we are detecting:
-    java.util.List<AsteroidsSprite> activeColliders = world.getActiveColliders();
-    double distanceToNearest = Double.MAX_VALUE;
-    
-    // An easily generated length; longer than the diagonal of the screen.
-    double rayLength = AsteroidsSprite.width + AsteroidsSprite.height;
+class Intersectors {
 
-    // Start and end points of the sensors 'ray':
-    Point2D.Double start = new Point2D.Double(l.getX() + (AsteroidsSprite.width / 2),
-                                              l.getY() + (AsteroidsSprite.height / 2));
-    Point2D.Double end = new Point2D.Double(l.getX() -Math.sin(r)*rayLength +
-                                            (AsteroidsSprite.width / 2),
-                                            l.getY() -Math.cos(r)*rayLength +
-                                            (AsteroidsSprite.height / 2));
+  // Return the AsteroidsSprites which intersect a circle defined by 
+  // <loc, radius>:
+  public static List<AsteroidsSprite> intersectRadius(double radius,
+                                                      Vector2D loc, 
+                                                      GameState world) {
+    // List of the colliders we inspect:
+    List<AsteroidsSprite> activeColliders = world.getActiveColliders();
 
+    // List of colliders inside <loc, radius>:
+    List<AsteroidsSprite> detected = new ArrayList<AsteroidsSprite>();
 
-    // Area (a line) we will check for intersection with colliders:
-    java.awt.geom.Line2D.Double ray = new Line2D.Double(start, end);
+    // Check for intersection between <line> and every active-collider:
+    for (AsteroidsSprite cur : activeColliders) {
+        double curDistance = Vector2D.distance( loc,
+                                                new Vector2D(cur.x, cur.y) );
 
-    // Check for collision between <ray> and every active-collider:
+        // Adding <cur>'s radius ensures that if any edge of <cur> could be
+        // within our intersection radius, we will detect <cur>.
+        // To increase intersection fidelity, add a check on the distance to
+        // each point in <cur> against <radius>.
+        if (curDistance <= radius+cur.getRadius()) {
+          detected.add(cur);
+        }
+    }
+
+    return detected;
+  }
+
+  // Return the AsteroidsSprites which intersect a line defined by 
+  // <loc, length, orientation>:
+  public static List<AsteroidsSprite> intersectLine(double length,
+                                                    Vector2D loc,
+                                                    double orientation,
+                                                    GameState world) {
+    // List of the colliders we inspect:
+    List<AsteroidsSprite> activeColliders = world.getActiveColliders();
+
+    // List of colliders intersected by <line>:
+    List<AsteroidsSprite> detected = new ArrayList<AsteroidsSprite>();
+
+    // Start and end points of intersection <line>:
+    Point2D.Double start = new Point2D.Double(
+      loc.getX() + (AsteroidsSprite.width / 2),
+      loc.getY() + (AsteroidsSprite.height / 2));
+
+    Point2D.Double end = new Point2D.Double(
+      loc.getX() -Math.sin(orientation)*length + (AsteroidsSprite.width / 2),
+      loc.getY() -Math.cos(orientation)*length + (AsteroidsSprite.height / 2));
+
+    // <line> we are checking for intersection with colliders:
+    java.awt.geom.Line2D.Double line = new Line2D.Double(start, end);
+
+    // Check for intersection between <line> and every active-collider:
     for (AsteroidsSprite cur : activeColliders) {
 
-      // If <ray> intersects <cur>:
-      if (this.intersects(cur.sprite, ray)) {
-        double curDistance = Vector2D.distance(
-                                l,
-                                new Vector2D(cur.x, cur.y) );
-
-        if (curDistance < distanceToNearest) {
-          distanceToNearest = curDistance;
-        }
+      // If <line> intersects <cur>:
+      // Add <cur> to the list of detected colliders.
+      if (intersects(cur.sprite, line)) {
+        detected.add(cur);
       }
     }
 
-    distanceToNearest = 
-      (distanceToNearest < Double.MAX_VALUE) ? distanceToNearest : 0;
-    return distanceToNearest;
+    return detected;
   }
 
-  // Check for intersection between <poly> and <line>:
+  // Does <line> intersect <poly>?
   // Based on: http://bit.ly/1qIdDkf
   public static boolean intersects(final Polygon poly, final Line2D.Double line) {
-    //Getting an iterator along the polygon path
+    // Get an iterator along the polygon path
     final PathIterator polyIt = poly.getPathIterator(null); 
 
-    //Double array with length 6 needed by iterator
+    // Double array with length 6 needed by iterator
     final double[] coords = new double[6]; 
 
-    //First point (needed for closing polygon path)
+    // First point (needed for closing polygon path)
     final double[] firstCoords = new double[2];
 
-    //Previously visited point 
+    // Previously visited point 
     final double[] lastCoords = new double[2]; 
     boolean intersects = false;
 
-    polyIt.currentSegment(firstCoords); //Getting the first coordinate pair
-    lastCoords[0] = firstCoords[0]; //Priming the previous coordinate pair
+    polyIt.currentSegment(firstCoords); // Get the first coordinate pair
+    lastCoords[0] = firstCoords[0]; // Prime the previous coordinate pair
     lastCoords[1] = firstCoords[1];
     polyIt.next();
 
@@ -245,8 +273,6 @@ class SensorMinRayDist implements DoubleSensor {
                 if(currentLine.intersectsLine(line)) {
                   intersects = true;
                 }
-
-
                 break;
             }
         }
@@ -255,6 +281,146 @@ class SensorMinRayDist implements DoubleSensor {
     return intersects;
   }
 }
+
+/*
+  Detects all colliders within a circle described by <loc, detectionRadius> and 
+  returns the distance to the nearest intersected collider:
+*/
+class SensorRadiusSmallMinDist implements DoubleSensor {
+  static final double SMALL_RADIUS = 20.0;
+  public double sense(Vector2D loc, double orientation, GameState world) {
+    double distanceToNearest = Double.MAX_VALUE;
+    double detectionRadius = SMALL_RADIUS; // Radius of the detection circle
+
+    // List of colliders that intersect with a line described by
+    // <lineLength, loc, orientation>
+    List<AsteroidsSprite> intersectedColliders = 
+      Intersectors.intersectRadius(detectionRadius, loc, world);
+
+    // Find the distance to the nearest intersected collider:
+    for (AsteroidsSprite cur : intersectedColliders) {
+      double curDistance = Vector2D.distance(loc, cur.getLocation());
+
+      // If <cur> is the closest collider yet:
+      if (curDistance < distanceToNearest) {
+        distanceToNearest = curDistance;
+      }
+    }
+
+    // Reset distance if nothing was detected:
+    if (distanceToNearest == Double.MAX_VALUE) {
+      distanceToNearest = 0;
+    }
+
+    return distanceToNearest;
+  }
+}
+
+/*
+  Casts a ray from <loc> in direction <orientation> and returns the distance to
+  the nearest intersected collider:
+*/
+class SensorRayMinDist implements DoubleSensor {
+  public double sense(Vector2D loc, double orientation, GameState world) {
+    double distanceToNearest = Double.MAX_VALUE;
+    
+    // An easily generated length; longer than the diagonal of the screen.
+    double lineLength = AsteroidsSprite.width + AsteroidsSprite.height;
+
+    // List of colliders that intersect with a line described by
+    // <lineLength, loc, orientation>
+    List<AsteroidsSprite> intersectedColliders = 
+      Intersectors.intersectLine(lineLength, loc, orientation, world);
+
+    // Find the distance to the nearest intersected collider:
+    for (AsteroidsSprite cur : intersectedColliders) {
+      double curDistance = Vector2D.distance(loc, cur.getLocation());
+
+      // If <cur> is the closest collider yet:
+      if (curDistance < distanceToNearest) {
+        distanceToNearest = curDistance;
+      }
+    }
+
+    // Reset distance if nothing was detected:
+    if (distanceToNearest == Double.MAX_VALUE) {
+      distanceToNearest = 0;
+    }
+
+    return distanceToNearest;
+  }
+}
+
+/*
+  Casts a ray from <loc> in direction <orientation> and returns the speed of
+  the nearest intersected collider:
+*/
+class SensorRaySpeed implements DoubleSensor {
+  public double sense(Vector2D loc, double orientation, GameState world) {
+    double distanceToNearest = Double.MAX_VALUE;
+    double speed = 0.0;
+    
+    // An easily generated length; longer than the diagonal of the screen.
+    double lineLength = AsteroidsSprite.width + AsteroidsSprite.height;
+
+    // List of colliders that intersect with a line described by
+    // <lineLength, loc, orientation>
+    List<AsteroidsSprite> intersectedColliders = 
+      Intersectors.intersectLine(lineLength, loc, orientation, world);
+
+    // Find the distance to the nearest intersected collider:
+    for (AsteroidsSprite cur : intersectedColliders) {
+      double curDistance = Vector2D.distance(loc, cur.getLocation());
+
+      // If <cur> is the closest collider yet:
+      if (curDistance < distanceToNearest) {
+        distanceToNearest = curDistance;
+        speed = cur.getSpeed();
+      }
+    }
+
+    if (speed != 0) {
+      System.out.println(speed);
+    }
+
+    return speed;
+  }
+}
+
+
+/*
+  Casts a ray from <loc> in direction <orientation> and returns the speed at 
+  which the the nearest intersected collider is approaching <loc>.
+*/
+// TODO: IMPLEMENT THIS SENSOR.
+  /*
+class SensorRayApproachSpeed implements DoubleSensor {
+  public double sense(Vector2D loc, double orientation, GameState world) {
+    double distanceToNearest = Double.MAX_VALUE;
+    double approachSpeed = 0.0;
+    
+    // An easily generated length; longer than the diagonal of the screen.
+    double lineLength = AsteroidsSprite.width + AsteroidsSprite.height;
+
+    // List of colliders that intersect with a line described by
+    // <lineLength, loc, orientation>
+    List<AsteroidsSprite> intersectedColliders = 
+      Intersectors.intersectLine(lineLength, loc, orientation, world);
+
+    // Find the distance to the nearest intersected collider:
+    for (AsteroidsSprite cur : intersectedColliders) {
+      double curDistance = Vector2D.distance(loc, cur.getLocation());
+
+      // If <cur> is the closest collider yet:
+      if (curDistance < distanceToNearest) {
+        distanceToNearest = curDistance;
+        speed = cur.getSpeed();
+      }
+    }
+
+    return distanceToNearest;
+  }
+}*/
 
 
 /*
@@ -265,13 +431,14 @@ class SensorMinRayDist implements DoubleSensor {
   accumulated input.
 */
 interface DoubleThreshold {
+  static final double MAX_OUTPUT = 3.0;
   public void input(double input);// Accumulate input signals.
   public double output();         // Return the output of the accumulated input.
   public void reset();            // Reset the accumulated input.
 }
 
 /*
-  Returns output equal to <input>:
+  Returns output equal to accumulated <input>:
 */
 class ThresholdEquality implements DoubleThreshold {
   double charge = 0;
@@ -286,13 +453,51 @@ class ThresholdEquality implements DoubleThreshold {
   // (this very simple threshold returns output = charge)
   public double output() {
     output = charge;
-    output = (output > 1) ? 1 : output;
+    output = (output > MAX_OUTPUT) ? MAX_OUTPUT : output;
     return output;
   }
 
   // Discharge any accumulated input:
   public void reset() {
     charge = 0;
+  }
+}
+
+/*
+  Returns MAX_OUTPUT if accumulated input does not equal 0:
+*/
+class ThresholdBinary extends ThresholdEquality {
+  // Return the output of the accumulated charge:
+  // (this very simple threshold returns output = charge)
+  public double output() {
+    if (charge != 0) { output = MAX_OUTPUT; }
+    return output;
+  }
+}
+
+/*
+  Returns (accumulated <input>)^2:
+*/
+class ThresholdSquared extends ThresholdEquality {
+  // Return the output of the accumulated charge:
+  // (this very simple threshold returns output = charge)
+  public double output() {
+    output = Math.pow(charge, 2);
+    output = (output > MAX_OUTPUT) ? MAX_OUTPUT : output;
+    return output;
+  }
+}
+
+/*
+  Returns (accumulated <input>)^.5:
+*/
+class ThresholdSqrt extends ThresholdEquality {
+  // Return the output of the accumulated charge:
+  // (this very simple threshold returns output = charge)
+  public double output() {
+    output = Math.sqrt(charge);
+    output = (output > MAX_OUTPUT) ? MAX_OUTPUT : output;
+    return output;
   }
 }
 
@@ -359,25 +564,23 @@ class BraitenbergVehicle {
 
   // TODO: Consider replacing controlsignals with equality thresholds?
   // Control signals generated by the vehicle
-  double[] controlSignals = new double[]{0,0,0,0};
-  boolean firePhoton = false;
-  boolean fireHyper = false;
+  double[] controlSignals = new double[]{0,0,0,0,0,0};
 
   // This vehicle's hardpoints equipped with sensors:
   // Used to 'sense' some quality of <world>.
   // Results of sensing are output to thresholds.
-  java.util.List<HardPoint> hardPoints = new ArrayList<HardPoint>();
+  List<HardPoint> hardPoints = new ArrayList<HardPoint>();
 
   // This vehicle's double-threshold devices:
   // Receive input from sensors, modulates that input and outputs the result.
-  java.util.List<DoubleThreshold> dThresholds = new ArrayList<DoubleThreshold>();
+  List<DoubleThreshold> dThresholds = new ArrayList<DoubleThreshold>();
 
   // Registers a connection between a: (sensor, threshold) or 
   // (threshold, controlSignal) pair.
   // The first element of the tuple produces an output and this is used as input
   // to the second element.
-  java.util.List<Wire> sensorWires = new ArrayList<Wire>();
-  java.util.List<Wire> controlWires = new ArrayList<Wire>();
+  List<Wire> sensorWires = new ArrayList<Wire>();
+  List<Wire> controlWires = new ArrayList<Wire>();
 
   // Constructor:
   public BraitenbergVehicle(GameState world) {
@@ -442,9 +645,6 @@ class BraitenbergVehicle {
     for (int i = 0; i < controlSignals.length; i++) {
       controlSignals[i] = 0;
     }
-
-    firePhoton = false;
-    fireHyper = false;
   }
 
 
@@ -463,13 +663,13 @@ class BraitenbergVehicle {
   }
 
   // Accessors
-  long    getLifetime()     { return lifetime; }
-  double  getTurnLeft()     { return controlSignals[0]; }
-  double  getTurnRight()    { return controlSignals[1]; }
-  double  getAccForward()   { return controlSignals[2]; }
-  double  getAccBackward()  { return controlSignals[3]; }
-  boolean getFirePhoton()   { return firePhoton; }
-  boolean getFireHyper()    { return fireHyper; }
+  long   getLifetime()     { return lifetime; }
+  double getTurnLeft()     { return controlSignals[0]; }
+  double getTurnRight()    { return controlSignals[1]; }
+  double getAccForward()   { return controlSignals[2]; }
+  double getAccBackward()  { return controlSignals[3]; }
+  double getFirePhoton()   { return controlSignals[4]; }
+  double getFireHyper()    { return controlSignals[5]; }
 }
 
 /*
@@ -487,17 +687,17 @@ class BraitenbergCockroach extends BraitenbergVehicle {
 
     // Hardcoded test of HardPoints/Sensors/Wires:
 
-    SensorMinRayDist s1 = new SensorMinRayDist();
-
+    SensorRaySpeed s1 = new SensorRaySpeed();
     HardPoint h1 = new HardPoint(new Vector2D(0,0), 0.0);
+
     h1.addSensor(s1);
     hardPoints.add(h1);
 
-    ThresholdEquality t1 = new ThresholdEquality();
+    ThresholdBinary t1 = new ThresholdBinary();
     dThresholds.add(t1);
 
     Wire w1 = new Wire(0,0, false);
-    Wire w2 = new Wire(0,0, false);
+    Wire w2 = new Wire(0,4, false);
 
     sensorWires.add(w1);
     controlWires.add(w2);
@@ -545,8 +745,8 @@ class GameState {
 
   // Return an ArrayList of all active colliders:
   // Anything which may collide with the Ship is a collider.
-  public java.util.List<AsteroidsSprite> getActiveColliders() {
-    java.util.List<AsteroidsSprite> activeColliders = new ArrayList<AsteroidsSprite>();
+  public List<AsteroidsSprite> getActiveColliders() {
+    List<AsteroidsSprite> activeColliders = new ArrayList<AsteroidsSprite>();
 
     // Add all active colliders to <activeColliders>:
     for (int i = 0; i != asteroids.length; i++) {
@@ -683,6 +883,19 @@ class AsteroidsSprite {
   }
 
   public Vector2D getLocation() { return new Vector2D(x, y); }
+
+  public double getSpeed() {
+    double speed = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    return speed;
+  }
+
+  // Return the radius of a bounding circle:
+  public double getRadius() { 
+    double radius = Math.sqrt(shape.getBounds().width * shape.getBounds().width +
+                              shape.getBounds().height * shape.getBounds().height);
+
+      return radius;
+    }
 }
 
 /******************************************************************************
@@ -701,7 +914,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   // Statistics list.
   // Records details of an agent's life.
   // TODO: Consider writing JSON instead...
-  private java.util.List<String> lifeStatistics = new ArrayList<String>();
+  private List<String> lifeStatistics = new ArrayList<String>();
 
   // Agent Variables.
 
@@ -711,7 +924,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   static final int MAX_DEBUG_LINES = 10;
   boolean debugging = true;
-  java.util.List debugInfo = new ArrayList<String>();
+  List debugInfo = new ArrayList<String>();
 
   // Copyright information.
 
@@ -735,7 +948,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     Math.round(1000 / DELAY);
 
   static final int MAX_SHOTS =  8;          // Maximum number of sprites
-  static final int MAX_ROCKS =  1;          // for photons, asteroids and
+  static final int MAX_ROCKS =  6;          // for photons, asteroids and
   static final int MAX_SCRAP = 40;          // explosions.
 
   static final int SCRAP_COUNT  = 2 * FPS;  // Timer counter starting values
@@ -1704,12 +1917,12 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   public void updateControlSignals(BraitenbergVehicle pilot) {
 
     // Read <pilot>'s brain for control signals:
-    turnLeft = pilot.getTurnLeft();
-    turnRight = pilot.getTurnRight();
-    accForward = pilot.getAccForward();
+    turnLeft =    pilot.getTurnLeft();
+    turnRight =   pilot.getTurnRight();
+    accForward =  pilot.getAccForward();
     accBackward = pilot.getAccBackward();
-    firePhoton = pilot.getFirePhoton();
-    fireHyper = pilot.getFireHyper();
+    firePhoton =  (pilot.getFirePhoton() >= 1); // Convert the signal to a bool.
+    fireHyper =   (pilot.getFireHyper() >= 1);  // Convert the signal to a bool.
     debugInfo.add(String.format("Ship turnL: %3.2f firePh: %b", turnLeft, firePhoton));
   }
 
