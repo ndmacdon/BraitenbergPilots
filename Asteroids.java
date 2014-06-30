@@ -53,6 +53,7 @@
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.*;
 import java.net.*;
 import java.math.*;
 import java.util.*;
@@ -143,133 +144,6 @@ class Vector2D {
   public double getX() { return x; }
 }
 
-/*
-  Provides a structured interface for reading the game's state.
-*/
-class GameState {
-
-  PhysicalEntity ship = null;
-  PhysicalEntity[] shipProjectiles = null;
-
-  // Anything which may collide with the Ship is a collider.
-  PhysicalEntity[] colliders = null;
-
-  // Constructor
-  public GameState(int maxProjectiles, int maxColliders) {
-    shipProjectiles = new PhysicalEntity[maxProjectiles];
-    colliders = new PhysicalEntity[maxColliders];
-  }
-
-
-  //TODO: Consider: are the add methods really necessary???
-  public void initShip(PhysicalEntity p) {
-    ship = p;
-  }
-
-  // Add <p> to the state:
-  public void addCollider(int index, PhysicalEntity p) {
-    colliders[index] = p;
-  }
-
-  // Remove the collider at <index> from the state:
-  public void removeCollider(int index) {
-    colliders[index] = null;
-  }
-
-  // Mutators
-
-  // Update the physical properties of the ship
-  public void updateShip(Vector2D v, Vector2D l, double t, double r) {
-    // If the ship exists: update it. Else: make a new ship with <v,l,t,r>
-    if (ship != null) {
-      ship.setLocation(l);
-      ship.setVelocity(v);
-      ship.setRotation(t);
-      ship.setRadius(r);
-    }
-    else {
-      ship = new PhysicalEntity(v, l, t, r);
-    }
-  }
-
-  // Update the physical properties of the collider at <index>
-  public void updateCollider(
-      int index, 
-      Vector2D v, 
-      Vector2D l, 
-      double t,
-      double r) {
-    // If collider exists: update it. Else: make a new collider with <v,l,t,r>
-    if (colliders[index] != null) {
-      colliders[index].setLocation(l);
-      colliders[index].setVelocity(v);
-      colliders[index].setRotation(t);
-      colliders[index].setRadius(r);
-    } 
-    else {
-      this.addCollider(index, new PhysicalEntity(v, l, t, r));
-    }
-
-  }
-
-  // Accessors
-  public PhysicalEntity getShip() { return new PhysicalEntity(ship); }
-  public int getColliderCount() { return colliders.length; }
-
-  // Return an ArrayList of all active colliders:
-  public java.util.List<PhysicalEntity> getActiveColliders() {
-    java.util.List<PhysicalEntity> activeColliders = new ArrayList<PhysicalEntity>();
-
-    // Add all active colliders to <activeColliders>:
-    for (int i = 0; i != colliders.length; i++) {
-      if (colliders[i] != null) {
-        activeColliders.add(colliders[i]);
-      }
-    }
-
-    return activeColliders;
-  }
-}
-
-/*
-  Encapsulates the basic attributes of a physical object in the Asteroids domain.
-  Includes everything required to observe the objects physical behavior.
-*/
-class PhysicalEntity {
-  Vector2D velocity;
-  Vector2D location;
-  double rotation;
-  double radius;
-
-  // Constructor
-  public PhysicalEntity(Vector2D v, Vector2D l, double t, double r) {
-    velocity = new Vector2D(v);
-    location = new Vector2D(l);
-    rotation = t;
-    radius = r;
-  }
-
-  // Copy constructor
-  public PhysicalEntity(PhysicalEntity p) {
-    velocity = new Vector2D(p.getVelocity());
-    location = new Vector2D(p.getLocation());
-    rotation = p.getRotation();
-    radius = p.getRadius();
-  }
-
-  // Mutators
-  public void setVelocity(Vector2D v) { velocity.set(v.getX(), v.getY()); }
-  public void setLocation(Vector2D l) { location.set(l.getX(), l.getY()); }
-  public void setRotation(double r) { rotation = r; }
-  public void setRadius(double r) { radius = r; }
-
-  // Accessors
-  public Vector2D getLocation() { return new Vector2D(location.x, location.y); }
-  public Vector2D getVelocity() { return new Vector2D(velocity.x, velocity.y); }
-  public double getRotation() { return rotation; }
-  public double getRadius() { return radius; }
-}
-
 // TODO: Generalize sensors and threshold devices, they are both very similar...
 /*
   Defines the interface to a sensor device which returns a double when queried:
@@ -285,7 +159,100 @@ interface DoubleSensor {
 */
 class SensorMinRayDist implements DoubleSensor {
   public double sense(Vector2D l, double r, GameState world) {
-    return .2f;
+    // A list of the colliders we are detecting:
+    java.util.List<AsteroidsSprite> activeColliders = world.getActiveColliders();
+    double distanceToNearest = Double.MAX_VALUE;
+    
+    // An easily generated length; longer than the diagonal of the screen.
+    double rayLength = AsteroidsSprite.width + AsteroidsSprite.height;
+
+    // Start and end points of the sensors 'ray':
+    Point2D.Double start = new Point2D.Double(l.getX() + (AsteroidsSprite.width / 2),
+                                              l.getY() + (AsteroidsSprite.height / 2));
+    Point2D.Double end = new Point2D.Double(l.getX() -Math.sin(r)*rayLength +
+                                            (AsteroidsSprite.width / 2),
+                                            l.getY() -Math.cos(r)*rayLength +
+                                            (AsteroidsSprite.height / 2));
+
+
+    // Area (a line) we will check for intersection with colliders:
+    java.awt.geom.Line2D.Double ray = new Line2D.Double(start, end);
+
+    // Check for collision between <ray> and every active-collider:
+    for (AsteroidsSprite cur : activeColliders) {
+
+      // If <ray> intersects <cur>:
+      if (this.intersects(cur.sprite, ray)) {
+        double curDistance = Vector2D.distance(
+                                l,
+                                new Vector2D(cur.x, cur.y) );
+
+        if (curDistance < distanceToNearest) {
+          distanceToNearest = curDistance;
+        }
+      }
+    }
+
+    distanceToNearest = 
+      (distanceToNearest < Double.MAX_VALUE) ? distanceToNearest : 0;
+    return distanceToNearest;
+  }
+
+  // Check for intersection between <poly> and <line>:
+  // Based on: http://bit.ly/1qIdDkf
+  public static boolean intersects(final Polygon poly, final Line2D.Double line) {
+    //Getting an iterator along the polygon path
+    final PathIterator polyIt = poly.getPathIterator(null); 
+
+    //Double array with length 6 needed by iterator
+    final double[] coords = new double[6]; 
+
+    //First point (needed for closing polygon path)
+    final double[] firstCoords = new double[2];
+
+    //Previously visited point 
+    final double[] lastCoords = new double[2]; 
+    boolean intersects = false;
+
+    polyIt.currentSegment(firstCoords); //Getting the first coordinate pair
+    lastCoords[0] = firstCoords[0]; //Priming the previous coordinate pair
+    lastCoords[1] = firstCoords[1];
+    polyIt.next();
+
+    while(!polyIt.isDone()) {
+        final int type = polyIt.currentSegment(coords);
+        switch(type) {
+            case PathIterator.SEG_LINETO : {
+                final Line2D.Double currentLine = new Line2D.Double(
+                                                        lastCoords[0], 
+                                                        lastCoords[1],
+                                                        coords[0],
+                                                        coords[1]);
+                if(currentLine.intersectsLine(line)) {
+                    intersects = true;
+                }
+
+                lastCoords[0] = coords[0];
+                lastCoords[1] = coords[1];
+                break;
+            }
+            case PathIterator.SEG_CLOSE : {
+                final Line2D.Double currentLine = new Line2D.Double(
+                                                        coords[0],
+                                                        coords[1],
+                                                        firstCoords[0],
+                                                        firstCoords[1]);
+                if(currentLine.intersectsLine(line)) {
+                  intersects = true;
+                }
+
+
+                break;
+            }
+        }
+        polyIt.next();
+    }
+    return intersects;
   }
 }
 
@@ -319,6 +286,7 @@ class ThresholdEquality implements DoubleThreshold {
   // (this very simple threshold returns output = charge)
   public double output() {
     output = charge;
+    output = (output > 1) ? 1 : output;
     return output;
   }
 
@@ -419,26 +387,27 @@ class BraitenbergVehicle {
 
   // TODO: generalize sense()/signal(), they are both extremely similar...
 
-  // Query a Sensor indicated by the sensorWire <w> and use the result as input 
-  // to the Threshold also indicated by <w>:
+  // Query a Sensor indicated by the sensorWire <wire> and use the result as input 
+  // to the Threshold also indicated by <wire>:
   void sense() {
-    PhysicalEntity ship = world.getShip();
-
-    // Read the source from <w> and apply it to <w>'s destination
-    for (Wire w : sensorWires) {
+    AsteroidsSprite ship = world.getShip();
+    
+    // Read the source from <wire> and apply it to <wire>'s destination
+    for (Wire wire : sensorWires) {
       // Get the source:
-      HardPoint hardPoint = hardPoints.get(w.source);
+      HardPoint hardPoint = hardPoints.get(wire.source);
 
       // Get the destination:
-      DoubleThreshold threshold = dThresholds.get(w.destination);
+      DoubleThreshold threshold = dThresholds.get(wire.destination);
 
+      
       // Get the sources output:
       double sensorResult = hardPoint.sense(world, 
                                             ship.getLocation(), 
-                                            ship.getRotation() );
-
-      // If wire <w> is an inhibitor, invert the output:
-      sensorResult = (w.inhibitor) ? -sensorResult : sensorResult;
+                                            ship.angle );
+  
+      // If <wire> is an inhibitor, invert the output:
+      sensorResult = (wire.inhibitor) ? -sensorResult : sensorResult;
 
       // Apply source's output to the destination:
       threshold.input(sensorResult);
@@ -448,17 +417,17 @@ class BraitenbergVehicle {
   // Read data from thresholds and enter it into control-signals
   void signal() {
     
-    // Query a Threshold indicated by the sensorWire <w> and use the result as 
-    // input to the Threshold also indicated by <w>:
-    for (Wire w : controlWires) {
-      DoubleThreshold threshold = dThresholds.get(w.source); // Get the source.
+    // Query a Threshold indicated by the sensorWire <wire> and use the result as 
+    // input to the Threshold also indicated by <wire>:
+    for (Wire wire : controlWires) {
+      DoubleThreshold threshold = dThresholds.get(wire.source); // Get the source.
       double thresholdResult = threshold.output(); // Get the source's output.
 
-      // If wire <w> is an inhibitor, invert the result:
-      thresholdResult = (w.inhibitor) ? -thresholdResult : thresholdResult;
+      // If wire <wire> is an inhibitor, invert the result:
+      thresholdResult = (wire.inhibitor) ? -thresholdResult : thresholdResult;
 
       // Apply source's output to the destination:
-      controlSignals[w.destination] += thresholdResult;
+      controlSignals[wire.destination] += thresholdResult;
     }
   }
 
@@ -532,8 +501,6 @@ class BraitenbergCockroach extends BraitenbergVehicle {
 
     sensorWires.add(w1);
     controlWires.add(w2);
-
-
   }
 
   // Analyze the gamestate and generate commands:
@@ -546,6 +513,52 @@ class BraitenbergCockroach extends BraitenbergVehicle {
 
 }
 
+/*
+  Provides a structured interface for reading the game's state.
+*/
+class GameState {
+  AsteroidsSprite ship = null;
+  AsteroidsSprite ufo = null;
+  AsteroidsSprite missle = null;
+  AsteroidsSprite[] photons = null;
+  AsteroidsSprite[] asteroids = null;
+  Dimension screen = null;
+
+  // Constructor
+  public GameState( AsteroidsSprite ship,
+                    AsteroidsSprite[] photons,
+                    AsteroidsSprite[] asteroids,
+                    AsteroidsSprite missle,
+                    AsteroidsSprite ufo) {
+    this.ship = ship;
+    this.photons = photons;
+    this.asteroids = asteroids;
+    this.missle = missle;
+    this.ufo = ufo;
+  }
+
+  // Accessors
+  public AsteroidsSprite getShip() {
+    AsteroidsSprite copyShip = (ship == null) ? null : new AsteroidsSprite(ship);
+    return copyShip;
+  }
+
+  // Return an ArrayList of all active colliders:
+  // Anything which may collide with the Ship is a collider.
+  public java.util.List<AsteroidsSprite> getActiveColliders() {
+    java.util.List<AsteroidsSprite> activeColliders = new ArrayList<AsteroidsSprite>();
+
+    // Add all active colliders to <activeColliders>:
+    for (int i = 0; i != asteroids.length; i++) {
+      if (asteroids[i].active) {
+        activeColliders.add(asteroids[i]);
+      }
+    }
+    // TODO: Include UFO and missiles in active colliders...
+
+    return activeColliders;
+  }
+}
 
 /******************************************************************************
   The AsteroidsSprite class defines a game object, including it's shape,
@@ -583,6 +596,23 @@ class AsteroidsSprite {
     this.deltaX = 0.0;
     this.deltaY = 0.0;
     this.sprite = new Polygon();
+  }
+
+  // Copy constructor
+  public AsteroidsSprite(AsteroidsSprite p) {
+    this.shape = new Polygon( p.shape.xpoints.clone(), 
+                              p.shape.ypoints.clone(), 
+                              p.shape.npoints);
+    this.active = p.active;
+    this.angle = p.angle;
+    this.deltaAngle = p.deltaAngle;
+    this.x = p.x;
+    this.y = p.y;
+    this.deltaX = p.deltaX;
+    this.deltaY = p.deltaY;
+    this.sprite = new Polygon(p.sprite.xpoints.clone(), 
+                              p.sprite.ypoints.clone(), 
+                              p.sprite.npoints);
   }
 
   // Methods:
@@ -651,6 +681,8 @@ class AsteroidsSprite {
         return true;
     return false;
   }
+
+  public Vector2D getLocation() { return new Vector2D(x, y); }
 }
 
 /******************************************************************************
@@ -661,10 +693,10 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   public static Frame frame = null;
 
-  // Structured collection of physical entities.
+  // Structured collection of AsteroidsSprites.
   // Used by agent's to provide awareness of game state.
   // MAXCOLLIDERS = MAX_ROCKS + 1 UFO + 1 MISSILE
-  GameState currentState = new GameState(MAX_SHOTS, MAX_ROCKS + 2);
+  GameState currentState;
 
   // Statistics list.
   // Records details of an agent's life.
@@ -703,7 +735,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     Math.round(1000 / DELAY);
 
   static final int MAX_SHOTS =  8;          // Maximum number of sprites
-  static final int MAX_ROCKS =  6;          // for photons, asteroids and
+  static final int MAX_ROCKS =  1;          // for photons, asteroids and
   static final int MAX_SCRAP = 40;          // explosions.
 
   static final int SCRAP_COUNT  = 2 * FPS;  // Timer counter starting values
@@ -943,6 +975,12 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
     // Initialize game data and put us in 'game over' mode.
 
+    currentState = new GameState( ship,
+                                  photons,
+                                  asteroids,
+                                  missle,
+                                  ufo);
+
     highScore = 0;
     detail = true;
     initGame();
@@ -1057,6 +1095,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
             if (--asteroidsCounter <= 0)
               initAsteroids();
 
+        // TODO: Remove blocking boolean
         // Only Update the CurrentState && Agent while the game is playing:
         if (playing) {
 
@@ -1068,14 +1107,13 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
             double shipT = ship.angle;
 
             debugInfo.add(String.format("Ship rot: %4.2f loc: %s", shipT, shipL));
-            currentState.updateShip(shipV, shipL, shipT, shipR);
           }
 
-
+          
           // Update each collider corresponding to an asteroid:
           for (int h = 0; h != MAX_ROCKS; h++) {
             if (asteroids[h].active) {
-              // Update the corresponding collider.
+              // Display the corresponding collider.
               Vector2D v = new Vector2D(asteroids[h].deltaX, asteroids[h].deltaY);
               Vector2D l = new Vector2D(asteroids[h].x, asteroids[h].y);
               double r = Math.sqrt(Math.pow(asteroids[h].width/2, 2.0) + 
@@ -1083,24 +1121,21 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
               double t = asteroids[h].angle;
 
               debugInfo.add(String.format("Asteroid %d rot: %,3.2f loc: %s", h, t, l));
-              currentState.updateCollider(h, v, l, t, r);
-              
-              /*
-              // DEBUG: ensure currentState is synchronized...
-              debugInfo.add(String.format("Collider %s X:%,3.1f Y:%,3.1f", h, l.getX(), l.getY()));
-              PhysicalEntity temp = currentState.getCollider(h);
-              debugInfo.add(String.format("Collider %s X:%,3.1f Y:%,3.1f",h, temp.getLocation().getX(), temp.getLocation().getY()));
-              */
-              
-            } else {
-              // Disable the corresponding collider.
-              currentState.removeCollider(h);
+              debugInfo.add(String.format("Shape:  X: %d Y: %d\n", 
+                asteroids[h].shape.getBounds().x,
+                asteroids[h].shape.getBounds().y));
+              debugInfo.add(String.format("Sprite:  X: %d Y: %d\n", 
+                asteroids[h].sprite.getBounds().x,
+                asteroids[h].sprite.getBounds().y));
             }
           }
-          debugInfo.add(String.format("Active Colliders: %s", 
-            currentState.getActiveColliders().size()));
+          
+          //debugInfo.add(String.format("Active Colliders: %s", 
+          //  currentState.getActiveColliders().size()));
+
           pilot.update();
           debugInfo.add(String.format("Lifetime: %,10d", pilot.getLifetime()));
+          
         }
       }
 
@@ -1752,7 +1787,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
     // Create the off screen graphics context, if no good one exists.
 
-    if (offGraphics == null || d.width != offDimension.width || d.height != offDimension.height) {
+    if (offGraphics == null || d.width != offDimension.width ||
+       d.height != offDimension.height) {
       offDimension = d;
       offImage = createImage(d.width, d.height);
       offGraphics = offImage.getGraphics();
@@ -1782,8 +1818,10 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     offGraphics.setColor(new Color(c, c, c));
     if (missle.active) {
       offGraphics.drawPolygon(missle.sprite);
-      offGraphics.drawLine(missle.sprite.xpoints[missle.sprite.npoints - 1], missle.sprite.ypoints[missle.sprite.npoints - 1],
-                           missle.sprite.xpoints[0], missle.sprite.ypoints[0]);
+      offGraphics.drawLine(
+        missle.sprite.xpoints[missle.sprite.npoints - 1], 
+        missle.sprite.ypoints[missle.sprite.npoints - 1],
+        missle.sprite.xpoints[0], missle.sprite.ypoints[0]);
     }
 
     // Draw the asteroids.
@@ -1796,8 +1834,11 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         }
         offGraphics.setColor(Color.white);
         offGraphics.drawPolygon(asteroids[i].sprite);
-        offGraphics.drawLine(asteroids[i].sprite.xpoints[asteroids[i].sprite.npoints - 1], asteroids[i].sprite.ypoints[asteroids[i].sprite.npoints - 1],
-                             asteroids[i].sprite.xpoints[0], asteroids[i].sprite.ypoints[0]);
+        offGraphics.drawLine(
+          asteroids[i].sprite.xpoints[asteroids[i].sprite.npoints - 1],
+          asteroids[i].sprite.ypoints[asteroids[i].sprite.npoints - 1],
+          asteroids[i].sprite.xpoints[0], 
+          asteroids[i].sprite.ypoints[0]);
       }
 
     // Draw the flying saucer.
@@ -1809,8 +1850,9 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       }
       offGraphics.setColor(Color.white);
       offGraphics.drawPolygon(ufo.sprite);
-      offGraphics.drawLine(ufo.sprite.xpoints[ufo.sprite.npoints - 1], ufo.sprite.ypoints[ufo.sprite.npoints - 1],
-                           ufo.sprite.xpoints[0], ufo.sprite.ypoints[0]);
+      offGraphics.drawLine( ufo.sprite.xpoints[ufo.sprite.npoints - 1], 
+                            ufo.sprite.ypoints[ufo.sprite.npoints - 1],
+                            ufo.sprite.xpoints[0], ufo.sprite.ypoints[0]);
     }
 
     // Draw the ship, counter is used to fade color to white on hyperspace.
@@ -1823,8 +1865,9 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       }
       offGraphics.setColor(new Color(c, c, c));
       offGraphics.drawPolygon(ship.sprite);
-      offGraphics.drawLine(ship.sprite.xpoints[ship.sprite.npoints - 1], ship.sprite.ypoints[ship.sprite.npoints - 1],
-                           ship.sprite.xpoints[0], ship.sprite.ypoints[0]);
+      offGraphics.drawLine( ship.sprite.xpoints[ship.sprite.npoints - 1], 
+                            ship.sprite.ypoints[ship.sprite.npoints - 1],
+                            ship.sprite.xpoints[0], ship.sprite.ypoints[0]);
 
       // Draw thruster exhaust if thrusters are on. Do it randomly to get a
       // flicker effect.
@@ -1832,13 +1875,15 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       if (!paused && detail && Math.random() < 0.5) {
         if (accForward > 0) {
           offGraphics.drawPolygon(fwdThruster.sprite);
-          offGraphics.drawLine(fwdThruster.sprite.xpoints[fwdThruster.sprite.npoints - 1], fwdThruster.sprite.ypoints[fwdThruster.sprite.npoints - 1],
-                               fwdThruster.sprite.xpoints[0], fwdThruster.sprite.ypoints[0]);
+          offGraphics.drawLine( fwdThruster.sprite.xpoints[fwdThruster.sprite.npoints - 1], 
+                                fwdThruster.sprite.ypoints[fwdThruster.sprite.npoints - 1],
+                                fwdThruster.sprite.xpoints[0], fwdThruster.sprite.ypoints[0]);
         }
         if (accBackward > 0) {
           offGraphics.drawPolygon(revThruster.sprite);
-          offGraphics.drawLine(revThruster.sprite.xpoints[revThruster.sprite.npoints - 1], revThruster.sprite.ypoints[revThruster.sprite.npoints - 1],
-                               revThruster.sprite.xpoints[0], revThruster.sprite.ypoints[0]);
+          offGraphics.drawLine( revThruster.sprite.xpoints[revThruster.sprite.npoints - 1], 
+                                revThruster.sprite.ypoints[revThruster.sprite.npoints - 1],
+                                revThruster.sprite.xpoints[0], revThruster.sprite.ypoints[0]);
         }
       }
     }
@@ -1868,20 +1913,39 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       int j = 0; // Index of the current item in the iteration.
       for(Iterator<String> iter = debugInfo.iterator(); iter.hasNext(); ) {
         s = iter.next();
-        offGraphics.drawString(s, d.width - (fontWidth + fm.stringWidth(s)), fontHeight*(j+2));
+        offGraphics.drawString(
+          s, 
+          d.width - (fontWidth + fm.stringWidth(s)),
+          fontHeight*(j+2));
+
         j++;
       }
     }
 
     if (!playing) {
       s = copyName;
-      offGraphics.drawString(s, (d.width - fm.stringWidth(s)) / 2, d.height / 2 - 2 * fontHeight);
+      offGraphics.drawString( 
+        s, 
+        (d.width - fm.stringWidth(s)) / 2, 
+        d.height / 2 - 2 * fontHeight);
+
       s = copyVers;
-      offGraphics.drawString(s, (d.width - fm.stringWidth(s)) / 2, d.height / 2 - fontHeight);
+      offGraphics.drawString(
+        s, (d.width - fm.stringWidth(s)) / 2, 
+        d.height / 2 - fontHeight);
+
       s = copyInfo;
-      offGraphics.drawString(s, (d.width - fm.stringWidth(s)) / 2, d.height / 2 + fontHeight);
+      offGraphics.drawString(
+        s, 
+        (d.width - fm.stringWidth(s)) / 2, 
+        d.height / 2 + fontHeight);
+
       s = copyLink;
-      offGraphics.drawString(s, (d.width - fm.stringWidth(s)) / 2, d.height / 2 + 2 * fontHeight);
+      offGraphics.drawString(
+        s, 
+        (d.width - fm.stringWidth(s)) / 2, 
+        d.height / 2 + 2 * fontHeight);
+
       if (!loaded) {
         s = "Loading sounds...";
         w = 4 * fontWidth + fm.stringWidth(s);
@@ -1897,9 +1961,16 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       }
       else {
         s = "Game Over";
-        offGraphics.drawString(s, (d.width - fm.stringWidth(s)) / 2, d.height / 4);
+        offGraphics.drawString(
+          s, 
+          (d.width - fm.stringWidth(s)) / 2, 
+          d.height / 4);
+
         s = "'S' to Start";
-        offGraphics.drawString(s, (d.width - fm.stringWidth(s)) / 2, d.height / 4 + fontHeight);
+        offGraphics.drawString(
+          s, 
+          (d.width - fm.stringWidth(s)) / 2, 
+          d.height / 4 + fontHeight);
       }
     }
     else if (paused) {
