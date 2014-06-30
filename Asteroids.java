@@ -468,7 +468,6 @@ class ThresholdEquality implements DoubleThreshold {
 */
 class ThresholdBinary extends ThresholdEquality {
   // Return the output of the accumulated charge:
-  // (this very simple threshold returns output = charge)
   public double output() {
     if (charge != 0) { output = MAX_OUTPUT; }
     return output;
@@ -480,7 +479,6 @@ class ThresholdBinary extends ThresholdEquality {
 */
 class ThresholdSquared extends ThresholdEquality {
   // Return the output of the accumulated charge:
-  // (this very simple threshold returns output = charge)
   public double output() {
     output = Math.pow(charge, 2);
     output = (output > MAX_OUTPUT) ? MAX_OUTPUT : output;
@@ -493,7 +491,6 @@ class ThresholdSquared extends ThresholdEquality {
 */
 class ThresholdSqrt extends ThresholdEquality {
   // Return the output of the accumulated charge:
-  // (this very simple threshold returns output = charge)
   public double output() {
     output = Math.sqrt(charge);
     output = (output > MAX_OUTPUT) ? MAX_OUTPUT : output;
