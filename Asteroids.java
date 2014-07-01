@@ -211,7 +211,7 @@ class Intersectors {
       loc.getY() -Math.cos(orientation)*length + (AsteroidsSprite.height / 2));
 
     // <line> we are checking for intersection with colliders:
-    java.awt.geom.Line2D.Double line = new Line2D.Double(start, end);
+    Line2D.Double line = new Line2D.Double(start, end);
 
     // Check for intersection between <line> and every active-collider:
     for (AsteroidsSprite cur : activeColliders) {
@@ -435,14 +435,30 @@ interface DoubleThreshold {
   public void input(double input);// Accumulate input signals.
   public double output();         // Return the output of the accumulated input.
   public void reset();            // Reset the accumulated input.
+  public DoubleThreshold copy();
 }
 
 /*
   Returns output equal to accumulated <input>:
 */
 class ThresholdEquality implements DoubleThreshold {
-  double charge = 0;
-  double output = 0;
+  double charge;
+  double output;
+
+  // Constructor:
+  public ThresholdEquality() {
+    charge = 0;
+    output = 0;
+  }
+
+  // Returns a new instance of this class:
+  public DoubleThreshold copy() { return new ThresholdEquality(); }
+
+  // Copy Constructor:
+  public ThresholdEquality(ThresholdEquality original) {
+    charge = original.charge;
+    output = original.charge;
+  }
 
   // Accumulate input signals:
   public void input(double input) {
@@ -460,6 +476,7 @@ class ThresholdEquality implements DoubleThreshold {
   // Discharge any accumulated input:
   public void reset() {
     charge = 0;
+    output = 0;
   }
 }
 
@@ -467,9 +484,12 @@ class ThresholdEquality implements DoubleThreshold {
   Returns MAX_OUTPUT if accumulated input does not equal 0:
 */
 class ThresholdBinary extends ThresholdEquality {
+  // Returns a new instance of this class:
+  public DoubleThreshold copy() { return new ThresholdBinary(); }
+
   // Return the output of the accumulated charge:
   public double output() {
-    if (charge != 0) { output = MAX_OUTPUT; }
+    output = (charge == 0) ? charge : MAX_OUTPUT;
     return output;
   }
 }
@@ -478,6 +498,9 @@ class ThresholdBinary extends ThresholdEquality {
   Returns (accumulated <input>)^2:
 */
 class ThresholdSquared extends ThresholdEquality {
+  // Returns a new instance of this class:
+  public DoubleThreshold copy() { return new ThresholdSquared(); }
+
   // Return the output of the accumulated charge:
   public double output() {
     output = Math.pow(charge, 2);
@@ -490,6 +513,9 @@ class ThresholdSquared extends ThresholdEquality {
   Returns (accumulated <input>)^.5:
 */
 class ThresholdSqrt extends ThresholdEquality {
+  // Returns a new instance of this class:
+  public DoubleThreshold copy() { return new ThresholdSqrt(); }
+
   // Return the output of the accumulated charge:
   public double output() {
     output = Math.sqrt(charge);
@@ -513,26 +539,40 @@ class Wire {
     this.destination = destination;
     this.inhibitor = inhibitor;
   }
+
+  // Copy Constructor:
+  public Wire(Wire original) {
+    source = original.source;
+    destination = original.source;
+    inhibitor = original.inhibitor;
+  }
 }
 
 
 /*
   Represents a 'sensor-socket' on a vehicle.
   Hardpoints may be attached to vehicles.
-  Sensors added to hardpoints may be queried.
+  Sensors added to Hardpoints may be queried.
 */
-class HardPoint {
+class Hardpoint {
   Vector2D locationOffset;  // Hardpoint location relative to vehicle's origin.
   double rotationOffset;    // Hardpoint rotation relative to vehicle's orientation.
-  DoubleSensor sensor;      // Sensor attached to this hardpoint.
+  DoubleSensor sensor;      // Sensor attached to this Hardpoint.
 
   // Constructor:
-  public HardPoint(Vector2D l, double r) {
+  public Hardpoint(Vector2D l, double r) {
     locationOffset = l;
     rotationOffset = r;
   }
 
-  // Attach a sensor to this hardpoint:
+  // Copy Constructor:
+  public Hardpoint(Hardpoint original) {
+    locationOffset = original.locationOffset;
+    rotationOffset = original.rotationOffset;
+    sensor = original.sensor;
+  }
+
+  // Attach a sensor to this Hardpoint:
   void addSensor(DoubleSensor s) {
 
     sensor = s;
@@ -540,14 +580,34 @@ class HardPoint {
 
   // Activate the 'attached' sensor and return the result:
   double sense(GameState world, Vector2D location, double rotation) {
+    // Get the location of this hardpoint in world-space:
+    Vector2D worldLocation = getWorldLocation(location, rotation);
+
     if (sensor != null) {
-    return sensor.sense(Vector2D.sum(location, locationOffset), 
-                        rotation + rotationOffset,
-                        world);
+      return sensor.sense(worldLocation, 
+                          rotation + rotationOffset,
+                          world);
     }
     else {
       return 0.0;
     }
+  }
+
+  // Get the offset of this hardpoint in world-space:
+  Vector2D getWorldLocation(Vector2D location, double rotation) {
+    Vector2D xComponent = new Vector2D(
+      Math.cos(rotation) * locationOffset.getX(),
+      -Math.sin(rotation) * locationOffset.getX()
+      );
+
+    Vector2D yComponent = new Vector2D(
+      Math.sin(rotation) * locationOffset.getY(),
+      Math.cos(rotation) * locationOffset.getY()
+      );
+
+    Vector2D translatedOffset = Vector2D.sum(xComponent, yComponent);
+
+    return Vector2D.sum(location, translatedOffset);
   }
 }
 
@@ -561,12 +621,12 @@ class BraitenbergVehicle {
 
   // TODO: Consider replacing controlsignals with equality thresholds?
   // Control signals generated by the vehicle
-  double[] controlSignals = new double[]{0,0,0,0,0,0};
+  double[] controlSignals;
 
-  // This vehicle's hardpoints equipped with sensors:
+  // This vehicle's Hardpoints equipped with sensors:
   // Used to 'sense' some quality of <world>.
   // Results of sensing are output to thresholds.
-  List<HardPoint> hardPoints = new ArrayList<HardPoint>();
+  List<Hardpoint> hardpoints = new ArrayList<Hardpoint>();
 
   // This vehicle's double-threshold devices:
   // Receive input from sensors, modulates that input and outputs the result.
@@ -583,6 +643,34 @@ class BraitenbergVehicle {
   public BraitenbergVehicle(GameState world) {
     this.lifetime = 0;
     this.world = world;
+    controlSignals = new double[]{0,0,0,0,0,0};
+  }
+
+  // Copy constructor:
+  public BraitenbergVehicle(BraitenbergVehicle original) {
+    this.lifetime = 0;
+    this.world = original.world;
+    controlSignals = new double[]{0,0,0,0,0,0};
+
+    // Copy Hardpoints:
+    for (Hardpoint h : original.hardpoints) {
+      hardpoints.add(new Hardpoint(h));
+    }
+
+    // Copy Thresholds:
+    for (DoubleThreshold dh : dThresholds) {
+      dThresholds.add(dh.copy());
+    }
+
+    // Copy SensorWires:
+    for (Wire sw : original.sensorWires) {
+      sensorWires.add(new Wire(sw));
+    }
+
+    // Copy ControlWires:
+    for (Wire cw : original.controlWires) {
+      controlWires.add(new Wire(cw));
+    }
   }
 
   // TODO: generalize sense()/signal(), they are both extremely similar...
@@ -595,14 +683,14 @@ class BraitenbergVehicle {
     // Read the source from <wire> and apply it to <wire>'s destination
     for (Wire wire : sensorWires) {
       // Get the source:
-      HardPoint hardPoint = hardPoints.get(wire.source);
+      Hardpoint hardpoint = hardpoints.get(wire.source);
 
       // Get the destination:
       DoubleThreshold threshold = dThresholds.get(wire.destination);
 
       
       // Get the sources output:
-      double sensorResult = hardPoint.sense(world, 
+      double sensorResult = hardpoint.sense(world, 
                                             ship.getLocation(), 
                                             ship.angle );
   
@@ -682,22 +770,61 @@ class BraitenbergCockroach extends BraitenbergVehicle {
     this.lifetime = 0;
     this.world = world;
 
-    // Hardcoded test of HardPoints/Sensors/Wires:
+    // Hardcoded test of Hardpoints/Sensors/Wires:
 
-    SensorRaySpeed s1 = new SensorRaySpeed();
-    HardPoint h1 = new HardPoint(new Vector2D(0,0), 0.0);
+    SensorRadiusSmallMinDist smallRadiusSensor = new SensorRadiusSmallMinDist();
+    SensorRayMinDist rayDistanceSensor = new SensorRayMinDist();
 
-    h1.addSensor(s1);
-    hardPoints.add(h1);
 
-    ThresholdBinary t1 = new ThresholdBinary();
-    dThresholds.add(t1);
+    Hardpoint hard0 = new Hardpoint(new Vector2D(0,-100), 0.0);// In front of vehicle.
 
-    Wire w1 = new Wire(0,0, false);
-    Wire w2 = new Wire(0,4, false);
+    // Add a sensor to the frontal hardpoint:
+    hard0.addSensor(smallRadiusSensor);
 
-    sensorWires.add(w1);
-    controlWires.add(w2);
+    // Add the hardpoint to the ship:
+    hardpoints.add(hard0);
+
+    // Add a threshold to the vehicle:
+    ThresholdBinary thresh0 = new ThresholdBinary();
+    dThresholds.add(thresh0);
+
+    // Wire the hardpoint to the threshold:
+    Wire sWire0 = new Wire(0,0, false);
+    sensorWires.add(sWire0);
+
+    // Wire the threshold to the turn-left control-signal:
+    Wire cWire0 = new Wire(0,0, false);
+    controlWires.add(cWire0);
+
+    // Add another hardpoint in the same manner as above behind the vehicle.
+    // Wire the rear hardpoint to the turn-right control-signal.
+    Hardpoint hard1 = new Hardpoint(new Vector2D(0,100), 0.0);// Behind vehicle.
+    hard1.addSensor(smallRadiusSensor);
+    hardpoints.add(hard1);
+
+    ThresholdBinary thresh1 = new ThresholdBinary();
+    dThresholds.add(thresh1);
+
+    Wire sWire1 = new Wire(1,1, false);
+    sensorWires.add(sWire1);
+
+    Wire cWire1 = new Wire(1,1, false);
+    controlWires.add(cWire1);
+
+    // Add another hardpoint in the same manner as above on the vehicle's origin.
+    // Wire the central hardpoint to the accelerate control-signal.
+    Hardpoint hard2 = new Hardpoint(new Vector2D(0,0), 0.0);
+    hard2.addSensor(smallRadiusSensor);
+    hardpoints.add(hard2);
+
+    ThresholdBinary thresh2 = new ThresholdBinary();
+    dThresholds.add(thresh2);
+
+    Wire sWire2 = new Wire(2,2, false);
+    sensorWires.add(sWire2);
+
+    Wire cWire2 = new Wire(2,2, false);
+    controlWires.add(cWire2);
   }
 
   // Analyze the gamestate and generate commands:
@@ -709,6 +836,41 @@ class BraitenbergCockroach extends BraitenbergVehicle {
   }
 
 }
+
+/*
+  BraitenbergVehicleFactory
+  Creates Braitenberg Vehicles from components:
+*/
+  /*
+class BRVFactory {
+  // A pile of sensors we may draw from to equip a Hardpoint:
+  List<DoubleSensor> sensorPile = new ArrayList<DoubleSensor>();
+
+  // A pile of Hardpoints we may draw from to equip a BraitenbergVehicle:
+  List<Hardpoint> hardpointPile = new ArrayList<Hardpoint>();
+
+  // List of Braitenberg Vehicles equipped with hardpoints but no sensors or
+  // wires.
+  // Serves as the base for a 'model' or 'line' of similar vehicles.
+  List<BraitenbergVehicle> chasisPile = new ArrayList<BraitenbergVehicle>();
+  
+  // Constructor:
+  public BRVFactory(GameState world) {
+    // Supply the sensor pile:
+    sensorPile.add(new SensorRayMinDist());
+    sensorPile.add(new SensorRadiusSmallMinDist());
+    sensorPile.add(new SensorRaySpeed());
+
+    // Create differing types of chasis-configurations:
+    BraitenbergVehicle typeOne = new BraitenbergVehicle(world);
+    typeOne.hardpoints.add(new Hardpoint)
+
+
+    // Supply the chasis pile:
+    chasisPile.add(typeOne);
+
+  }
+}*/
 
 /*
   Provides a structured interface for reading the game's state.
@@ -1317,6 +1479,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
             double shipT = ship.angle;
 
             debugInfo.add(String.format("Ship rot: %4.2f loc: %s", shipT, shipL));
+                      debugInfo.add(String.format("Hardpoint Loc: %s", pilot.hardpoints.get(0).getWorldLocation(shipL, shipT)));
           }
 
           
@@ -1331,9 +1494,6 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
               double t = asteroids[h].angle;
 
               debugInfo.add(String.format("Asteroid %d rot: %,3.2f loc: %s", h, t, l));
-              debugInfo.add(String.format("Shape:  X: %d Y: %d\n", 
-                asteroids[h].shape.getBounds().x,
-                asteroids[h].shape.getBounds().y));
               debugInfo.add(String.format("Sprite:  X: %d Y: %d\n", 
                 asteroids[h].sprite.getBounds().x,
                 asteroids[h].sprite.getBounds().y));
