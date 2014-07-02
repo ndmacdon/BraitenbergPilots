@@ -379,10 +379,6 @@ class SensorRaySpeed implements DoubleSensor {
       }
     }
 
-    if (speed != 0) {
-      System.out.println(speed);
-    }
-
     return speed;
   }
 }
@@ -658,7 +654,7 @@ class BraitenbergVehicle {
     }
 
     // Copy Thresholds:
-    for (DoubleThreshold dh : dThresholds) {
+    for (DoubleThreshold dh : original.dThresholds) {
       dThresholds.add(dh.copy());
     }
 
@@ -841,7 +837,6 @@ class BraitenbergCockroach extends BraitenbergVehicle {
   BraitenbergVehicleFactory
   Creates Braitenberg Vehicles from components:
 */
-  /*
 class BRVFactory {
   // A pile of sensors we may draw from to equip a Hardpoint:
   List<DoubleSensor> sensorPile = new ArrayList<DoubleSensor>();
@@ -849,28 +844,208 @@ class BRVFactory {
   // A pile of Hardpoints we may draw from to equip a BraitenbergVehicle:
   List<Hardpoint> hardpointPile = new ArrayList<Hardpoint>();
 
+  // A pile of Thresholds we may draw from to equip a BraitenbergVehicle:
+  List<DoubleThreshold> thresholdPile = new ArrayList<DoubleThreshold>();
+
   // List of Braitenberg Vehicles equipped with hardpoints but no sensors or
   // wires.
   // Serves as the base for a 'model' or 'line' of similar vehicles.
-  List<BraitenbergVehicle> chasisPile = new ArrayList<BraitenbergVehicle>();
+  List<BraitenbergVehicle> chassisPile = new ArrayList<BraitenbergVehicle>();
+
+  GameState world;
   
   // Constructor:
   public BRVFactory(GameState world) {
+    this.world = world;
+
     // Supply the sensor pile:
     sensorPile.add(new SensorRayMinDist());
     sensorPile.add(new SensorRadiusSmallMinDist());
     sensorPile.add(new SensorRaySpeed());
 
-    // Create differing types of chasis-configurations:
-    BraitenbergVehicle typeOne = new BraitenbergVehicle(world);
-    typeOne.hardpoints.add(new Hardpoint)
+    // Supply the thresholdPile:
+    thresholdPile.add(new ThresholdEquality());
 
-
-    // Supply the chasis pile:
-    chasisPile.add(typeOne);
-
+    // Supply the chassis pile:
+    chassisPile.add(makeStarfishChassis());
   }
-}*/
+
+  // TODO: Improve comments here...
+  // TODO: Include all chassis??
+  // Make starfish...
+  List<BraitenbergVehicle> makeStarfish() {
+    List<BraitenbergVehicle> vehicles = equipSensors(chassisPile.get(0));
+
+    vehicles = equipFixedThresholds(vehicles);
+    vehicles = equipWires(vehicles);
+
+    return vehicles;
+  }
+
+  // Create a Braitenberg vehicle with empty hardpoints arranged in a 
+  // star-pattern:
+  BraitenbergVehicle makeStarfishChassis() {
+    // Sensors arranged in a star pattern:
+    BraitenbergVehicle starfish = new BraitenbergVehicle(world);
+    // Front
+    starfish.hardpoints.add(
+      new Hardpoint(new Vector2D(0,-100), 0.0));
+
+    // Front-Left
+    starfish.hardpoints.add(
+      new Hardpoint(new Vector2D(-100,-100), Math.PI/4));
+
+    // Rear-Left
+    starfish.hardpoints.add(
+      new Hardpoint(new Vector2D(-100,100), 3*Math.PI/4));
+
+    // Rear-Right
+    starfish.hardpoints.add(
+      new Hardpoint(new Vector2D(100,100), 5*Math.PI/4));
+
+    // Front-Right
+    starfish.hardpoints.add(
+      new Hardpoint(new Vector2D(100,-100), 7*Math.PI/4));
+
+    return starfish;
+  }
+
+  // Equip a chassis with every combination of sensors possible and return the
+  // resulting list of BraitenbergVehicles:
+  List<BraitenbergVehicle> equipSensors(BraitenbergVehicle chassis) {
+    List<BraitenbergVehicle> equippedVehicles = new ArrayList<BraitenbergVehicle>();
+    BraitenbergVehicle nextVehicle;
+    int numHardpoints = chassis.hardpoints.size();
+    int numSensors = sensorPile.size();
+    List<int[]>permutations = getPermutations(numHardpoints, numSensors);
+
+    
+    // <permutation> helps us generate each permutation of sensors:
+    // Digit index corresponds to a hardpoint on <chassis>.
+    // Digit value corresponds to a sensor type from <sensorPile>.
+    for (int[] permutation : permutations) {
+      nextVehicle = new BraitenbergVehicle(chassis); // Get a clone of the chassis.
+
+      // Equip <nextVehicle> according to the current permutation...
+      for (int i = 0; i < numHardpoints; i++) {
+        DoubleSensor selectedSensor = sensorPile.get(permutation[i]);
+        nextVehicle.hardpoints.get(i).addSensor(selectedSensor);
+      }
+
+      equippedVehicles.add(nextVehicle); // Add the equipped.
+    }
+
+    return equippedVehicles;
+  }
+
+  // Equip Five Equality Thresholds to the BraitenbergVehicles in <vehicles>:
+  List<BraitenbergVehicle> equipFixedThresholds(List<BraitenbergVehicle> vehicles) {
+    for (BraitenbergVehicle nextVehicle : vehicles) {
+      nextVehicle.dThresholds.add(thresholdPile.get(0).copy());
+      nextVehicle.dThresholds.add(thresholdPile.get(0).copy());
+      nextVehicle.dThresholds.add(thresholdPile.get(0).copy());
+      nextVehicle.dThresholds.add(thresholdPile.get(0).copy());
+      nextVehicle.dThresholds.add(thresholdPile.get(0).copy());
+    }
+
+    return vehicles;
+  }
+
+  // TODO: Improve comments here...
+  // Equip a list of vehicles with every combination of wires possible and return
+  // the resulting list of BraitenbergVehicles:
+  List<BraitenbergVehicle> equipWires(List<BraitenbergVehicle> vehicles) {
+    List<BraitenbergVehicle> wiredVehicles = new ArrayList<BraitenbergVehicle>();
+    BraitenbergVehicle nextVehicle;
+    int numHardpoints = vehicles.get(0).hardpoints.size();
+    // Exclude hyperspace signal:
+    int numControlSignals = vehicles.get(0).controlSignals.length - 1;
+    List<int[]>permutations = getPermutationsNoRepetions( numHardpoints, 
+                                                          numControlSignals);
+
+    for (BraitenbergVehicle original : vehicles) {
+      // <permutation> helps us generate each permutation of wirings:
+      // Digit index corresponds to a hardpoint on <chassis>.
+      // Digit value corresponds to a control signal on <chassis>.
+      for (int[] permutation : permutations) {
+        nextVehicle = new BraitenbergVehicle(original); // Get a clone of the chassis.
+
+        // Wire <nextVehicle> according to the current permutation...
+        for (int i = numHardpoints-1; i >= 0; i--) {
+          nextVehicle.sensorWires.add(new Wire(i, i, false));
+          nextVehicle.controlWires.add(new Wire(i, permutation[i], false));
+        }
+
+        wiredVehicles.add(nextVehicle); // Add the wired vehicle.
+      }
+    }
+
+
+    return wiredVehicles;
+  }
+
+  // TODO: Improve comments here...
+  // Return all permutations:
+  static List<int[]> getPermutations(int digits, int base) {
+    List<int[]> permutations = new ArrayList<int[]>();
+    int[] curPermutation = new int[digits];
+    int digitSum = 0; // Sum of the digits in the current permutation.
+
+    permutations.add(curPermutation.clone()); // Add the first permutation.
+
+    // While we have not reached the last permutation of digits:
+    while (digitSum != (base-1) * digits) {
+      digitSum = 0;
+
+      // Increment permutation modulus(maxValues)
+      curPermutation[0]++;
+      for (int j = 0; j < digits; j++) {
+        // Carry overflowed digit to the next column:
+        if (curPermutation[j] == base) {
+          curPermutation[j] = 0;
+          curPermutation[j+1]++;
+        }
+
+        // Track the sum of the digits of the new permutation:
+        digitSum += curPermutation[j];
+      }
+      // Store the permutation:
+      permutations.add(curPermutation.clone());
+    }
+
+    return permutations;
+  }
+
+  // TODO: Improve comments here...
+  // Return all permutations in which no digit occurs more than once:
+  // Perhaps inefficient but simple.
+  static List<int[]> getPermutationsNoRepetions(int digits, int base) {
+    List<int[]> permutations = getPermutations(digits, base);
+    Iterator<int[]> iter = permutations.iterator();
+    int[] permutation;  // Permutation being inspected.
+
+    // Remove any permutation in which the same digit occurs more than once:
+    while (iter.hasNext()) {
+      permutation = iter.next();
+
+      for (int i = 0; i < permutation.length - 1; i++) {
+        for (int j = i+1; j < permutation.length; j++) {
+          // If any digit occurs twice:
+          // Remove it.
+          if (permutation[i] == permutation[j]) {
+            j = permutation.length; // Stop checking this permutation.
+            i = permutation.length; // Stop checking this permutation.
+            iter.remove();
+          }
+        }
+      }
+    }
+
+    return permutations;
+  }
+
+
+}
 
 /*
   Provides a structured interface for reading the game's state.
@@ -901,6 +1076,8 @@ class GameState {
     AsteroidsSprite copyShip = (ship == null) ? null : new AsteroidsSprite(ship);
     return copyShip;
   }
+
+  public void setShip(AsteroidsSprite ship) { this.ship = ship; }
 
   // Return an ArrayList of all active colliders:
   // Anything which may collide with the Ship is a collider.
@@ -1077,7 +1254,10 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   // Agent Variables.
 
-  BraitenbergCockroach pilot;
+  BRVFactory factory;
+  List<BraitenbergVehicle> vehicles;
+  Iterator<BraitenbergVehicle> vehicleIter;
+  BraitenbergVehicle pilot;
 
   // Debug information
 
@@ -1102,11 +1282,11 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   // Constants
 
-  static final int DELAY = 20;             // Milliseconds between screen and
+  static final int DELAY = 10;             // Milliseconds between screen and
   static final int FPS   =                 // the resulting frame rate.
     Math.round(1000 / DELAY);
 
-  static final int MAX_SHOTS =  8;          // Maximum number of sprites
+  static final int MAX_SHOTS =  12;          // Maximum number of sprites
   static final int MAX_ROCKS =  6;          // for photons, asteroids and
   static final int MAX_SCRAP = 40;          // explosions.
 
@@ -1123,7 +1303,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   static final double MAX_ROCK_SPEED = 240.0 / FPS;
   static final double MAX_ROCK_SPIN  = Math.PI / FPS;
 
-  static final int MAX_SHIPS = 20;           // Starting number of ships for
+  static final int MAX_SHIPS = 1;           // Starting number of ships for
                                             // each game.
   static final int UFO_PASSES = 3;          // Number of passes for flying
                                             // saucer per appearance.
@@ -1353,6 +1533,11 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
                                   missle,
                                   ufo);
 
+    factory = new BRVFactory(currentState);
+    vehicles = factory.makeStarfish();
+    vehicleIter = vehicles.iterator();
+    pilot = new BraitenbergCockroach(currentState);
+
     highScore = 0;
     detail = true;
     initGame();
@@ -1417,7 +1602,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   public void run() {
     int i, j;
     long startTime;
-    //System.out.println(test(5));
+
     // Lower this thread's priority and get the current time.
 
     Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
@@ -1432,6 +1617,10 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
     // This is the main loop.
     while (Thread.currentThread() == loopThread) {
+      if (vehicleIter.hasNext() && loaded && !playing) {
+        pilot = vehicleIter.next();
+        initGame();
+      }
       debugInfo.clear();
 
       if (!paused) {
@@ -1547,10 +1736,6 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     revThruster.render();
 
     hyperCounter = 0;
-
-    // Initialize Pilot Agent:
-
-    pilot = new BraitenbergCockroach(currentState);
   }
 
   // Interpret control-variables into <ship>-actions:
