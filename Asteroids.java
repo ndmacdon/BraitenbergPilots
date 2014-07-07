@@ -45,9 +45,8 @@
  *              The robots are modeled after those described in Valentino 
  *              Braitenberg's Vehicles. They are equipped with; sensors which 
  *              are excited by various qualities of the environment, threshold 
- *              devices which modulate the raw output of sensors according to an
- *              arbitrary function, and 'motors' which have various effects on 
- *              the robot and its environment.
+ *              devices which modulate the raw output of sensors, and 'motors' 
+ *              which have various effects on the robot and its environment.
  ****/
 
 
@@ -64,7 +63,8 @@ import java.io.*;
 
 
 /*
-  Provides some standard Vector Operations.
+  Provides some standard Vector Operations such as dot product
+  or distance between vectors.
 */
 class Vector2D {
   double x, y;
@@ -81,14 +81,14 @@ class Vector2D {
     this.y = v.getY();
   }
 
-  // Distance-Squared between a and b:
-  public static double distanceSQ(Vector2D a, Vector2D b) {
-    double cX = a.getX() - b.getX();
-    double cY = a.getY() - b.getY();
-    return (cX*cX + cY*cY);
+  // Distance-Squared between <v1> and <v2>:
+  public static double distanceSQ(Vector2D v1, Vector2D v2) {
+    double vX = v1.getX() - v2.getX();
+    double vY = v1.getY() - v2.getY();
+    return (vX*vX + vY*vY);
   }
 
-  // Distance between v1 and v2:
+  // Distance between <v1> and <v2>:
   public static double distance(Vector2D v1, Vector2D v2) {
     return Math.sqrt(distanceSQ(v1, v2));
   }
@@ -106,7 +106,7 @@ class Vector2D {
     return new Vector2D(xNorm, yNorm);
   }
 
-  // Dot-Product of v1 and v2:
+  // Dot-Product of <v1> and <v2>:
   public static double dot(Vector2D v1, Vector2D v2) {
     return (v1.getX()*v2.getX() + v1.getY()*v2.getY());
   }
@@ -118,12 +118,12 @@ class Vector2D {
     return (r2 - r1);
   }
 
-  // Sum of v1 and v2:
+  // Sum of <v1> and <v2>:
   public static Vector2D sum(Vector2D v1, Vector2D v2) {
     return new Vector2D(v1.getX() + v2.getX(), v1.getY() + v2.getY());
   }
 
-  // Difference between v1 and v2:
+  // Difference between <v1> and <v2>:
   public static Vector2D difference(Vector2D v1, Vector2D v2) {
     return new Vector2D(v1.getX() - v2.getX(), v1.getY() - v2.getY());
   }
@@ -145,283 +145,126 @@ class Vector2D {
   public double getX() { return x; }
 }
 
-// TODO: Generalize sensors and threshold devices, they are both very similar...
 /*
   Defines the interface to a sensor device which returns a double when queried:
 */
 interface DoubleSensor {
+  double SHORT_LENGTH = 20.0;
+  double MEDIUM_LENGTH = 200.0;
+  double LONG_LENGTH = 800.0;
+  double SLOW_SPEED = 5.0;
   // Activate the sensor at location <l> with orientation <r> in <world>:
   double sense(Vector2D l, double r, GameState world);
 }
 
-
 /*
-  A collection of intersection functions.
-  Each returns a list of AsteroidsSprites intersected by a given shape.
+  Detects all colliders within a circle described by <loc, detectionRadius>.
+  Returns the complement of the distance to the nearest intersected collider 
+  as a fraction of <detectionRadius>.
+  i.e. output = 1 - (<distanceToNearest> / <detectionRadius>)
+  This gives:
+    ~one when objects are exactly on the sensor
+    ~values close to one when objects are very near
+    ~values close to zero when objects are very far
+    ~zero when all objects are outside of <detectionRadius>
 */
-class Intersectors {
+class SensorRadiusMedDist implements DoubleSensor {
+  
+  public double sense(Vector2D loc, double orientation, GameState world) {
+    double detectionRadius = MEDIUM_LENGTH; // Radius of the detection circle
+    double output = 0.0f;
 
-  // Return the AsteroidsSprites which intersect a circle defined by 
-  // <loc, radius>:
-  public static List<AsteroidsSprite> intersectRadius(double radius,
-                                                      Vector2D loc, 
-                                                      GameState world) {
-    // List of the colliders we inspect:
-    List<AsteroidsSprite> activeColliders = world.getActiveColliders();
+    // List of AsteroidsSprites that intersect with a circle described by
+    // <loc, distanceToNearest>
+    List<AsteroidsSprite> intersected = 
+      world.intersectRadius(detectionRadius, loc);
 
-    // List of colliders inside <loc, radius>:
-    List<AsteroidsSprite> detected = new ArrayList<AsteroidsSprite>();
+    // The nearest AsteroidsSprite:
+    AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
 
-    // Check for intersection between <line> and every active-collider:
-    for (AsteroidsSprite cur : activeColliders) {
-        double curDistance = Vector2D.distance( loc,
-                                                new Vector2D(cur.x, cur.y) );
-
-        // Adding <cur>'s radius ensures that if any edge of <cur> could be
-        // within our intersection radius, we will detect <cur>.
-        // To increase intersection fidelity, add a check on the distance to
-        // each point in <cur> against <radius>.
-        if (curDistance <= radius+cur.getRadius()) {
-          detected.add(cur);
-        }
+    // Calculate output if something was detected:
+    if (nearest != null) {
+      double distanceToNearest = Vector2D.distance(loc, nearest.getLocation());
+      output = 1.0f - (distanceToNearest / detectionRadius);
     }
 
-    return detected;
-  }
-
-  // Return the AsteroidsSprites which intersect a line defined by 
-  // <loc, length, orientation>:
-  public static List<AsteroidsSprite> intersectLine(double length,
-                                                    Vector2D loc,
-                                                    double orientation,
-                                                    GameState world) {
-    // List of the colliders we inspect:
-    List<AsteroidsSprite> activeColliders = world.getActiveColliders();
-
-    // List of colliders intersected by <line>:
-    List<AsteroidsSprite> detected = new ArrayList<AsteroidsSprite>();
-
-    // Start and end points of intersection <line>:
-    Point2D.Double start = new Point2D.Double(
-      loc.getX() + (AsteroidsSprite.width / 2),
-      loc.getY() + (AsteroidsSprite.height / 2));
-
-    Point2D.Double end = new Point2D.Double(
-      loc.getX() -Math.sin(orientation)*length + (AsteroidsSprite.width / 2),
-      loc.getY() -Math.cos(orientation)*length + (AsteroidsSprite.height / 2));
-
-    // <line> we are checking for intersection with colliders:
-    Line2D.Double line = new Line2D.Double(start, end);
-
-    // Check for intersection between <line> and every active-collider:
-    for (AsteroidsSprite cur : activeColliders) {
-
-      // If <line> intersects <cur>:
-      // Add <cur> to the list of detected colliders.
-      if (intersects(cur.sprite, line)) {
-        detected.add(cur);
-      }
-    }
-
-    return detected;
-  }
-
-  // Does <line> intersect <poly>?
-  // Based on: http://bit.ly/1qIdDkf
-  public static boolean intersects(final Polygon poly, final Line2D.Double line) {
-    // Get an iterator along the polygon path
-    final PathIterator polyIt = poly.getPathIterator(null); 
-
-    // Double array with length 6 needed by iterator
-    final double[] coords = new double[6]; 
-
-    // First point (needed for closing polygon path)
-    final double[] firstCoords = new double[2];
-
-    // Previously visited point 
-    final double[] lastCoords = new double[2]; 
-    boolean intersects = false;
-
-    polyIt.currentSegment(firstCoords); // Get the first coordinate pair
-    lastCoords[0] = firstCoords[0]; // Prime the previous coordinate pair
-    lastCoords[1] = firstCoords[1];
-    polyIt.next();
-
-    while(!polyIt.isDone()) {
-        final int type = polyIt.currentSegment(coords);
-        switch(type) {
-            case PathIterator.SEG_LINETO : {
-                final Line2D.Double currentLine = new Line2D.Double(
-                                                        lastCoords[0], 
-                                                        lastCoords[1],
-                                                        coords[0],
-                                                        coords[1]);
-                if(currentLine.intersectsLine(line)) {
-                    intersects = true;
-                }
-
-                lastCoords[0] = coords[0];
-                lastCoords[1] = coords[1];
-                break;
-            }
-            case PathIterator.SEG_CLOSE : {
-                final Line2D.Double currentLine = new Line2D.Double(
-                                                        coords[0],
-                                                        coords[1],
-                                                        firstCoords[0],
-                                                        firstCoords[1]);
-                if(currentLine.intersectsLine(line)) {
-                  intersects = true;
-                }
-                break;
-            }
-        }
-        polyIt.next();
-    }
-    return intersects;
+    return output;
   }
 }
 
 /*
-  Detects all colliders within a circle described by <loc, detectionRadius> and 
-  returns the distance to the nearest intersected collider:
+  Detects all colliders intersecting a line described by <loc, orientation>.
+  Returns the complement of the distance to the nearest intersected collider 
+  as a fraction of <lineLength>.
+  i.e. output = 1 - (<distanceToNearest> / <lineLength>)
+  This gives:
+    ~one when objects are exactly on the sensor
+    ~values close to one when objects are very near
+    ~values close to zero when objects are very far
+    ~zero when all objects are outside of detection beam
 */
-class SensorRadiusSmallMinDist implements DoubleSensor {
-  static final double SMALL_RADIUS = 20.0;
+class SensorRayLongDist implements DoubleSensor {
   public double sense(Vector2D loc, double orientation, GameState world) {
-    double distanceToNearest = Double.MAX_VALUE;
-    double detectionRadius = SMALL_RADIUS; // Radius of the detection circle
+    double lineLength = LONG_LENGTH; // Length of the detection-beam.
+    double output = 0.0f;
 
     // List of colliders that intersect with a line described by
     // <lineLength, loc, orientation>
-    List<AsteroidsSprite> intersectedColliders = 
-      Intersectors.intersectRadius(detectionRadius, loc, world);
+    List<AsteroidsSprite> intersected = 
+      world.intersectLine(lineLength, loc, orientation);
 
-    // Find the distance to the nearest intersected collider:
-    for (AsteroidsSprite cur : intersectedColliders) {
-      double curDistance = Vector2D.distance(loc, cur.getLocation());
+    // The nearest AsteroidsSprite:
+    AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
 
-      // If <cur> is the closest collider yet:
-      if (curDistance < distanceToNearest) {
-        distanceToNearest = curDistance;
-      }
+    // Calculate output if something was detected:
+    if (nearest != null) {
+      double distanceToNearest = Vector2D.distance(loc, nearest.getLocation());
+      output = 1.0f - (distanceToNearest / lineLength);
     }
 
-    // Reset distance if nothing was detected:
-    if (distanceToNearest == Double.MAX_VALUE) {
-      distanceToNearest = 0;
-    }
-
-    return distanceToNearest;
+    return output;
   }
 }
 
 /*
-  Casts a ray from <loc> in direction <orientation> and returns the distance to
-  the nearest intersected collider:
+  Detects all colliders intersecting a line described by <loc, orientation>.
+  Returns the complement of the speed to the nearest intersected collider 
+  as a fraction of <baseSpeed>.
+  i.e. output = 1 - (<speed> / <baseSpeed>)
+  This gives:
+    ~one when objects are moving at speed >= <baseSpeed>
+    ~values close to one when objects are moving at nearly <baseSpeed>
+    ~values close to zero when objects are moving at nearly zero
+    ~zero when all objects are outside of detection beam
 */
-class SensorRayMinDist implements DoubleSensor {
+class SensorRayLongSpeed implements DoubleSensor {
   public double sense(Vector2D loc, double orientation, GameState world) {
-    double distanceToNearest = Double.MAX_VALUE;
-    
-    // An easily generated length; longer than the diagonal of the screen.
-    double lineLength = AsteroidsSprite.width + AsteroidsSprite.height;
+    double lineLength = LONG_LENGTH; // Length of the detection-beam.
+    double baseSpeed = SLOW_SPEED;
+    double output = 0.0;
 
     // List of colliders that intersect with a line described by
     // <lineLength, loc, orientation>
-    List<AsteroidsSprite> intersectedColliders = 
-      Intersectors.intersectLine(lineLength, loc, orientation, world);
+    List<AsteroidsSprite> intersected = 
+      world.intersectLine(lineLength, loc, orientation);
 
-    // Find the distance to the nearest intersected collider:
-    for (AsteroidsSprite cur : intersectedColliders) {
-      double curDistance = Vector2D.distance(loc, cur.getLocation());
+    // The nearest AsteroidsSprite:
+    AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
 
-      // If <cur> is the closest collider yet:
-      if (curDistance < distanceToNearest) {
-        distanceToNearest = curDistance;
-      }
+    // Calculate output if something was detected:
+    if (nearest != null) {
+      double speed = nearest.getSpeed();
+      output = 1.0f - (speed / baseSpeed);
     }
 
-    // Reset distance if nothing was detected:
-    if (distanceToNearest == Double.MAX_VALUE) {
-      distanceToNearest = 0;
-    }
-
-    return distanceToNearest;
-  }
-}
-
-/*
-  Casts a ray from <loc> in direction <orientation> and returns the speed of
-  the nearest intersected collider:
-*/
-class SensorRaySpeed implements DoubleSensor {
-  public double sense(Vector2D loc, double orientation, GameState world) {
-    double distanceToNearest = Double.MAX_VALUE;
-    double speed = 0.0;
-    
-    // An easily generated length; longer than the diagonal of the screen.
-    double lineLength = AsteroidsSprite.width + AsteroidsSprite.height;
-
-    // List of colliders that intersect with a line described by
-    // <lineLength, loc, orientation>
-    List<AsteroidsSprite> intersectedColliders = 
-      Intersectors.intersectLine(lineLength, loc, orientation, world);
-
-    // Find the distance to the nearest intersected collider:
-    for (AsteroidsSprite cur : intersectedColliders) {
-      double curDistance = Vector2D.distance(loc, cur.getLocation());
-
-      // If <cur> is the closest collider yet:
-      if (curDistance < distanceToNearest) {
-        distanceToNearest = curDistance;
-        speed = cur.getSpeed();
-      }
-    }
-
-    return speed;
+    return output;
   }
 }
 
 
 /*
-  Casts a ray from <loc> in direction <orientation> and returns the speed at 
-  which the the nearest intersected collider is approaching <loc>.
-*/
-// TODO: IMPLEMENT THIS SENSOR.
-  /*
-class SensorRayApproachSpeed implements DoubleSensor {
-  public double sense(Vector2D loc, double orientation, GameState world) {
-    double distanceToNearest = Double.MAX_VALUE;
-    double approachSpeed = 0.0;
-    
-    // An easily generated length; longer than the diagonal of the screen.
-    double lineLength = AsteroidsSprite.width + AsteroidsSprite.height;
-
-    // List of colliders that intersect with a line described by
-    // <lineLength, loc, orientation>
-    List<AsteroidsSprite> intersectedColliders = 
-      Intersectors.intersectLine(lineLength, loc, orientation, world);
-
-    // Find the distance to the nearest intersected collider:
-    for (AsteroidsSprite cur : intersectedColliders) {
-      double curDistance = Vector2D.distance(loc, cur.getLocation());
-
-      // If <cur> is the closest collider yet:
-      if (curDistance < distanceToNearest) {
-        distanceToNearest = curDistance;
-        speed = cur.getSpeed();
-      }
-    }
-
-    return distanceToNearest;
-  }
-}*/
-
-
-/*
-  Defines a threshold device with double input and output:
-  Inputs are accumulated and output is computed based on the accumulated input.
+  Defines a modulation device with double input and output:
+  Inputs are accumulated and fed to a function which sets the output value.
   Resetting the threshold discharges any accumulated input.
   The output of an implementation results from an arbitrary function of the 
   accumulated input.
@@ -1094,6 +937,122 @@ class GameState {
 
     return activeColliders;
   }
+
+  // Return the AsteroidsSprites which intersect a circle defined by 
+  // <loc, radius>:
+  public List<AsteroidsSprite> intersectRadius(double radius, Vector2D loc) {
+    // List of the colliders we inspect:
+    List<AsteroidsSprite> activeColliders = this.getActiveColliders();
+
+    // List of colliders inside <loc, radius>:
+    List<AsteroidsSprite> detected = new ArrayList<AsteroidsSprite>();
+
+    // Check for intersection between <line> and every active-collider:
+    for (AsteroidsSprite cur : activeColliders) {
+        double curDistance = Vector2D.distance( loc,
+                                                new Vector2D(cur.x, cur.y) );
+
+        // Adding <cur>'s radius ensures that if any edge of <cur> could be
+        // within our intersection radius, we will detect <cur>.
+        // To increase intersection fidelity, add a check on the distance to
+        // each point in <cur> against <radius>.
+        if (curDistance <= radius+cur.getRadius()) {
+          detected.add(cur);
+        }
+    }
+
+    return detected;
+  }
+
+  // Return the AsteroidsSprites which intersect a line defined by 
+  // <loc, length, orientation>:
+  public List<AsteroidsSprite> intersectLine(double length, Vector2D loc, 
+    double orientation) {
+    // List of the colliders we inspect:
+    List<AsteroidsSprite> activeColliders = this.getActiveColliders();
+
+    // List of colliders intersected by <line>:
+    List<AsteroidsSprite> detected = new ArrayList<AsteroidsSprite>();
+
+    // Start and end points of intersection <line>:
+    Point2D.Double start = new Point2D.Double(
+      loc.getX() + (AsteroidsSprite.width / 2),
+      loc.getY() + (AsteroidsSprite.height / 2));
+
+    Point2D.Double end = new Point2D.Double(
+      loc.getX() -Math.sin(orientation)*length + (AsteroidsSprite.width / 2),
+      loc.getY() -Math.cos(orientation)*length + (AsteroidsSprite.height / 2));
+
+    // <line> we are checking for intersection with colliders:
+    Line2D.Double line = new Line2D.Double(start, end);
+
+    // Check for intersection between <line> and every active-collider:
+    for (AsteroidsSprite cur : activeColliders) {
+
+      // If <line> intersects <cur>:
+      // Add <cur> to the list of detected colliders.
+      if (intersects(cur.sprite, line)) {
+        detected.add(cur);
+      }
+    }
+
+    return detected;
+  }
+
+  // Does <line> intersect <poly>?
+  // Based on: http://bit.ly/1qIdDkf
+  public static boolean intersects(final Polygon poly, final Line2D.Double line) {
+    // Get an iterator along the polygon path
+    final PathIterator polyIt = poly.getPathIterator(null); 
+
+    // Double array with length 6 needed by iterator
+    final double[] coords = new double[6]; 
+
+    // First point (needed for closing polygon path)
+    final double[] firstCoords = new double[2];
+
+    // Previously visited point 
+    final double[] lastCoords = new double[2]; 
+    boolean intersects = false;
+
+    polyIt.currentSegment(firstCoords); // Get the first coordinate pair
+    lastCoords[0] = firstCoords[0]; // Prime the previous coordinate pair
+    lastCoords[1] = firstCoords[1];
+    polyIt.next();
+
+    while(!polyIt.isDone()) {
+        final int type = polyIt.currentSegment(coords);
+        switch(type) {
+            case PathIterator.SEG_LINETO : {
+                final Line2D.Double currentLine = new Line2D.Double(
+                                                        lastCoords[0], 
+                                                        lastCoords[1],
+                                                        coords[0],
+                                                        coords[1]);
+                if(currentLine.intersectsLine(line)) {
+                    intersects = true;
+                }
+
+                lastCoords[0] = coords[0];
+                lastCoords[1] = coords[1];
+                break;
+            }
+            case PathIterator.SEG_CLOSE : {
+                final Line2D.Double currentLine = new Line2D.Double(
+                                                        coords[0],
+                                                        coords[1],
+                                                        firstCoords[0],
+                                                        firstCoords[1]);
+                if(currentLine.intersectsLine(line)) {
+                  intersects = true;
+                }
+                break;
+            }
+        }
+        polyIt.next();
+    }
+    return intersects;
+  }
 }
 
 /******************************************************************************
@@ -1218,6 +1177,26 @@ class AsteroidsSprite {
     return false;
   }
 
+  // Return the AsteroidsSprite in <list> nearest to <loc>:
+  public static AsteroidsSprite nearest(Vector2D loc, 
+    List<AsteroidsSprite> list) {
+    double distanceToNearest = Double.MAX_VALUE;
+    AsteroidsSprite nearest = null;
+
+    double curDistance;
+    for (AsteroidsSprite cur : list) {
+      curDistance = Vector2D.distance(loc, cur.getLocation());
+
+      // If <cur> is the closest AsteroidsSprite yet:
+      if (curDistance < distanceToNearest) {
+        distanceToNearest = curDistance;
+        nearest = cur;
+      }
+    }
+
+    return nearest;
+  }
+
   public Vector2D getLocation() { return new Vector2D(x, y); }
 
   public double getSpeed() {
@@ -1231,7 +1210,7 @@ class AsteroidsSprite {
                               shape.getBounds().height * shape.getBounds().height);
 
       return radius;
-    }
+  }
 }
 
 /******************************************************************************
