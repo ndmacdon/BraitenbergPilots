@@ -221,18 +221,24 @@ class SensorTriMedDist extends DoubleSensor {
     double result = 0.0f;
 
     Vector2D a = new Vector2D(loc);
-    Vector2D b = new Vector2D(
-      -sideLength*Math.sin(orientation + (Math.PI/6)),
-      -sideLength*Math.cos(orientation + (Math.PI/6)) );
+    Vector2D lp = new Vector2D(
+      loc.getX() -sideLength*Math.sin(orientation + (Math.PI/6)),
+      loc.getY() -sideLength*Math.cos(orientation + (Math.PI/6)) );
 
-    Vector2D c = new Vector2D(
-      -sideLength*Math.sin(orientation - (Math.PI/6)),
-      -sideLength*Math.cos(orientation - (Math.PI/6)) );
+      //loc.getX() -Math.sin(orientation)*length + (AsteroidsSprite.width / 2),
+      //loc.getY() -Math.cos(orientation)*length + (AsteroidsSprite.height / 2));
+
+    Vector2D rp = new Vector2D(
+      loc.getX() -sideLength*Math.sin(orientation - (Math.PI/6)),
+      loc.getY() -sideLength*Math.cos(orientation - (Math.PI/6)) );
+
+    System.out.println("a: " + a + "\nlp: " + lp + "\nrp: " + rp);
+    System.out.println("-------Intersecting.......");
 
     // List of AsteroidsSprites that intersect with a circle described by
     // <loc, distanceToNearest>
     List<AsteroidsSprite> intersected = 
-      world.intersectTri(a, b, c);
+      world.intersectTri(a, lp, rp);
 
     // The nearest AsteroidsSprite:
     AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
@@ -805,6 +811,130 @@ class BraitenbergVehicleOneTriangle extends BraitenbergVehicle {
 
 }
 
+/*
+  Modeled after Braitenberg's Vehicle 2
+*/
+class BraitenbergVehicleTwoARadius extends BraitenbergVehicle {
+
+  // Constructor
+  public BraitenbergVehicleTwoARadius(GameState world) {
+    super(world);
+    this.lifetime = 0;
+    this.world = world;
+
+    // Hardcoded Hardpoints/Sensors/Wires:
+
+    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+
+    // Hardpoint on the Vehicle's Nose:
+    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
+    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
+
+    // Add a sensor to the nose hardpoints:
+    leftNosePoint.addSensor(sensorRadiusDist);
+    rightNosePoint.addSensor(sensorRadiusDist);
+
+    // Add the hardpoint to the ship:
+    hardpoints.add(leftNosePoint);
+    hardpoints.add(rightNosePoint);
+
+    // Add a Modulator to the vehicle:
+    ModulatorIdentity leftMod = new ModulatorIdentity();
+    ModulatorIdentity rightMod = new ModulatorIdentity();
+    modulators.add(leftMod);
+    modulators.add(rightMod);
+
+    // Wire the hardpoints to Modulators:
+    Wire leftSensWire = new Wire(0,0, false);
+    Wire rightSensWire = new Wire(1,1, false);
+    sensorWires.add(leftSensWire);
+    sensorWires.add(rightSensWire);
+
+    // Wire the modulator to a Control Signal:
+    Wire leftThrustWire = new Wire(0,2, false);
+    Wire leftSteerWire = new Wire(0,1, false);
+    Wire rightThrustWire = new Wire(1,2, false);
+    Wire rightSteerWire = new Wire(1,0, false);
+
+    controlWires.add(leftThrustWire);
+    controlWires.add(leftSteerWire);
+    controlWires.add(rightThrustWire);
+    controlWires.add(rightSteerWire);
+  }
+
+  // Analyze the gamestate and generate commands:
+  void update() {
+    lifetime++;
+    relax();
+    sense();
+    process(hardpoints, modulators, sensorWires);
+    signal();
+  }
+
+}
+
+/*
+  Modeled after Braitenberg's Vehicle 2
+*/
+class BraitenbergVehicleTwoATriangle extends BraitenbergVehicle {
+
+  // Constructor
+  public BraitenbergVehicleTwoATriangle(GameState world) {
+    super(world);
+    this.lifetime = 0;
+    this.world = world;
+
+    // Hardcoded Hardpoints/Sensors/Wires:
+
+    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
+
+    // Hardpoint on the Vehicle's Nose:
+    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI/6);
+    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
+
+    // Add a sensor to the nose hardpoints:
+    leftNosePoint.addSensor(sensorTriDist);
+    rightNosePoint.addSensor(sensorTriDist);
+
+    // Add the hardpoint to the ship:
+    hardpoints.add(leftNosePoint);
+    hardpoints.add(rightNosePoint);
+
+    // Add a Modulator to the vehicle:
+    ModulatorIdentity leftMod = new ModulatorIdentity();
+    ModulatorIdentity rightMod = new ModulatorIdentity();
+    modulators.add(leftMod);
+    modulators.add(rightMod);
+
+    // Wire the hardpoints to Modulators:
+    Wire leftSensWire = new Wire(0,0, false);
+    Wire rightSensWire = new Wire(1,1, false);
+    sensorWires.add(leftSensWire);
+    sensorWires.add(rightSensWire);
+
+    // Wire the modulator to a Control Signal:
+    Wire leftThrustWire = new Wire(0,2, false);
+    Wire leftSteerWire = new Wire(0,1, false);
+    Wire rightThrustWire = new Wire(1,2, false);
+    Wire rightSteerWire = new Wire(1,0, false);
+
+    controlWires.add(leftThrustWire);
+    controlWires.add(leftSteerWire);
+    controlWires.add(rightThrustWire);
+    controlWires.add(rightSteerWire);
+  }
+
+  // Analyze the gamestate and generate commands:
+  void update() {
+    lifetime++;
+    relax();
+    sense();
+    process(hardpoints, modulators, sensorWires);
+    signal();
+  }
+
+}
+
 
 /*
   BraitenbergVehicleFactory
@@ -1144,27 +1274,45 @@ class GameState {
       (AsteroidsSprite.width / 2), 
       (AsteroidsSprite.height / 2));
 
+    System.out.println("\nworldOffset: " + worldOffset);
+
     locA = Vector2D.sum(locA, worldOffset);
     locB = Vector2D.sum(locB, worldOffset);
     locC = Vector2D.sum(locC, worldOffset);
 
+    System.out.println("locA: " + locA + "\nlocB: " + locB + "\nlocC: " + locC);
+    System.out.println("-------------------------------------------------");
+
     // <triangle> we are checking for intersection with colliders:
-    AsteroidsSprite triangle =  new AsteroidsSprite();
-    triangle.sprite.addPoint( (int)locA.getX(), (int)locA.getY());
-    triangle.sprite.addPoint( (int)locB.getX(), (int)locB.getY());
-    triangle.sprite.addPoint( (int)locC.getX(), (int)locC.getY());
+    Polygon triangle = new Polygon(
+      new int[]{(int)locA.getX(), (int)locB.getX(), (int)locC.getX()},
+      new int[]{(int)locA.getY(), (int)locB.getY(), (int)locC.getY()},
+      3);
 
     // Check for intersection between <triangle> and every active-collider:
     for (AsteroidsSprite cur : activeColliders) {
 
       // If <triangle> intersects <cur>:
       // Add <cur> to the list of intersected colliders.
-      if (triangle.isColliding(cur)) {
+      if (intersects(triangle, cur.sprite)) {
         intersected.add(cur);
       }
     }
 
     return intersected;
+  }
+
+  // Does <p1> intersect <p2>?
+  // Based on: http://bit.ly/1qIdDkf
+  public static boolean intersects(Polygon p1, Polygon p2) {
+    int i = 0;
+    for (i = 0; i < p2.npoints; i++)
+      if (p1.contains(p2.xpoints[i], p2.ypoints[i]))
+        return true;
+    for (i = 0; i < p1.npoints; i++)
+      if (p2.contains(p1.xpoints[i], p1.ypoints[i]))
+        return true;
+    return false;
   }
 
   // Does <line> intersect <poly>?
@@ -1459,7 +1607,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   static final double SHIP_ANGLE_STEP = Math.PI / FPS;
   static final double SHIP_SPEED_STEP = 15.0 / FPS;
   static final double MAX_SHIP_SPEED  = 1.5 * MAX_ROCK_SPEED;
-  static final double FRICTION        = .97;
+  static final double FRICTION        = .985;
 
   static final int FIRE_DELAY = 50;         // Minimum number of milliseconds
                                             // required between photon shots.
@@ -1680,7 +1828,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
                                   missle,
                                   ufo);
 
-    pilot = new BraitenbergVehicleOneTriangle(currentState);
+    pilot = new BraitenbergVehicleTwoATriangle(currentState);
 
     highScore = 0;
     detail = true;
@@ -1811,7 +1959,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
               Math.pow(ship.height/2, 2.0));
             double shipT = ship.angle;
 
-            debugInfo.add(String.format("Ship rot: %4.2f loc: %s", shipT, shipL));
+            debugInfo.add(String.format("Ship R  %4.2f X  %d Y  %d", shipT, ship.sprite.xpoints[0], ship.sprite.ypoints[0]));
                       debugInfo.add(String.format("Hardpoint Loc: %s", pilot.hardpoints.get(0).getWorldLocation(shipL, shipT)));
           }
 
@@ -1821,15 +1969,12 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
             if (asteroids[h].active) {
               // Display the corresponding collider.
               Vector2D v = new Vector2D(asteroids[h].deltaX, asteroids[h].deltaY);
-              Vector2D l = new Vector2D(asteroids[h].x, asteroids[h].y);
+              Vector2D l = new Vector2D(asteroids[h].sprite.xpoints[0], asteroids[h].sprite.ypoints[0]);
               double r = Math.sqrt(Math.pow(asteroids[h].width/2, 2.0) + 
                 Math.pow(asteroids[h].height/2, 2.0));
               double t = asteroids[h].angle;
 
               debugInfo.add(String.format("Asteroid %d rot: %,3.2f loc: %s", h, t, l));
-              debugInfo.add(String.format("Sprite:  X: %d Y: %d\n", 
-                asteroids[h].sprite.getBounds().x,
-                asteroids[h].sprite.getBounds().y));
             }
           }
           
