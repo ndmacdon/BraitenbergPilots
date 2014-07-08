@@ -225,15 +225,9 @@ class SensorTriMedDist extends DoubleSensor {
       loc.getX() -sideLength*Math.sin(orientation + (Math.PI/6)),
       loc.getY() -sideLength*Math.cos(orientation + (Math.PI/6)) );
 
-      //loc.getX() -Math.sin(orientation)*length + (AsteroidsSprite.width / 2),
-      //loc.getY() -Math.cos(orientation)*length + (AsteroidsSprite.height / 2));
-
     Vector2D rp = new Vector2D(
       loc.getX() -sideLength*Math.sin(orientation - (Math.PI/6)),
       loc.getY() -sideLength*Math.cos(orientation - (Math.PI/6)) );
-
-    System.out.println("a: " + a + "\nlp: " + lp + "\nrp: " + rp);
-    System.out.println("-------Intersecting.......");
 
     // List of AsteroidsSprites that intersect with a circle described by
     // <loc, distanceToNearest>
@@ -812,7 +806,7 @@ class BraitenbergVehicleOneTriangle extends BraitenbergVehicle {
 }
 
 /*
-  Modeled after Braitenberg's Vehicle 2
+  Modeled after Braitenberg's Vehicle 2A
 */
 class BraitenbergVehicleTwoARadius extends BraitenbergVehicle {
 
@@ -874,7 +868,7 @@ class BraitenbergVehicleTwoARadius extends BraitenbergVehicle {
 }
 
 /*
-  Modeled after Braitenberg's Vehicle 2
+  Modeled after Braitenberg's Vehicle 2A
 */
 class BraitenbergVehicleTwoATriangle extends BraitenbergVehicle {
 
@@ -934,6 +928,8 @@ class BraitenbergVehicleTwoATriangle extends BraitenbergVehicle {
   }
 
 }
+
+
 
 
 /*
@@ -1274,14 +1270,9 @@ class GameState {
       (AsteroidsSprite.width / 2), 
       (AsteroidsSprite.height / 2));
 
-    System.out.println("\nworldOffset: " + worldOffset);
-
     locA = Vector2D.sum(locA, worldOffset);
     locB = Vector2D.sum(locB, worldOffset);
     locC = Vector2D.sum(locC, worldOffset);
-
-    System.out.println("locA: " + locA + "\nlocB: " + locB + "\nlocC: " + locC);
-    System.out.println("-------------------------------------------------");
 
     // <triangle> we are checking for intersection with colliders:
     Polygon triangle = new Polygon(
@@ -1303,7 +1294,6 @@ class GameState {
   }
 
   // Does <p1> intersect <p2>?
-  // Based on: http://bit.ly/1qIdDkf
   public static boolean intersects(Polygon p1, Polygon p2) {
     int i = 0;
     for (i = 0; i < p2.npoints; i++)
