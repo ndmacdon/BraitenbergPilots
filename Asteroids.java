@@ -146,33 +146,44 @@ class Vector2D {
 }
 
 /*
+  Define devices which are sources or receivers of signals:
+*/
+interface Source    { double getOutput(); }
+interface Receiver  { void input(double input); }
+
+/*
   Defines the interface to a sensor device which returns a double when queried:
 */
-interface DoubleSensor {
+interface Sensor extends Source{
   double SHORT_LENGTH = 20.0;
   double MEDIUM_LENGTH = 200.0;
   double LONG_LENGTH = 800.0;
   double SLOW_SPEED = 5.0;
   // Activate the sensor at location <l> with orientation <r> in <world>:
-  double sense(Vector2D l, double r, GameState world);
+  void sense(Vector2D l, double r, GameState world);
+}
+
+class DoubleSensor implements Sensor {
+  double output = 0.0;
+  public void sense(Vector2D l, double r, GameState world) {}
+  public double getOutput() { return output; }
 }
 
 /*
   Detects all colliders within a circle described by <loc, detectionRadius>.
-  Returns the complement of the distance to the nearest intersected collider 
-  as a fraction of <detectionRadius>.
-  i.e. output = 1 - (<distanceToNearest> / <detectionRadius>)
+  Assigns <output> the complement of the distance to the nearest intersected 
+  collider as a fraction of <detectionRadius>.
+  i.e. <output> = 1 - (<distanceToNearest> / <detectionRadius>)
   This gives:
     ~one when objects are exactly on the sensor
     ~values close to one when objects are very near
     ~values close to zero when objects are very far
     ~zero when all objects are outside of <detectionRadius>
 */
-class SensorRadiusMedDist implements DoubleSensor {
-  
-  public double sense(Vector2D loc, double orientation, GameState world) {
+class SensorRadiusMedDist extends DoubleSensor {
+  public void sense(Vector2D loc, double orientation, GameState world) {
     double detectionRadius = MEDIUM_LENGTH; // Radius of the detection circle
-    double output = 0.0f;
+    double result = 0.0f;
 
     // List of AsteroidsSprites that intersect with a circle described by
     // <loc, distanceToNearest>
@@ -182,31 +193,31 @@ class SensorRadiusMedDist implements DoubleSensor {
     // The nearest AsteroidsSprite:
     AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
 
-    // Calculate output if something was detected:
+    // Calculate result if something was detected:
     if (nearest != null) {
       double distanceToNearest = Vector2D.distance(loc, nearest.getLocation());
-      output = 1.0f - (distanceToNearest / detectionRadius);
+      result = 1.0f - (distanceToNearest / detectionRadius);
     }
 
-    return output;
+    output = result;
   }
 }
 
 /*
   Detects all colliders intersecting a line described by <loc, orientation>.
-  Returns the complement of the distance to the nearest intersected collider 
-  as a fraction of <lineLength>.
-  i.e. output = 1 - (<distanceToNearest> / <lineLength>)
+  Assigns <output> the complement of the distance to the nearest intersected 
+  collider as a fraction of <lineLength>.
+  i.e. <output> = 1 - (<distanceToNearest> / <lineLength>)
   This gives:
     ~one when objects are exactly on the sensor
     ~values close to one when objects are very near
     ~values close to zero when objects are very far
     ~zero when all objects are outside of detection beam
 */
-class SensorRayLongDist implements DoubleSensor {
-  public double sense(Vector2D loc, double orientation, GameState world) {
+class SensorRayLongDist extends DoubleSensor {
+  public void sense(Vector2D loc, double orientation, GameState world) {
     double lineLength = LONG_LENGTH; // Length of the detection-beam.
-    double output = 0.0f;
+    double result = 0.0f;
 
     // List of colliders that intersect with a line described by
     // <lineLength, loc, orientation>
@@ -216,32 +227,32 @@ class SensorRayLongDist implements DoubleSensor {
     // The nearest AsteroidsSprite:
     AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
 
-    // Calculate output if something was detected:
+    // Calculate result if something was detected:
     if (nearest != null) {
       double distanceToNearest = Vector2D.distance(loc, nearest.getLocation());
-      output = 1.0f - (distanceToNearest / lineLength);
+      result = 1.0f - (distanceToNearest / lineLength);
     }
 
-    return output;
+    output = result;
   }
 }
 
 /*
   Detects all colliders intersecting a line described by <loc, orientation>.
-  Returns the complement of the speed to the nearest intersected collider 
+  Assigns <output> the complement of the speed to the nearest intersected collider 
   as a fraction of <baseSpeed>.
-  i.e. output = 1 - (<speed> / <baseSpeed>)
+  i.e. <output> = 1 - (<speed> / <baseSpeed>)
   This gives:
     ~one when objects are moving at speed >= <baseSpeed>
     ~values close to one when objects are moving at nearly <baseSpeed>
     ~values close to zero when objects are moving at nearly zero
     ~zero when all objects are outside of detection beam
 */
-class SensorRayLongSpeed implements DoubleSensor {
-  public double sense(Vector2D loc, double orientation, GameState world) {
+class SensorRayLongSpeed extends DoubleSensor {
+  public void sense(Vector2D loc, double orientation, GameState world) {
     double lineLength = LONG_LENGTH; // Length of the detection-beam.
     double baseSpeed = SLOW_SPEED;
-    double output = 0.0;
+    double result = 0.0;
 
     // List of colliders that intersect with a line described by
     // <lineLength, loc, orientation>
@@ -251,28 +262,26 @@ class SensorRayLongSpeed implements DoubleSensor {
     // The nearest AsteroidsSprite:
     AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
 
-    // Calculate output if something was detected:
+    // Calculate result if something was detected:
     if (nearest != null) {
       double speed = nearest.getSpeed();
-      output = 1.0f - (speed / baseSpeed);
+      result = 1.0f - (speed / baseSpeed);
     }
 
-    return output;
+    output = result;
   }
 }
 
 
 /*
-  Defines a modulation device with double input and output:
-  Inputs are accumulated and fed to a function which sets the output value.
+  Defines a modulation device with double input and signal:
+  Inputs are accumulated and fed to a function which sets the signal value.
   Resetting the Modulator discharges any accumulated input.
-  The output of an implementation results from an arbitrary function of the 
+  The signal of an implementation results from an arbitrary function of the 
   accumulated input.
 */
-interface Modulator {
-  static final double MAX_OUTPUT = 3.0;
-  public void input(double input);// Accumulate input signals.
-  public double output();         // Return the output of the accumulated input.
+interface Modulator extends Source, Receiver {
+  double MAX_OUTPUT = 1.0;
   public void reset();            // Reset the accumulated input.
   public Modulator copy();
 }
@@ -299,14 +308,14 @@ class ModulatorIdentity implements Modulator {
     output = original.charge;
   }
 
-  // Accumulate input signals:
+  // Accumulate input outputs:
   public void input(double input) {
     charge += input;
   }
 
   // Return the output of the accumulated charge:
   // (this very simple Modulator returns output = charge)
-  public double output() {
+  public double getOutput() {
     output = charge;
     output = (output > MAX_OUTPUT) ? MAX_OUTPUT : output;
     return output;
@@ -327,7 +336,7 @@ class ModulatorBinary extends ModulatorIdentity {
   public Modulator copy() { return new ModulatorBinary(); }
 
   // Return the output of the accumulated charge:
-  public double output() {
+  public double getOutput() {
     output = (charge == 0) ? charge : MAX_OUTPUT;
     return output;
   }
@@ -341,7 +350,7 @@ class ModulatorSquared extends ModulatorIdentity {
   public Modulator copy() { return new ModulatorSquared(); }
 
   // Return the output of the accumulated charge:
-  public double output() {
+  public double getOutput() {
     output = Math.pow(charge, 2);
     output = (output > MAX_OUTPUT) ? MAX_OUTPUT : output;
     return output;
@@ -356,7 +365,7 @@ class ModulatorSqrt extends ModulatorIdentity {
   public Modulator copy() { return new ModulatorSqrt(); }
 
   // Return the output of the accumulated charge:
-  public double output() {
+  public double getOutput() {
     output = Math.sqrt(charge);
     output = (output > MAX_OUTPUT) ? MAX_OUTPUT : output;
     return output;
@@ -393,10 +402,11 @@ class Wire {
   Hardpoints may be attached to vehicles.
   Sensors added to Hardpoints may be queried.
 */
-class Hardpoint {
+class Hardpoint implements Source{
   Vector2D locationOffset;  // Hardpoint location relative to vehicle's origin.
   double rotationOffset;    // Hardpoint rotation relative to vehicle's orientation.
-  DoubleSensor sensor;      // Sensor attached to this Hardpoint.
+  Sensor sensor;      // Sensor attached to this Hardpoint.
+  double output = 0.0;
 
   // Constructor:
   public Hardpoint(Vector2D l, double r) {
@@ -412,24 +422,27 @@ class Hardpoint {
   }
 
   // Attach a sensor to this Hardpoint:
-  void addSensor(DoubleSensor s) {
+  void addSensor(Sensor s) {
 
     sensor = s;
   }
 
   // Activate the 'attached' sensor and return the result:
-  double sense(GameState world, Vector2D location, double rotation) {
+  void sense(GameState world, Vector2D location, double rotation) {
     // Get the location of this hardpoint in world-space:
     Vector2D worldLocation = getWorldLocation(location, rotation);
+    double result = 0.0;
 
     if (sensor != null) {
-      return sensor.sense(worldLocation, 
-                          rotation + rotationOffset,
-                          world);
+      sensor.sense(worldLocation, rotation + rotationOffset, world);
+      result = sensor.getOutput();
     }
-    else {
-      return 0.0;
-    }
+
+    output = result;
+  }
+
+  public double getOutput() {
+    return output;
   }
 
   // Get the offset of this hardpoint in world-space:
@@ -512,32 +525,37 @@ class BraitenbergVehicle {
     }
   }
 
-  // TODO: generalize sense()/signal(), they are both extremely similar...
-
-  // Query a Sensor indicated by the sensorWire <wire> and use the result as input 
-  // to the Modulator also indicated by <wire>:
+  // Prime each sensor with output:
   void sense() {
     AsteroidsSprite ship = world.getShip();
     
+    // Sense with each Hardpoint:
+    for (Hardpoint cur : hardpoints) {
+      cur.sense(world, ship.getLocation(), ship.angle );
+    }
+  }
+
+  // Query a list of Sources and use their output as input to a list of sources.
+  // <Source, Destination> pairings are indicated by <wires>.
+  void process(List<? extends Source> sourceList, 
+    List<? extends Receiver> destinationList,
+    List<Wire> wires) {
+    AsteroidsSprite ship = world.getShip();
+    
     // Read the source from <wire> and apply it to <wire>'s destination
-    for (Wire wire : sensorWires) {
+    for (Wire wire : wires) {
       // Get the source:
-      Hardpoint hardpoint = hardpoints.get(wire.source);
+      Source source = sourceList.get(wire.source);
+      double output = source.getOutput();
 
       // Get the destination:
-      Modulator Modulator = modulators.get(wire.destination);
+      Receiver destination = destinationList.get(wire.destination);
 
-      
-      // Get the sources output:
-      double sensorResult = hardpoint.sense(world, 
-                                            ship.getLocation(), 
-                                            ship.angle );
-  
-      // If <wire> is an inhibitor, invert the output:
-      sensorResult = (wire.inhibitor) ? -sensorResult : sensorResult;
+      // If <wire> is an inhibitor, negate the output:
+      output = (wire.inhibitor) ? 1.0-output : output;
 
       // Apply source's output to the destination:
-      Modulator.input(sensorResult);
+      destination.input(output);
     }
   }
 
@@ -547,14 +565,14 @@ class BraitenbergVehicle {
     // Query a Modulator indicated by the sensorWire <wire> and use the result as 
     // input to the Modulator also indicated by <wire>:
     for (Wire wire : controlWires) {
-      Modulator Modulator = modulators.get(wire.source); // Get the source.
-      double ModulatorResult = Modulator.output(); // Get the source's output.
+      Modulator source = modulators.get(wire.source); // Get the source.
+      double output = source.getOutput(); // Get the source's output.
 
       // If wire <wire> is an inhibitor, invert the result:
-      ModulatorResult = (wire.inhibitor) ? -ModulatorResult : ModulatorResult;
+      output = (wire.inhibitor) ? 1.0-output : output;
 
       // Apply source's output to the destination:
-      controlSignals[wire.destination] += ModulatorResult;
+      controlSignals[wire.destination] += output;
     }
   }
 
@@ -582,7 +600,7 @@ class BraitenbergVehicle {
   void update() {
     lifetime++;
     relax();
-    sense();
+    process(hardpoints, modulators, sensorWires);
     signal();
   }
 
@@ -682,7 +700,7 @@ class BraitenbergCockroach extends BraitenbergVehicle {
 */
 class BRVFactory {
   // A pile of sensors we may draw from to equip a Hardpoint:
-  List<DoubleSensor> sensorPile = new ArrayList<DoubleSensor>();
+  List<Sensor> sensorPile = new ArrayList<Sensor>();
 
   // A pile of Hardpoints we may draw from to equip a BraitenbergVehicle:
   List<Hardpoint> hardpointPile = new ArrayList<Hardpoint>();
@@ -771,7 +789,7 @@ class BRVFactory {
 
       // Equip <nextVehicle> according to the current permutation...
       for (int i = 0; i < numHardpoints; i++) {
-        DoubleSensor selectedSensor = sensorPile.get(permutation[i]);
+        Sensor selectedSensor = sensorPile.get(permutation[i]);
         nextVehicle.hardpoints.get(i).addSensor(selectedSensor);
       }
 
@@ -1232,6 +1250,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   private List<String> lifeStatistics = new ArrayList<String>();
 
   // Agent Variables.
+
+  static final double CONTROL_SCALING = 3.0;
 
   BRVFactory factory;
   List<BraitenbergVehicle> vehicles;
@@ -2238,13 +2258,14 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   public void updateControlSignals(BraitenbergVehicle pilot) {
 
     // Read <pilot>'s brain for control signals:
-    turnLeft =    pilot.getTurnLeft();
-    turnRight =   pilot.getTurnRight();
-    accForward =  pilot.getAccForward();
-    accBackward = pilot.getAccBackward();
+    turnLeft =    CONTROL_SCALING * pilot.getTurnLeft();
+    turnRight =   CONTROL_SCALING * pilot.getTurnRight();
+    accForward =  CONTROL_SCALING * pilot.getAccForward();
+    accBackward = CONTROL_SCALING * pilot.getAccBackward();
     firePhoton =  (pilot.getFirePhoton() >= 1); // Convert the signal to a bool.
     fireHyper =   (pilot.getFireHyper() >= 1);  // Convert the signal to a bool.
-    debugInfo.add(String.format("Ship turnL: %3.2f firePh: %b", turnLeft, firePhoton));
+    debugInfo.add(String.format("Ship L: %3.2f R: %3.2f F: %3.2f B: %3.2f Fire: %b Hyper: %b",
+      turnLeft, turnRight, accForward, accBackward, firePhoton, fireHyper));
   }
 
   // Interpret Keyboard commands as utility functions:
