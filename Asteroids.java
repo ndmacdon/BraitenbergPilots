@@ -156,8 +156,8 @@ interface Receiver  { void input(double input); }
 */
 interface Sensor extends Source{
   double SHORT_LENGTH = 20.0;
-  double MEDIUM_LENGTH = 200.0;
-  double LONG_LENGTH = 800.0;
+  double MEDIUM_LENGTH = 300.0;
+  double LONG_LENGTH = 2000.0;
   double SLOW_SPEED = 5.0;
   // Activate the sensor at location <l> with orientation <r> in <world>:
   void sense(Vector2D l, double r, GameState world);
@@ -196,7 +196,52 @@ class SensorRadiusMedDist extends DoubleSensor {
     // Calculate result if something was detected:
     if (nearest != null) {
       double distanceToNearest = Vector2D.distance(loc, nearest.getLocation());
-      result = 1.0f - (distanceToNearest / detectionRadius);
+      double fraction = distanceToNearest / detectionRadius;
+      result = (fraction > 1.0) ? 0.0 : 1.0-fraction;
+    }
+
+    output = result;
+  }
+}
+
+/*
+  Detects all colliders within an equi-triangle described by <loc, orientation>.
+  Assigns <output> the complement of the distance to the nearest intersected 
+  collider as a fraction of <detectionRadius>.
+  i.e. <output> = 1 - (<distanceToNearest> / <detectionRadius>)
+  This gives:
+    ~one when objects are exactly on the sensor
+    ~values close to one when objects are very near
+    ~values close to zero when objects are very far
+    ~zero when all objects are outside of <detectionRadius>
+*/
+class SensorTriMedDist extends DoubleSensor {
+  public void sense(Vector2D loc, double orientation, GameState world) {
+    double sideLength = MEDIUM_LENGTH; // Side length of the triangle
+    double result = 0.0f;
+
+    Vector2D a = new Vector2D(loc);
+    Vector2D b = new Vector2D(
+      -sideLength*Math.sin(orientation + (Math.PI/6)),
+      -sideLength*Math.cos(orientation + (Math.PI/6)) );
+
+    Vector2D c = new Vector2D(
+      -sideLength*Math.sin(orientation - (Math.PI/6)),
+      -sideLength*Math.cos(orientation - (Math.PI/6)) );
+
+    // List of AsteroidsSprites that intersect with a circle described by
+    // <loc, distanceToNearest>
+    List<AsteroidsSprite> intersected = 
+      world.intersectTri(a, b, c);
+
+    // The nearest AsteroidsSprite:
+    AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
+
+    // Calculate result if something was detected:
+    if (nearest != null) {
+      double distanceToNearest = Vector2D.distance(loc, nearest.getLocation());
+      double fraction = distanceToNearest / sideLength;
+      result = (fraction > 1.0) ? 0.0 : 1.0-fraction;
     }
 
     output = result;
@@ -230,7 +275,8 @@ class SensorRayLongDist extends DoubleSensor {
     // Calculate result if something was detected:
     if (nearest != null) {
       double distanceToNearest = Vector2D.distance(loc, nearest.getLocation());
-      result = 1.0f - (distanceToNearest / lineLength);
+      double fraction = distanceToNearest / lineLength;
+      result = (fraction > 1.0) ? 0.0 : 1.0-fraction;
     }
 
     output = result;
@@ -265,7 +311,8 @@ class SensorRayLongSpeed extends DoubleSensor {
     // Calculate result if something was detected:
     if (nearest != null) {
       double speed = nearest.getSpeed();
-      result = 1.0f - (speed / baseSpeed);
+      double fraction = speed / baseSpeed;
+      result = (fraction > 1.0) ? 0.0 : 1.0-fraction;
     }
 
     output = result;
@@ -615,84 +662,149 @@ class BraitenbergVehicle {
 }
 
 /*
-  Very Basic BraitenBerg Vehicle used for testing Sensors/Signals/Modulators.
-  Can sense the gamestate and generate command signals.
+  Modeled after Braitenberg's Vehicle 1
 */
-class BraitenbergCockroach extends BraitenbergVehicle {
-
+class BraitenbergVehicleOneRay extends BraitenbergVehicle {
 
   // Constructor
-  public BraitenbergCockroach(GameState world) {
+  public BraitenbergVehicleOneRay(GameState world) {
     super(world);
     this.lifetime = 0;
     this.world = world;
 
     // Hardcoded test of Hardpoints/Sensors/Wires:
 
-    SensorRadiusSmallMinDist smallRadiusSensor = new SensorRadiusSmallMinDist();
-    SensorRayMinDist rayDistanceSensor = new SensorRayMinDist();
+    SensorRayLongDist sensorRayDist = new SensorRayLongDist();
 
+    // Hardpoint on the Vehicle's Nose:
+    Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
 
-    Hardpoint hard0 = new Hardpoint(new Vector2D(0,-100), 0.0);// In front of vehicle.
-
-    // Add a sensor to the frontal hardpoint:
-    hard0.addSensor(smallRadiusSensor);
+    // Add a sensor to the nose hardpoint:
+    nosePoint.addSensor(sensorRayDist);
 
     // Add the hardpoint to the ship:
-    hardpoints.add(hard0);
+    hardpoints.add(nosePoint);
 
     // Add a Modulator to the vehicle:
-    ModulatorBinary thresh0 = new ModulatorBinary();
-    modulators.add(thresh0);
+    ModulatorIdentity mod = new ModulatorIdentity();
+    modulators.add(mod);
 
     // Wire the hardpoint to the Modulator:
-    Wire sWire0 = new Wire(0,0, false);
-    sensorWires.add(sWire0);
+    Wire sensWire = new Wire(0,0, false);
+    sensorWires.add(sensWire);
 
-    // Wire the Modulator to the turn-left control-signal:
-    Wire cWire0 = new Wire(0,0, false);
-    controlWires.add(cWire0);
-
-    // Add another hardpoint in the same manner as above behind the vehicle.
-    // Wire the rear hardpoint to the turn-right control-signal.
-    Hardpoint hard1 = new Hardpoint(new Vector2D(0,100), 0.0);// Behind vehicle.
-    hard1.addSensor(smallRadiusSensor);
-    hardpoints.add(hard1);
-
-    ModulatorBinary thresh1 = new ModulatorBinary();
-    modulators.add(thresh1);
-
-    Wire sWire1 = new Wire(1,1, false);
-    sensorWires.add(sWire1);
-
-    Wire cWire1 = new Wire(1,1, false);
-    controlWires.add(cWire1);
-
-    // Add another hardpoint in the same manner as above on the vehicle's origin.
-    // Wire the central hardpoint to the accelerate control-signal.
-    Hardpoint hard2 = new Hardpoint(new Vector2D(0,0), 0.0);
-    hard2.addSensor(smallRadiusSensor);
-    hardpoints.add(hard2);
-
-    ModulatorBinary thresh2 = new ModulatorBinary();
-    modulators.add(thresh2);
-
-    Wire sWire2 = new Wire(2,2, false);
-    sensorWires.add(sWire2);
-
-    Wire cWire2 = new Wire(2,2, false);
-    controlWires.add(cWire2);
+    // Wire the modulator to a Control Signal:
+    Wire contWire = new Wire(0,2, false);
+    controlWires.add(contWire);
   }
 
   // Analyze the gamestate and generate commands:
   void update() {
+    lifetime++;
     relax();
     sense();
+    process(hardpoints, modulators, sensorWires);
     signal();
-    lifetime++;
   }
 
 }
+
+/*
+  Modeled after Braitenberg's Vehicle 1
+*/
+class BraitenbergVehicleOneRadius extends BraitenbergVehicle {
+
+  // Constructor
+  public BraitenbergVehicleOneRadius(GameState world) {
+    super(world);
+    this.lifetime = 0;
+    this.world = world;
+
+    // Hardcoded test of Hardpoints/Sensors/Wires:
+
+    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+
+    // Hardpoint on the Vehicle's Nose:
+    Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
+
+    // Add a sensor to the nose hardpoint:
+    nosePoint.addSensor(sensorRadiusDist);
+
+    // Add the hardpoint to the ship:
+    hardpoints.add(nosePoint);
+
+    // Add a Modulator to the vehicle:
+    ModulatorIdentity mod = new ModulatorIdentity();
+    modulators.add(mod);
+
+    // Wire the hardpoint to the Modulator:
+    Wire sensWire = new Wire(0,0, false);
+    sensorWires.add(sensWire);
+
+    // Wire the modulator to a Control Signal:
+    Wire contWire = new Wire(0,2, false);
+    controlWires.add(contWire);
+  }
+
+  // Analyze the gamestate and generate commands:
+  void update() {
+    lifetime++;
+    relax();
+    sense();
+    process(hardpoints, modulators, sensorWires);
+    signal();
+  }
+
+}
+
+/*
+  Modeled after Braitenberg's Vehicle 1
+*/
+class BraitenbergVehicleOneTriangle extends BraitenbergVehicle {
+
+  // Constructor
+  public BraitenbergVehicleOneTriangle(GameState world) {
+    super(world);
+    this.lifetime = 0;
+    this.world = world;
+
+    // Hardcoded test of Hardpoints/Sensors/Wires:
+
+    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
+
+    // Hardpoint on the Vehicle's Nose:
+    Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
+
+    // Add a sensor to the nose hardpoint:
+    nosePoint.addSensor(sensorTriDist);
+
+    // Add the hardpoint to the ship:
+    hardpoints.add(nosePoint);
+
+    // Add a Modulator to the vehicle:
+    ModulatorIdentity mod = new ModulatorIdentity();
+    modulators.add(mod);
+
+    // Wire the hardpoint to the Modulator:
+    Wire sensWire = new Wire(0,0, false);
+    sensorWires.add(sensWire);
+
+    // Wire the modulator to a Control Signal:
+    Wire contWire = new Wire(0,2, false);
+    controlWires.add(contWire);
+  }
+
+  // Analyze the gamestate and generate commands:
+  void update() {
+    lifetime++;
+    relax();
+    sense();
+    process(hardpoints, modulators, sensorWires);
+    signal();
+  }
+
+}
+
 
 /*
   BraitenbergVehicleFactory
@@ -963,7 +1075,7 @@ class GameState {
     List<AsteroidsSprite> activeColliders = this.getActiveColliders();
 
     // List of colliders inside <loc, radius>:
-    List<AsteroidsSprite> detected = new ArrayList<AsteroidsSprite>();
+    List<AsteroidsSprite> intersected = new ArrayList<AsteroidsSprite>();
 
     // Check for intersection between <line> and every active-collider:
     for (AsteroidsSprite cur : activeColliders) {
@@ -975,11 +1087,11 @@ class GameState {
         // To increase intersection fidelity, add a check on the distance to
         // each point in <cur> against <radius>.
         if (curDistance <= radius+cur.getRadius()) {
-          detected.add(cur);
+          intersected.add(cur);
         }
     }
 
-    return detected;
+    return intersected;
   }
 
   // Return the AsteroidsSprites which intersect a line defined by 
@@ -990,7 +1102,7 @@ class GameState {
     List<AsteroidsSprite> activeColliders = this.getActiveColliders();
 
     // List of colliders intersected by <line>:
-    List<AsteroidsSprite> detected = new ArrayList<AsteroidsSprite>();
+    List<AsteroidsSprite> intersected = new ArrayList<AsteroidsSprite>();
 
     // Start and end points of intersection <line>:
     Point2D.Double start = new Point2D.Double(
@@ -1008,13 +1120,51 @@ class GameState {
     for (AsteroidsSprite cur : activeColliders) {
 
       // If <line> intersects <cur>:
-      // Add <cur> to the list of detected colliders.
+      // Add <cur> to the list of intersected colliders.
       if (intersects(cur.sprite, line)) {
-        detected.add(cur);
+        intersected.add(cur);
       }
     }
 
-    return detected;
+    return intersected;
+  }
+
+  // Return the AsteroidsSprites which intersect a triangle defined by 
+  // <locA, locB, locC>:
+  // Cheaper and simpler than sweeping a ray.
+  public List<AsteroidsSprite> intersectTri(Vector2D locA, Vector2D locB, 
+    Vector2D locC) {
+    // List of the colliders we inspect:
+    List<AsteroidsSprite> activeColliders = this.getActiveColliders();
+
+    // List of colliders intersected by <triangle>:
+    List<AsteroidsSprite> intersected = new ArrayList<AsteroidsSprite>();
+
+    Vector2D worldOffset = new Vector2D(
+      (AsteroidsSprite.width / 2), 
+      (AsteroidsSprite.height / 2));
+
+    locA = Vector2D.sum(locA, worldOffset);
+    locB = Vector2D.sum(locB, worldOffset);
+    locC = Vector2D.sum(locC, worldOffset);
+
+    // <triangle> we are checking for intersection with colliders:
+    AsteroidsSprite triangle =  new AsteroidsSprite();
+    triangle.sprite.addPoint( (int)locA.getX(), (int)locA.getY());
+    triangle.sprite.addPoint( (int)locB.getX(), (int)locB.getY());
+    triangle.sprite.addPoint( (int)locC.getX(), (int)locC.getY());
+
+    // Check for intersection between <triangle> and every active-collider:
+    for (AsteroidsSprite cur : activeColliders) {
+
+      // If <triangle> intersects <cur>:
+      // Add <cur> to the list of intersected colliders.
+      if (triangle.isColliding(cur)) {
+        intersected.add(cur);
+      }
+    }
+
+    return intersected;
   }
 
   // Does <line> intersect <poly>?
@@ -1136,7 +1286,7 @@ class AsteroidsSprite {
 
     // Update the rotation and position of the sprite based on the delta
     // values. If the sprite moves off the edge of the screen, it is wrapped
-    // around to the other side and TRUE is returnd.
+    // around to the other side and TRUE is returned.
 
     this.angle += this.deltaAngle;
     if (this.angle < 0)
@@ -1251,17 +1401,14 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   // Agent Variables.
 
-  static final double CONTROL_SCALING = 3.0;
+  static final double CONTROL_SCALING = 2.0;
 
-  BRVFactory factory;
-  List<BraitenbergVehicle> vehicles;
-  Iterator<BraitenbergVehicle> vehicleIter;
   BraitenbergVehicle pilot;
 
   // Debug information
 
   static final int MAX_DEBUG_LINES = 10;
-  boolean debugging = true;
+  boolean debugging = false;
   List debugInfo = new ArrayList<String>();
 
   // Copyright information.
@@ -1281,7 +1428,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   // Constants
 
-  static final int DELAY = 10;             // Milliseconds between screen and
+  static final int DELAY = 15;             // Milliseconds between screen and
   static final int FPS   =                 // the resulting frame rate.
     Math.round(1000 / DELAY);
 
@@ -1302,7 +1449,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   static final double MAX_ROCK_SPEED = 240.0 / FPS;
   static final double MAX_ROCK_SPIN  = Math.PI / FPS;
 
-  static final int MAX_SHIPS = 1;           // Starting number of ships for
+  static final int MAX_SHIPS = 10;           // Starting number of ships for
                                             // each game.
   static final int UFO_PASSES = 3;          // Number of passes for flying
                                             // saucer per appearance.
@@ -1311,7 +1458,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   static final double SHIP_ANGLE_STEP = Math.PI / FPS;
   static final double SHIP_SPEED_STEP = 15.0 / FPS;
-  static final double MAX_SHIP_SPEED  = 1.25 * MAX_ROCK_SPEED;
+  static final double MAX_SHIP_SPEED  = 1.5 * MAX_ROCK_SPEED;
+  static final double FRICTION        = .97;
 
   static final int FIRE_DELAY = 50;         // Minimum number of milliseconds
                                             // required between photon shots.
@@ -1532,10 +1680,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
                                   missle,
                                   ufo);
 
-    factory = new BRVFactory(currentState);
-    vehicles = factory.makeStarfish();
-    vehicleIter = vehicles.iterator();
-    pilot = new BraitenbergCockroach(currentState);
+    pilot = new BraitenbergVehicleOneTriangle(currentState);
 
     highScore = 0;
     detail = true;
@@ -1616,8 +1761,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
     // This is the main loop.
     while (Thread.currentThread() == loopThread) {
-      if (vehicleIter.hasNext() && loaded && !playing) {
-        pilot = vehicleIter.next();
+      if (loaded && !playing) {
+        //pilot = new BraitenbergVehicleOneRay(currentState)
         initGame();
       }
       debugInfo.clear();
@@ -1763,6 +1908,9 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     // Fire thrusters if an accelerate signal is active:
     dx = SHIP_SPEED_STEP * -Math.sin(ship.angle);
     dy = SHIP_SPEED_STEP *  Math.cos(ship.angle);
+
+    ship.deltaX *= FRICTION;
+    ship.deltaY *= FRICTION;
 
     ship.deltaX += accForward * dx;
     ship.deltaY += accForward * dy;
