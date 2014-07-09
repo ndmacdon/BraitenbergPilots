@@ -208,7 +208,7 @@ class SensorRadiusMedDist extends DoubleSensor {
   Detects all colliders within an equi-triangle described by <loc, orientation>.
   Assigns <output> the complement of the distance to the nearest intersected 
   collider as a fraction of <detectionRadius>.
-  i.e. <output> = 1 - (<distanceToNearest> / <detectionRadius>)
+  i.e. <output> = 1 - (<distanceToNearest> / <sideLength>)
   This gives:
     ~one when objects are exactly on the sensor
     ~values close to one when objects are very near
@@ -364,7 +364,9 @@ class ModulatorIdentity implements Modulator {
   // (this very simple Modulator returns output = charge)
   public double getOutput() {
     output = charge;
+    // Upper and lower bounds for output:
     output = (output > MAX_OUTPUT) ? MAX_OUTPUT : output;
+    output = (output < -MAX_OUTPUT) ? -MAX_OUTPUT : output;
     return output;
   }
 
@@ -384,7 +386,8 @@ class ModulatorBinary extends ModulatorIdentity {
 
   // Return the output of the accumulated charge:
   public double getOutput() {
-    output = (charge == 0) ? charge : MAX_OUTPUT;
+    output = (charge > 0) ? MAX_OUTPUT : charge;
+    output = (charge < 0) ? -MAX_OUTPUT : charge;
     return output;
   }
 }
@@ -1053,6 +1056,254 @@ class BraitenbergVehicleTwoBTriangle extends BraitenbergVehicle {
 
 }
 
+/*
+  Modeled after Braitenberg's Vehicle 3A
+*/
+class BraitenbergVehicleThreeARadius extends BraitenbergVehicle {
+
+  // Constructor
+  public BraitenbergVehicleThreeARadius(GameState world) {
+    super(world);
+    this.lifetime = 0;
+    this.world = world;
+
+    // Hardcoded Hardpoints/Sensors/Wires:
+
+    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+
+    // Hardpoint on the Vehicle's Nose:
+    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
+    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
+
+    // Add a sensor to the nose hardpoints:
+    leftNosePoint.addSensor(sensorRadiusDist);
+    rightNosePoint.addSensor(sensorRadiusDist);
+
+    // Add the hardpoint to the ship:
+    hardpoints.add(leftNosePoint);
+    hardpoints.add(rightNosePoint);
+
+    // Add a Modulator to the vehicle:
+    ModulatorIdentity leftMod = new ModulatorIdentity();
+    ModulatorIdentity rightMod = new ModulatorIdentity();
+    modulators.add(leftMod);
+    modulators.add(rightMod);
+
+    // Wire the hardpoints to Modulators:
+    Wire leftSensWire = new Wire(0,0, true);
+    Wire rightSensWire = new Wire(1,1, true);
+    sensorWires.add(leftSensWire);
+    sensorWires.add(rightSensWire);
+
+    // Wire the modulator to a Control Signal:
+    Wire leftThrustWire = new Wire(0,2, false);
+    Wire leftSteerWire = new Wire(0,1, false);
+    Wire rightThrustWire = new Wire(1,2, false);
+    Wire rightSteerWire = new Wire(1,0, false);
+
+    controlWires.add(leftThrustWire);
+    controlWires.add(leftSteerWire);
+    controlWires.add(rightThrustWire);
+    controlWires.add(rightSteerWire);
+  }
+
+  // Analyze the gamestate and generate commands:
+  void update() {
+    lifetime++;
+    relax();
+    sense();
+    process(hardpoints, modulators, sensorWires);
+    signal();
+  }
+
+}
+
+/*
+  Modeled after Braitenberg's Vehicle 3A
+*/
+class BraitenbergVehicleThreeATriangle extends BraitenbergVehicle {
+
+  // Constructor
+  public BraitenbergVehicleThreeATriangle(GameState world) {
+    super(world);
+    this.lifetime = 0;
+    this.world = world;
+
+    // Hardcoded Hardpoints/Sensors/Wires:
+
+    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
+
+    // Hardpoint on the Vehicle's Nose:
+    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI/6);
+    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
+
+    // Add a sensor to the nose hardpoints:
+    leftNosePoint.addSensor(sensorTriDist);
+    rightNosePoint.addSensor(sensorTriDist);
+
+    // Add the hardpoint to the ship:
+    hardpoints.add(leftNosePoint);
+    hardpoints.add(rightNosePoint);
+
+    // Add a Modulator to the vehicle:
+    ModulatorIdentity leftMod = new ModulatorIdentity();
+    ModulatorIdentity rightMod = new ModulatorIdentity();
+    modulators.add(leftMod);
+    modulators.add(rightMod);
+
+    // Wire the hardpoints to Modulators:
+    Wire leftSensWire = new Wire(0,0, true);
+    Wire rightSensWire = new Wire(1,1, true);
+    sensorWires.add(leftSensWire);
+    sensorWires.add(rightSensWire);
+
+    // Wire the modulator to a Control Signal:
+    Wire leftThrustWire = new Wire(0,2, false);
+    Wire leftSteerWire = new Wire(0,1, false);
+    Wire rightThrustWire = new Wire(1,2, false);
+    Wire rightSteerWire = new Wire(1,0, false);
+
+    controlWires.add(leftThrustWire);
+    controlWires.add(leftSteerWire);
+    controlWires.add(rightThrustWire);
+    controlWires.add(rightSteerWire);
+  }
+
+  // Analyze the gamestate and generate commands:
+  void update() {
+    lifetime++;
+    relax();
+    sense();
+    process(hardpoints, modulators, sensorWires);
+    signal();
+  }
+
+}
+
+/*
+  Modeled after Braitenberg's Vehicle 3B
+*/
+class BraitenbergVehicleThreeBRadius extends BraitenbergVehicle {
+
+  // Constructor
+  public BraitenbergVehicleThreeBRadius(GameState world) {
+    super(world);
+    this.lifetime = 0;
+    this.world = world;
+
+    // Hardcoded Hardpoints/Sensors/Wires:
+
+    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+
+    // Hardpoint on the Vehicle's Nose:
+    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
+    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
+
+    // Add a sensor to the nose hardpoints:
+    leftNosePoint.addSensor(sensorRadiusDist);
+    rightNosePoint.addSensor(sensorRadiusDist);
+
+    // Add the hardpoint to the ship:
+    hardpoints.add(leftNosePoint);
+    hardpoints.add(rightNosePoint);
+
+    // Add a Modulator to the vehicle:
+    ModulatorIdentity leftMod = new ModulatorIdentity();
+    ModulatorIdentity rightMod = new ModulatorIdentity();
+    modulators.add(leftMod);
+    modulators.add(rightMod);
+
+    // Wire the hardpoints to Modulators:
+    Wire leftSensWire = new Wire(0,0, true);
+    Wire rightSensWire = new Wire(1,1, true);
+    sensorWires.add(leftSensWire);
+    sensorWires.add(rightSensWire);
+
+    // Wire the modulator to a Control Signal:
+    Wire leftThrustWire = new Wire(0,2, false);
+    Wire leftSteerWire = new Wire(0,0, false);
+    Wire rightThrustWire = new Wire(1,2, false);
+    Wire rightSteerWire = new Wire(1,1, false);
+
+    controlWires.add(leftThrustWire);
+    controlWires.add(leftSteerWire);
+    controlWires.add(rightThrustWire);
+    controlWires.add(rightSteerWire);
+  }
+
+  // Analyze the gamestate and generate commands:
+  void update() {
+    lifetime++;
+    relax();
+    sense();
+    process(hardpoints, modulators, sensorWires);
+    signal();
+  }
+
+}
+
+/*
+  Modeled after Braitenberg's Vehicle 3B
+*/
+class BraitenbergVehicleThreeBTriangle extends BraitenbergVehicle {
+
+  // Constructor
+  public BraitenbergVehicleThreeBTriangle(GameState world) {
+    super(world);
+    this.lifetime = 0;
+    this.world = world;
+
+    // Hardcoded Hardpoints/Sensors/Wires:
+
+    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
+
+    // Hardpoint on the Vehicle's Nose:
+    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI/6);
+    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
+
+    // Add a sensor to the nose hardpoints:
+    leftNosePoint.addSensor(sensorTriDist);
+    rightNosePoint.addSensor(sensorTriDist);
+
+    // Add the hardpoint to the ship:
+    hardpoints.add(leftNosePoint);
+    hardpoints.add(rightNosePoint);
+
+    // Add a Modulator to the vehicle:
+    ModulatorIdentity leftMod = new ModulatorIdentity();
+    ModulatorIdentity rightMod = new ModulatorIdentity();
+    modulators.add(leftMod);
+    modulators.add(rightMod);
+
+    // Wire the hardpoints to Modulators:
+    Wire leftSensWire = new Wire(0,0, true);
+    Wire rightSensWire = new Wire(1,1, true);
+    sensorWires.add(leftSensWire);
+    sensorWires.add(rightSensWire);
+
+    // Wire the modulator to a Control Signal:
+    Wire leftThrustWire = new Wire(0,2, false);
+    Wire leftSteerWire = new Wire(0,0, false);
+    Wire rightThrustWire = new Wire(1,2, false);
+    Wire rightSteerWire = new Wire(1,1, false);
+
+    controlWires.add(leftThrustWire);
+    controlWires.add(leftSteerWire);
+    controlWires.add(rightThrustWire);
+    controlWires.add(rightSteerWire);
+  }
+
+  // Analyze the gamestate and generate commands:
+  void update() {
+    lifetime++;
+    relax();
+    sense();
+    process(hardpoints, modulators, sensorWires);
+    signal();
+  }
+
+}
+
 
 /*
   BraitenbergVehicleFactory
@@ -1683,7 +1934,6 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   // Thread control variables.
 
-  Thread loadThread;
   Thread loopThread;
 
   // Constants
@@ -1754,7 +2004,6 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   // Flags for game state and options.
 
-  boolean loaded = false;
   boolean paused;
   boolean playing;
   boolean detail;
@@ -1940,7 +2189,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
                                   missle,
                                   ufo);
 
-    pilot = new BraitenbergVehicleTwoBTriangle(currentState);
+    pilot = new BraitenbergVehicleThreeBRadius(currentState);
 
     highScore = 0;
     detail = true;
@@ -1984,11 +2233,6 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       loopThread = new Thread(this);
       loopThread.start();
     }
-    
-    if (!loaded && loadThread == null) {
-      loadThread = new Thread(this);
-      loadThread.start();
-    }
   }
 
   public void stop() {
@@ -1996,10 +2240,6 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     if (loopThread != null) {
       loopThread.stop();
       loopThread = null;
-    }
-    if (loadThread != null) {
-      loadThread.stop();
-      loadThread = null;
     }
   }
 
@@ -2012,16 +2252,9 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
     startTime = System.currentTimeMillis();
 
-    // Run thread for loading sounds.
-
-    if (!loaded && Thread.currentThread() == loadThread) {
-      loaded = true;
-      loadThread.stop();
-    }
-
     // This is the main loop.
     while (Thread.currentThread() == loopThread) {
-      if (loaded && !playing) {
+      if (!playing) {
         //pilot = new BraitenbergVehicleOneRay(currentState)
         initGame();
       }
@@ -2669,7 +2902,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     accBackward = CONTROL_SCALING * pilot.getAccBackward();
     firePhoton =  (pilot.getFirePhoton() >= 1); // Convert the signal to a bool.
     fireHyper =   (pilot.getFireHyper() >= 1);  // Convert the signal to a bool.
-    debugInfo.add(String.format("Ship L: %3.2f R: %3.2f F: %3.2f B: %3.2f Fire: %b Hyper: %b",
+    debugInfo.add(String.format(
+      "Ship L: %3.2f R: %3.2f F: %3.2f B: %3.2f Fire: %b Hyper: %b",
       turnLeft, turnRight, accForward, accBackward, firePhoton, fireHyper));
   }
 
@@ -2697,7 +2931,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
     // 'S' key: start the game, if not already in progress.
 
-    if (c == 's' && loaded && !playing) {
+    if (c == 's' && !playing) {
       initGame();
     }
 
@@ -2906,32 +3140,18 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         (d.width - fm.stringWidth(s)) / 2, 
         d.height / 2 + 2 * fontHeight);
 
-      if (!loaded) {
-        s = "Loading sounds...";
-        w = 4 * fontWidth + fm.stringWidth(s);
-        h = fontHeight;
-        x = (d.width - w) / 2;
-        y = 3 * d.height / 4 - fm.getMaxAscent();
-        offGraphics.setColor(Color.black);
-          offGraphics.fillRect(x, y, w, h);
-        offGraphics.setColor(Color.gray);
-        offGraphics.setColor(Color.white);
-        offGraphics.drawRect(x, y, w, h);
-        offGraphics.drawString(s, x + 2 * fontWidth, y + fm.getMaxAscent());
-      }
-      else {
-        s = "Game Over";
-        offGraphics.drawString(
-          s, 
-          (d.width - fm.stringWidth(s)) / 2, 
-          d.height / 4);
 
-        s = "'S' to Start";
-        offGraphics.drawString(
-          s, 
-          (d.width - fm.stringWidth(s)) / 2, 
-          d.height / 4 + fontHeight);
-      }
+      s = "Game Over";
+      offGraphics.drawString(
+        s, 
+        (d.width - fm.stringWidth(s)) / 2, 
+        d.height / 4);
+
+      s = "'S' to Start";
+      offGraphics.drawString(
+        s, 
+        (d.width - fm.stringWidth(s)) / 2, 
+        d.height / 4 + fontHeight);
     }
     else if (paused) {
       s = "Game Paused";
