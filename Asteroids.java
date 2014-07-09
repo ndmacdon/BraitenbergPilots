@@ -929,7 +929,129 @@ class BraitenbergVehicleTwoATriangle extends BraitenbergVehicle {
 
 }
 
+/*
+  Modeled after Braitenberg's Vehicle 2B
+*/
+class BraitenbergVehicleTwoBRadius extends BraitenbergVehicle {
 
+  // Constructor
+  public BraitenbergVehicleTwoBRadius(GameState world) {
+    super(world);
+    this.lifetime = 0;
+    this.world = world;
+
+    // Hardcoded Hardpoints/Sensors/Wires:
+
+    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+
+    // Hardpoint on the Vehicle's Nose:
+    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
+    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
+
+    // Add a sensor to the nose hardpoints:
+    leftNosePoint.addSensor(sensorRadiusDist);
+    rightNosePoint.addSensor(sensorRadiusDist);
+
+    // Add the hardpoint to the ship:
+    hardpoints.add(leftNosePoint);
+    hardpoints.add(rightNosePoint);
+
+    // Add a Modulator to the vehicle:
+    ModulatorIdentity leftMod = new ModulatorIdentity();
+    ModulatorIdentity rightMod = new ModulatorIdentity();
+    modulators.add(leftMod);
+    modulators.add(rightMod);
+
+    // Wire the hardpoints to Modulators:
+    Wire leftSensWire = new Wire(0,0, false);
+    Wire rightSensWire = new Wire(1,1, false);
+    sensorWires.add(leftSensWire);
+    sensorWires.add(rightSensWire);
+
+    // Wire the modulator to a Control Signal:
+    Wire leftThrustWire = new Wire(0,2, false);
+    Wire leftSteerWire = new Wire(0,0, false);
+    Wire rightThrustWire = new Wire(1,2, false);
+    Wire rightSteerWire = new Wire(1,1, false);
+
+    controlWires.add(leftThrustWire);
+    controlWires.add(leftSteerWire);
+    controlWires.add(rightThrustWire);
+    controlWires.add(rightSteerWire);
+  }
+
+  // Analyze the gamestate and generate commands:
+  void update() {
+    lifetime++;
+    relax();
+    sense();
+    process(hardpoints, modulators, sensorWires);
+    signal();
+  }
+
+}
+
+/*
+  Modeled after Braitenberg's Vehicle 2B
+*/
+class BraitenbergVehicleTwoBTriangle extends BraitenbergVehicle {
+
+  // Constructor
+  public BraitenbergVehicleTwoBTriangle(GameState world) {
+    super(world);
+    this.lifetime = 0;
+    this.world = world;
+
+    // Hardcoded Hardpoints/Sensors/Wires:
+
+    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
+
+    // Hardpoint on the Vehicle's Nose:
+    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI/6);
+    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
+
+    // Add a sensor to the nose hardpoints:
+    leftNosePoint.addSensor(sensorTriDist);
+    rightNosePoint.addSensor(sensorTriDist);
+
+    // Add the hardpoint to the ship:
+    hardpoints.add(leftNosePoint);
+    hardpoints.add(rightNosePoint);
+
+    // Add a Modulator to the vehicle:
+    ModulatorIdentity leftMod = new ModulatorIdentity();
+    ModulatorIdentity rightMod = new ModulatorIdentity();
+    modulators.add(leftMod);
+    modulators.add(rightMod);
+
+    // Wire the hardpoints to Modulators:
+    Wire leftSensWire = new Wire(0,0, false);
+    Wire rightSensWire = new Wire(1,1, false);
+    sensorWires.add(leftSensWire);
+    sensorWires.add(rightSensWire);
+
+    // Wire the modulator to a Control Signal:
+    Wire leftThrustWire = new Wire(0,2, false);
+    Wire leftSteerWire = new Wire(0,0, false);
+    Wire rightThrustWire = new Wire(1,2, false);
+    Wire rightSteerWire = new Wire(1,1, false);
+
+    controlWires.add(leftThrustWire);
+    controlWires.add(leftSteerWire);
+    controlWires.add(rightThrustWire);
+    controlWires.add(rightSteerWire);
+  }
+
+  // Analyze the gamestate and generate commands:
+  void update() {
+    lifetime++;
+    relax();
+    sense();
+    process(hardpoints, modulators, sensorWires);
+    signal();
+  }
+
+}
 
 
 /*
@@ -1818,7 +1940,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
                                   missle,
                                   ufo);
 
-    pilot = new BraitenbergVehicleTwoATriangle(currentState);
+    pilot = new BraitenbergVehicleTwoBTriangle(currentState);
 
     highScore = 0;
     detail = true;
