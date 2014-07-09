@@ -386,6 +386,7 @@ class ModulatorBinary extends ModulatorIdentity {
 
   // Return the output of the accumulated charge:
   public double getOutput() {
+    // Clamp output between +-MAX_OUTPUT:
     output = (charge > 0) ? MAX_OUTPUT : charge;
     output = (charge < 0) ? -MAX_OUTPUT : charge;
     return output;
@@ -423,18 +424,41 @@ class ModulatorSqrt extends ModulatorIdentity {
 }
 
 /*
+  Models an inverted parabola with:
+  - f(0) = 0
+  - f(.5) = y-max = 1
+  - f(1) = 0
+*/
+class ModulatorParabolic extends ModulatorIdentity {
+  // Returns a new instance of this class:
+  public Modulator copy() { return new ModulatorParabolic(); }
+
+  // Return the output of the accumulated charge:
+  public double getOutput() {
+    output = -4*(Math.pow(charge, 2)-charge) - .25;
+    //output = -16*(Math.pow(charge, 2)-charge) - 3;
+    // Clamp output between +-MAX_OUTPUT:
+    output = (output > MAX_OUTPUT) ? MAX_OUTPUT : output;
+    output = (output < 0) ? 0 : output;
+    return output;
+  }
+}
+
+/*
   Registers a connection between an output device and an input device:
   If a wire is an inhibitor it inverts any signal passing through.
 */
 class Wire {
   int source;
   int destination;
+  float scale;
   boolean inhibitor;
 
   // Constructor:
-  public Wire(int source, int destination, boolean inhibitor) {
+  public Wire(int source, int destination, boolean inhibitor, float scale) {
     this.source = source;
     this.destination = destination;
+    this.scale = scale;
     this.inhibitor = inhibitor;
   }
 
@@ -596,7 +620,7 @@ class BraitenbergVehicle {
     for (Wire wire : wires) {
       // Get the source:
       Source source = sourceList.get(wire.source);
-      double output = source.getOutput();
+      double output = wire.scale*source.getOutput();
 
       // Get the destination:
       Receiver destination = destinationList.get(wire.destination);
@@ -616,7 +640,7 @@ class BraitenbergVehicle {
     // input to the Modulator also indicated by <wire>:
     for (Wire wire : controlWires) {
       Modulator source = modulators.get(wire.source); // Get the source.
-      double output = source.getOutput(); // Get the source's output.
+      double output = wire.scale*source.getOutput(); // Get the source's output.
 
       // If wire <wire> is an inhibitor, invert the result:
       output = (wire.inhibitor) ? 1.0-output : output;
@@ -650,6 +674,7 @@ class BraitenbergVehicle {
   void update() {
     lifetime++;
     relax();
+    sense();
     process(hardpoints, modulators, sensorWires);
     signal();
   }
@@ -693,23 +718,13 @@ class BraitenbergVehicleOneRay extends BraitenbergVehicle {
     modulators.add(mod);
 
     // Wire the hardpoint to the Modulator:
-    Wire sensWire = new Wire(0,0, false);
+    Wire sensWire = new Wire(0,0, false, 1.0f);
     sensorWires.add(sensWire);
 
     // Wire the modulator to a Control Signal:
-    Wire contWire = new Wire(0,2, false);
+    Wire contWire = new Wire(0,2, false, 1.0f);
     controlWires.add(contWire);
   }
-
-  // Analyze the gamestate and generate commands:
-  void update() {
-    lifetime++;
-    relax();
-    sense();
-    process(hardpoints, modulators, sensorWires);
-    signal();
-  }
-
 }
 
 /*
@@ -741,23 +756,13 @@ class BraitenbergVehicleOneRadius extends BraitenbergVehicle {
     modulators.add(mod);
 
     // Wire the hardpoint to the Modulator:
-    Wire sensWire = new Wire(0,0, false);
+    Wire sensWire = new Wire(0, 0, false, 1.0f);
     sensorWires.add(sensWire);
 
     // Wire the modulator to a Control Signal:
-    Wire contWire = new Wire(0,2, false);
+    Wire contWire = new Wire(0, 2, false, 1.0f);
     controlWires.add(contWire);
   }
-
-  // Analyze the gamestate and generate commands:
-  void update() {
-    lifetime++;
-    relax();
-    sense();
-    process(hardpoints, modulators, sensorWires);
-    signal();
-  }
-
 }
 
 /*
@@ -789,23 +794,13 @@ class BraitenbergVehicleOneTriangle extends BraitenbergVehicle {
     modulators.add(mod);
 
     // Wire the hardpoint to the Modulator:
-    Wire sensWire = new Wire(0,0, false);
+    Wire sensWire = new Wire(0,0, false, 1.0f);
     sensorWires.add(sensWire);
 
     // Wire the modulator to a Control Signal:
-    Wire contWire = new Wire(0,2, false);
+    Wire contWire = new Wire(0,2, false, 1.0f);
     controlWires.add(contWire);
   }
-
-  // Analyze the gamestate and generate commands:
-  void update() {
-    lifetime++;
-    relax();
-    sense();
-    process(hardpoints, modulators, sensorWires);
-    signal();
-  }
-
 }
 
 /*
@@ -842,32 +837,22 @@ class BraitenbergVehicleTwoARadius extends BraitenbergVehicle {
     modulators.add(rightMod);
 
     // Wire the hardpoints to Modulators:
-    Wire leftSensWire = new Wire(0,0, false);
-    Wire rightSensWire = new Wire(1,1, false);
+    Wire leftSensWire =   new Wire(0,0, false, 1.0f);
+    Wire rightSensWire =  new Wire(1,1, false, 1.0f);
     sensorWires.add(leftSensWire);
     sensorWires.add(rightSensWire);
 
     // Wire the modulator to a Control Signal:
-    Wire leftThrustWire = new Wire(0,2, false);
-    Wire leftSteerWire = new Wire(0,1, false);
-    Wire rightThrustWire = new Wire(1,2, false);
-    Wire rightSteerWire = new Wire(1,0, false);
+    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+    Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
+    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+    Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
 
     controlWires.add(leftThrustWire);
     controlWires.add(leftSteerWire);
     controlWires.add(rightThrustWire);
     controlWires.add(rightSteerWire);
   }
-
-  // Analyze the gamestate and generate commands:
-  void update() {
-    lifetime++;
-    relax();
-    sense();
-    process(hardpoints, modulators, sensorWires);
-    signal();
-  }
-
 }
 
 /*
@@ -904,32 +889,22 @@ class BraitenbergVehicleTwoATriangle extends BraitenbergVehicle {
     modulators.add(rightMod);
 
     // Wire the hardpoints to Modulators:
-    Wire leftSensWire = new Wire(0,0, false);
-    Wire rightSensWire = new Wire(1,1, false);
+    Wire leftSensWire =   new Wire(0,0, false, 1.0f);
+    Wire rightSensWire =  new Wire(1,1, false, 1.0f);
     sensorWires.add(leftSensWire);
     sensorWires.add(rightSensWire);
 
     // Wire the modulator to a Control Signal:
-    Wire leftThrustWire = new Wire(0,2, false);
-    Wire leftSteerWire = new Wire(0,1, false);
-    Wire rightThrustWire = new Wire(1,2, false);
-    Wire rightSteerWire = new Wire(1,0, false);
+    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+    Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
+    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+    Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
 
     controlWires.add(leftThrustWire);
     controlWires.add(leftSteerWire);
     controlWires.add(rightThrustWire);
     controlWires.add(rightSteerWire);
   }
-
-  // Analyze the gamestate and generate commands:
-  void update() {
-    lifetime++;
-    relax();
-    sense();
-    process(hardpoints, modulators, sensorWires);
-    signal();
-  }
-
 }
 
 /*
@@ -966,32 +941,22 @@ class BraitenbergVehicleTwoBRadius extends BraitenbergVehicle {
     modulators.add(rightMod);
 
     // Wire the hardpoints to Modulators:
-    Wire leftSensWire = new Wire(0,0, false);
-    Wire rightSensWire = new Wire(1,1, false);
+    Wire leftSensWire = new   Wire(0,0, false, 1.0f);
+    Wire rightSensWire = new  Wire(1,1, false, 1.0f);
     sensorWires.add(leftSensWire);
     sensorWires.add(rightSensWire);
 
     // Wire the modulator to a Control Signal:
-    Wire leftThrustWire = new Wire(0,2, false);
-    Wire leftSteerWire = new Wire(0,0, false);
-    Wire rightThrustWire = new Wire(1,2, false);
-    Wire rightSteerWire = new Wire(1,1, false);
+    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
+    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
 
     controlWires.add(leftThrustWire);
     controlWires.add(leftSteerWire);
     controlWires.add(rightThrustWire);
     controlWires.add(rightSteerWire);
   }
-
-  // Analyze the gamestate and generate commands:
-  void update() {
-    lifetime++;
-    relax();
-    sense();
-    process(hardpoints, modulators, sensorWires);
-    signal();
-  }
-
 }
 
 /*
@@ -1028,32 +993,22 @@ class BraitenbergVehicleTwoBTriangle extends BraitenbergVehicle {
     modulators.add(rightMod);
 
     // Wire the hardpoints to Modulators:
-    Wire leftSensWire = new Wire(0,0, false);
-    Wire rightSensWire = new Wire(1,1, false);
+    Wire leftSensWire = new   Wire(0,0, false, 1.0f);
+    Wire rightSensWire = new  Wire(1,1, false, 1.0f);
     sensorWires.add(leftSensWire);
     sensorWires.add(rightSensWire);
 
     // Wire the modulator to a Control Signal:
-    Wire leftThrustWire = new Wire(0,2, false);
-    Wire leftSteerWire = new Wire(0,0, false);
-    Wire rightThrustWire = new Wire(1,2, false);
-    Wire rightSteerWire = new Wire(1,1, false);
+    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
+    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
 
     controlWires.add(leftThrustWire);
     controlWires.add(leftSteerWire);
     controlWires.add(rightThrustWire);
     controlWires.add(rightSteerWire);
   }
-
-  // Analyze the gamestate and generate commands:
-  void update() {
-    lifetime++;
-    relax();
-    sense();
-    process(hardpoints, modulators, sensorWires);
-    signal();
-  }
-
 }
 
 /*
@@ -1090,32 +1045,22 @@ class BraitenbergVehicleThreeARadius extends BraitenbergVehicle {
     modulators.add(rightMod);
 
     // Wire the hardpoints to Modulators:
-    Wire leftSensWire = new Wire(0,0, true);
-    Wire rightSensWire = new Wire(1,1, true);
+    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
+    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
     sensorWires.add(leftSensWire);
     sensorWires.add(rightSensWire);
 
     // Wire the modulator to a Control Signal:
-    Wire leftThrustWire = new Wire(0,2, false);
-    Wire leftSteerWire = new Wire(0,1, false);
-    Wire rightThrustWire = new Wire(1,2, false);
-    Wire rightSteerWire = new Wire(1,0, false);
+    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+    Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
+    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+    Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
 
     controlWires.add(leftThrustWire);
     controlWires.add(leftSteerWire);
     controlWires.add(rightThrustWire);
     controlWires.add(rightSteerWire);
   }
-
-  // Analyze the gamestate and generate commands:
-  void update() {
-    lifetime++;
-    relax();
-    sense();
-    process(hardpoints, modulators, sensorWires);
-    signal();
-  }
-
 }
 
 /*
@@ -1152,32 +1097,22 @@ class BraitenbergVehicleThreeATriangle extends BraitenbergVehicle {
     modulators.add(rightMod);
 
     // Wire the hardpoints to Modulators:
-    Wire leftSensWire = new Wire(0,0, true);
-    Wire rightSensWire = new Wire(1,1, true);
+    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
+    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
     sensorWires.add(leftSensWire);
     sensorWires.add(rightSensWire);
 
     // Wire the modulator to a Control Signal:
-    Wire leftThrustWire = new Wire(0,2, false);
-    Wire leftSteerWire = new Wire(0,1, false);
-    Wire rightThrustWire = new Wire(1,2, false);
-    Wire rightSteerWire = new Wire(1,0, false);
+    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+    Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
+    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+    Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
 
     controlWires.add(leftThrustWire);
     controlWires.add(leftSteerWire);
     controlWires.add(rightThrustWire);
     controlWires.add(rightSteerWire);
   }
-
-  // Analyze the gamestate and generate commands:
-  void update() {
-    lifetime++;
-    relax();
-    sense();
-    process(hardpoints, modulators, sensorWires);
-    signal();
-  }
-
 }
 
 /*
@@ -1214,32 +1149,22 @@ class BraitenbergVehicleThreeBRadius extends BraitenbergVehicle {
     modulators.add(rightMod);
 
     // Wire the hardpoints to Modulators:
-    Wire leftSensWire = new Wire(0,0, true);
-    Wire rightSensWire = new Wire(1,1, true);
+    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
+    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
     sensorWires.add(leftSensWire);
     sensorWires.add(rightSensWire);
 
     // Wire the modulator to a Control Signal:
-    Wire leftThrustWire = new Wire(0,2, false);
-    Wire leftSteerWire = new Wire(0,0, false);
-    Wire rightThrustWire = new Wire(1,2, false);
-    Wire rightSteerWire = new Wire(1,1, false);
+    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
+    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
 
     controlWires.add(leftThrustWire);
     controlWires.add(leftSteerWire);
     controlWires.add(rightThrustWire);
     controlWires.add(rightSteerWire);
   }
-
-  // Analyze the gamestate and generate commands:
-  void update() {
-    lifetime++;
-    relax();
-    sense();
-    process(hardpoints, modulators, sensorWires);
-    signal();
-  }
-
 }
 
 /*
@@ -1276,34 +1201,76 @@ class BraitenbergVehicleThreeBTriangle extends BraitenbergVehicle {
     modulators.add(rightMod);
 
     // Wire the hardpoints to Modulators:
-    Wire leftSensWire = new Wire(0,0, true);
-    Wire rightSensWire = new Wire(1,1, true);
+    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
+    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
     sensorWires.add(leftSensWire);
     sensorWires.add(rightSensWire);
 
     // Wire the modulator to a Control Signal:
-    Wire leftThrustWire = new Wire(0,2, false);
-    Wire leftSteerWire = new Wire(0,0, false);
-    Wire rightThrustWire = new Wire(1,2, false);
-    Wire rightSteerWire = new Wire(1,1, false);
+    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
+    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
 
     controlWires.add(leftThrustWire);
     controlWires.add(leftSteerWire);
     controlWires.add(rightThrustWire);
     controlWires.add(rightSteerWire);
   }
-
-  // Analyze the gamestate and generate commands:
-  void update() {
-    lifetime++;
-    relax();
-    sense();
-    process(hardpoints, modulators, sensorWires);
-    signal();
-  }
-
 }
 
+
+/*
+  Modeled after Braitenberg's Vehicle 4A
+*/
+class BraitenbergVehicleFourARadius extends BraitenbergVehicle {
+
+  // Constructor
+  public BraitenbergVehicleFourARadius(GameState world) {
+    super(world);
+    this.lifetime = 0;
+    this.world = world;
+
+    // Hardcoded Hardpoints/Sensors/Wires:
+
+    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+
+    // Hardpoint on the Vehicle's Nose:
+    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
+    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
+
+    // Add a sensor to the nose hardpoints:
+    leftNosePoint.addSensor(sensorRadiusDist);
+    rightNosePoint.addSensor(sensorRadiusDist);
+
+    // Add the hardpoint to the ship:
+    hardpoints.add(leftNosePoint);
+    hardpoints.add(rightNosePoint);
+
+    // Add a Modulator to the vehicle:
+    ModulatorParabolic leftMod = new ModulatorParabolic();
+    ModulatorParabolic rightMod = new ModulatorParabolic();
+    modulators.add(leftMod);
+    modulators.add(rightMod);
+
+    // Wire the hardpoints to Modulators:
+    Wire leftSensWire =   new Wire(0,0, false, 1.0f);
+    Wire rightSensWire =  new Wire(1,1, false, 1.0f);
+    sensorWires.add(leftSensWire);
+    sensorWires.add(rightSensWire);
+
+    // Wire the modulator to a Control Signal:
+    Wire leftThrustWire =   new Wire(0,2, false, 0.5f);
+    Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
+    Wire rightThrustWire =  new Wire(1,2, false, 0.5f);
+    Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
+
+    controlWires.add(leftThrustWire);
+    controlWires.add(leftSteerWire);
+    controlWires.add(rightThrustWire);
+    controlWires.add(rightSteerWire);
+  }
+}
 
 /*
   BraitenbergVehicleFactory
@@ -1444,8 +1411,8 @@ class BRVFactory {
 
         // Wire <nextVehicle> according to the current permutation...
         for (int i = numHardpoints-1; i >= 0; i--) {
-          nextVehicle.sensorWires.add(new Wire(i, i, false));
-          nextVehicle.controlWires.add(new Wire(i, permutation[i], false));
+          nextVehicle.sensorWires.add(new Wire(i, i, false, 1.0f));
+          nextVehicle.controlWires.add(new Wire(i, permutation[i], false, 1.0f));
         }
 
         wiredVehicles.add(nextVehicle); // Add the wired vehicle.
@@ -2189,7 +2156,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
                                   missle,
                                   ufo);
 
-    pilot = new BraitenbergVehicleThreeBRadius(currentState);
+    pilot = new BraitenbergVehicleFourARadius(currentState);
 
     highScore = 0;
     detail = true;
