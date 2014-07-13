@@ -49,16 +49,12 @@
  *              which have various effects on the robot and its environment.
  ****/
 
-
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
-import java.net.*;
-import java.math.*;
 import java.util.*;
 import java.util.List;
 import java.applet.Applet;
-import java.applet.AudioClip;
 import java.io.*;
 
 
@@ -134,7 +130,7 @@ class Vector2D {
 
   // Mutators:
   public void setX(double x) { this.x = x; }
-  public void setY(double x) { this.y = y; }
+  public void setY(double y) { this.y = y; }
   public void set(double x, double y) {
     this.x = x;
     this.y = y;
@@ -614,7 +610,6 @@ class BraitenbergVehicle {
   void process(List<? extends Source> sourceList, 
     List<? extends Receiver> destinationList,
     List<Wire> wires) {
-    AsteroidsSprite ship = world.getShip();
     
     // Read the source from <wire> and apply it to <wire>'s destination
     for (Wire wire : wires) {
@@ -1298,9 +1293,9 @@ class BRVFactory {
     this.world = world;
 
     // Supply the sensor pile:
-    sensorPile.add(new SensorRayMinDist());
-    sensorPile.add(new SensorRadiusSmallMinDist());
-    sensorPile.add(new SensorRaySpeed());
+    sensorPile.add(new SensorRadiusMedDist());
+    sensorPile.add(new SensorRayLongDist());
+    sensorPile.add(new SensorTriMedDist());
 
     // Supply the ModulatorPile:
     ModulatorPile.add(new ModulatorIdentity());
@@ -1865,7 +1860,9 @@ class AsteroidsSprite {
 
 public class Asteroids extends Applet implements Runnable, KeyListener {
 
-  public static Frame frame = null;
+private static final long serialVersionUID = 1L;
+
+public static Frame frame = null;
 
   // Structured collection of AsteroidsSprites.
   // Used by agent's to provide awareness of game state.
@@ -1887,7 +1884,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   static final int MAX_DEBUG_LINES = 10;
   boolean debugging = false;
-  List debugInfo = new ArrayList<String>();
+  ArrayList<String> debugInfo = new ArrayList<String>();
 
   // Copyright information.
 
@@ -2195,36 +2192,36 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   }
 
   public void start() {
-
-    if (loopThread == null) {
-      loopThread = new Thread(this);
-      loopThread.start();
-    }
+	  loopThread = new Thread(this);
+	  loopThread.start();
   }
-
+  
   public void stop() {
-
-    if (loopThread != null) {
-      loopThread.stop();
-      loopThread = null;
-    }
+    loopThread = null;
   }
 
   public void run() {
-    int i, j;
     long startTime;
+    Thread thisThread = Thread.currentThread();
 
     // Lower this thread's priority and get the current time.
 
-    Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
     startTime = System.currentTimeMillis();
 
     // This is the main loop.
-    while (Thread.currentThread() == loopThread) {
-      if (!playing) {
-        //pilot = new BraitenbergVehicleOneRay(currentState)
-        initGame();
-      }
+    while (thisThread == loopThread) {
+		try {
+		    startTime += DELAY;
+		    Thread.sleep(Math.max(0, startTime - System.currentTimeMillis()));
+		  }
+		  catch (InterruptedException e) {
+		    break;
+		  }
+    
+		if (!playing) {
+			//pilot = new BraitenbergVehicleOneRay(currentState)
+			initGame();
+		}
       debugInfo.clear();
 
       if (!paused) {
@@ -2265,10 +2262,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         if (playing) {
 
           if (ship.active) {
-            Vector2D shipV = new Vector2D(ship.deltaX, ship.deltaY);
             Vector2D shipL = new Vector2D(ship.x, ship.y);
-            double shipR = Math.sqrt(Math.pow(ship.width/2, 2.0) + 
-              Math.pow(ship.height/2, 2.0));
             double shipT = ship.angle;
 
             debugInfo.add(String.format("Ship R  %4.2f X  %d Y  %d", shipT, ship.sprite.xpoints[0], ship.sprite.ypoints[0]));
@@ -2280,10 +2274,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
           for (int h = 0; h != MAX_ROCKS; h++) {
             if (asteroids[h].active) {
               // Display the corresponding collider.
-              Vector2D v = new Vector2D(asteroids[h].deltaX, asteroids[h].deltaY);
               Vector2D l = new Vector2D(asteroids[h].sprite.xpoints[0], asteroids[h].sprite.ypoints[0]);
-              double r = Math.sqrt(Math.pow(asteroids[h].width/2, 2.0) + 
-                Math.pow(asteroids[h].height/2, 2.0));
               double t = asteroids[h].angle;
 
               debugInfo.add(String.format("Asteroid %d rot: %,3.2f loc: %s", h, t, l));
@@ -2302,13 +2293,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       // Update the screen and set the timer for the next loop.
 
       repaint();
-      try {
-        startTime += DELAY;
-        Thread.sleep(Math.max(0, startTime - System.currentTimeMillis()));
-      }
-      catch (InterruptedException e) {
-        break;
-      }
+
     }
   }
 
@@ -2517,7 +2502,6 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   public void updateUfo() {
 
     int i, d;
-    boolean wrapped;
 
     // Move the flying saucer and check for collision with a photon. Stop it
     // when its counter has expired.
@@ -2943,8 +2927,6 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     int i;
     int c;
     String s;
-    int w, h;
-    int x, y;
 
     // Create the off screen graphics context, if no good one exists.
 
