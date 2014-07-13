@@ -1907,7 +1907,7 @@ public static Frame frame = null;
     Math.round(1000 / DELAY);
 
   static final int MAX_SHOTS =  12;          // Maximum number of sprites
-  static final int MAX_ROCKS =  6;          // for photons, asteroids and
+  static final int MAX_ROCKS =  30;          // for photons, asteroids and
   static final int MAX_SCRAP = 40;          // explosions.
 
   static final int SCRAP_COUNT  = 2 * FPS;  // Timer counter starting values
