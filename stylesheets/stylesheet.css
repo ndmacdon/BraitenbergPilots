@@ -64,6 +64,7 @@ h1, h2, h3, h4, h5, h6 {
   color:#222222;
   font-family: 'Lucida Grande', 'Calibri', Helvetica, Arial, sans-serif;
   letter-spacing: -1px;
+  clear: both;
 }
 
 h1 {
@@ -193,6 +194,7 @@ blockquote {
   margin-bottom: 20px;
   padding: 0 0 0 20px;
   border-left: 3px solid #bbb;
+  font-style: italic;
 }
 
 
@@ -372,8 +374,10 @@ Full-Width Styles
   margin-left: auto;
 }
 
-.vehicle {
-  height: 20em;
+.lonely-image {
+  height: 15em;
+  float: right;
+  clear: right;
 }
 
 

@@ -3,17 +3,17 @@
 
 <head>
   <meta charset='utf-8' />
-  <meta http-equiv="X-UA-Compatible" content="chrome=1" />
   <meta name="description" content="Braitenberg Pilots : Asteroids Pilot-Bots based on Braitenberg vehicles." />
 
   <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-  <title>Braitenberg Pilots | Overview</title>
+  <title>Braitenberg Pilots | Home</title>
 </head>
 
 <body>
 
-<!-- HEADER -->
+<!--========================= HEADER =========================-->
+<!--==========================================================-->
 <div id="header_wrap" class="outer">
     <header class="inner">
       <a id="forkme_banner" href="https://github.com/ndmacdon/BraitenbergPilots" target="_blank">View on GitHub</a>
@@ -28,22 +28,19 @@
     </header>
 </div>
 
-<!-- MAIN CONTENT -->
+<!--========================= MAIN CONTENT =========================-->
+<!--================================================================-->
 <div id="main_content_wrap" class="outer">
   <section id="main_content" class="inner">
 
     <h1>
-      <a name="project-description" class="anchor" href="#project-description">
-        <span class="octicon octicon-link"></span>
-      </a>
+      <a id="project-description" class="anchor" href="#project-description"></a>
       Project Description
     </h1>
 
     <h2>
-      <a name="introduction" class="anchor" href="#introduction">
-        <span class="octicon octicon-link"></span>
-      </a>
-      Introduction
+      <a id="preface" class="anchor" href="#preface"></a>
+      Preface
     </h2>
 
     <p>
@@ -54,48 +51,102 @@
       <a href="securityguide.html">60-Second-Guide to altering your Java Security Settings.</a>
     </p>
 
-    <p>
-      An introduction to the project...
-    </p>
-
-
-    <!-- VEHICLE 1 -->
     <h2>
-      <a name="vehicle-one" class="anchor" href="#vehicle-one">
-        <span class="octicon octicon-link"></span>
-      </a>
-      Vehicle 1
+      <a id="introduction" class="anchor" href="#introduction"></a>
+      Introduction
     </h2>
-    <p>
-      Description of vehicle one...
-    </p>
-    <a href="images/Vehicle01.png"><img class="vehicle" alt="Vehicle One" src="images/Vehicle01.png"></a>
 
-    <!-- VEHICLE 2 -->
+
+
+    <p>
+      Braitenberg Vehicles were created as a thought experiment by Valentino Braitenberg. Braitenberg sought to reveal the mechanisms of the mind with his Vehicles. He did this by combining simple (albeit fantastical) hardware to produce complex behaviors. Braitenberg's Vehicles develop in sequence: instincts, emotions, logic, concepts, ideas, foresight and egotism.
+    </p>
+
+    <p>
+      Braitenberg Pilots applies Braitenberg's Vehicle designs to the Asteroids environment to see if they can effectively survive and achieve a high score in the game.
+      ~General-solution ~Evolution
+    </p>
+
+    <p>
+      The first few Braitenberg Vehicles described in <cite>Vehicles</cite> are reproduced here. These initial Vehicles introduce the components used in subsequent Vehicles. ~REVISE~Braitenberg Pilots implement the results of a thought experiment and so require a more deliberate description.~
+    </p>
+
+
+    <!--========================= VEHICLE 1 =========================-->
+    <!--=============================================================-->
     <h2>
-      <a name="vehicle-two" class="anchor" href="#vehicle-two">
-        <span class="octicon octicon-link"></span>
+      <a class="anchor" href="#vehicle-one">
+      </a>
+      Vehicle I
+    </h2>
+    
+    <h3>
+      <a class="anchor" href="#vehicle-one-description"></a>
+      Description
+    </h3>
+
+    <blockquote>Vehicle I is equipped with one sensor and one motor.</blockquote>
+
+    <a href="images/Sensor01.png"><img class="lonely-image" alt="Radius Sensor" src="images/Sensor01.png"></a>
+    <p>
+      The sensor attached to Vehicle I detects objects in a radius extending extending from the sensor's origin. The sensor reports a normalized distance to the nearest detected object. To simplify implementation, the reported distance is measured from a detected object's origin to the sensor's origin. In this way, the sensor acts as a primitive antenna; focusing on the closest object in its field of detection.
+    </p>
+    <p>
+      Vehicle I's sensor is connected to a forward thruster. As stimulus excites the sensor, a signal is passed to the thruster. The connection is such that, the closer an object gets, the harder the thruster works.
+    </p>
+    <a href="images/Vehicle01.png"><img class="lonely-image" alt="Vehicle One" src="images/Vehicle01.png"></a>
+
+    <h3>
+      <a class="anchor" href="#vehicle-one-observations"></a>
+      Observations
+    </h3>
+    <p>
+      VEHICLE I OBSERVATIONS
+    </p>
+
+    <h3>
+      <a class="anchor" href="#vehicle-one-observations"></a>
+      Demonstration
+    </h3>
+    <embed
+      class="applet"
+      type="application/x-java-applet;version=1.6"
+      width="600" height="600" 
+      archive="flotsam.jar"
+      code="Asteroids.class"
+      pluginspage="http://java.com/download/"
+      myParam="" />
+    <p>
+      Select the Applet and press 'S' to start. Press 'P' to pause the Applet at any time.
+    </p>
+    <hr />
+
+
+    <!--========================= VEHICLE 2 =========================-->
+    <!--=============================================================-->
+    <h2>
+      <a id="vehicle-two" class="anchor" href="#vehicle-two">
       </a>
       Vehicle 2
     </h2>
+    <a href="images/Sensor02.png"><img class="lonely-image" alt="Cone Sensor" src="images/Sensor02.png"></a>
     <p>
       Description of vehicle two...
     </p>
-    <a href="images/Vehicle02.png"><img class="vehicle" alt="Vehicle Two" src="images/Vehicle02.png"></a>
-    
+    <a href="images/Vehicle02.png"><img class="lonely-image" alt="Vehicle Two" src="images/Vehicle02.png"></a>
 
-    <!-- EVOLVING VEHICLES -->
-    <h2>
-      <a name="evolving-new-vehicles" class="anchor" href="#evolving-new-vehicles">
-        <span class="octicon octicon-link"></span>
-      </a>
-      Evolving New Vehicles
-    </h2>
-
+    <h3>
+      <a class="anchor" href="#vehicle-one-observations"></a>
+      Observations
+    </h3>
     <p>
-      Description of evolutionary algorithms used...
+      VEHICLE II OBSERVATIONS
     </p>
 
+    <h3>
+      <a class="anchor" href="#vehicle-one-observations"></a>
+      Demonstration
+    </h3>
     <embed
       class="applet"
       type="application/x-java-applet;version=1.6"
@@ -105,9 +156,25 @@
       pluginspage="http://java.com/download/"
       myParam="" />
 
+
+    <!--========================= Evolving Vehicles =========================-->
+    <!--=====================================================================-->
     <h2>
-      <a name="future-goals" class="anchor" href="#future-goals">
-        <span class="octicon octicon-link"></span>
+      <a id="evolving-new-vehicles" class="anchor" href="#evolving-new-vehicles">
+      </a>
+      Evolving New Vehicles
+    </h2>
+
+    <p>
+      Description of evolutionary algorithms used...
+    </p>
+
+
+
+
+
+    <h2>
+      <a id="future-goals" class="anchor" href="#future-goals">
       </a>
       Future Goals
     </h2>
@@ -122,7 +189,8 @@
   </section>
 </div>
 
-<!-- FOOTER  -->
+<!--========================= FOOTER =========================-->
+<!--==========================================================-->
 <div id="footer_wrap" class="outer">
   <footer class="inner">
     <p class="copyright">
