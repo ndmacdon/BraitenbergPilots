@@ -2035,7 +2035,7 @@ public static Frame frame = null;
                                   missle,
                                   ufo);
     factory = new BRVFactory(currentState);
-    pilot = factory.makeVehicleOneRadius();
+    pilot = factory.makeVehicleFourATriangle();
 
     highScore = 0;
     detail = true;
