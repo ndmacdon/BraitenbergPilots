@@ -685,589 +685,6 @@ class BraitenbergVehicle {
 }
 
 /*
-  Modeled after Braitenberg's Vehicle 1
-*/
-class BraitenbergVehicleOneRay extends BraitenbergVehicle {
-
-  // Constructor
-  public BraitenbergVehicleOneRay(GameState world) {
-    super(world);
-    this.lifetime = 0;
-    this.world = world;
-
-    // Hardcoded test of Hardpoints/Sensors/Wires:
-
-    SensorRayLongDist sensorRayDist = new SensorRayLongDist();
-
-    // Hardpoint on the Vehicle's Nose:
-    Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
-
-    // Add a sensor to the nose hardpoint:
-    nosePoint.addSensor(sensorRayDist);
-
-    // Add the hardpoint to the ship:
-    hardpoints.add(nosePoint);
-
-    // Add a Modulator to the vehicle:
-    ModulatorIdentity mod = new ModulatorIdentity();
-    modulators.add(mod);
-
-    // Wire the hardpoint to the Modulator:
-    Wire sensWire = new Wire(0,0, false, 1.0f);
-    sensorWires.add(sensWire);
-
-    // Wire the modulator to a Control Signal:
-    Wire contWire = new Wire(0,2, false, 1.0f);
-    controlWires.add(contWire);
-  }
-}
-
-/*
-  Modeled after Braitenberg's Vehicle 1
-*/
-class BraitenbergVehicleOneRadius extends BraitenbergVehicle {
-
-  // Constructor
-  public BraitenbergVehicleOneRadius(GameState world) {
-    super(world);
-    this.lifetime = 0;
-    this.world = world;
-
-    // Hardcoded test of Hardpoints/Sensors/Wires:
-
-    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
-
-    // Hardpoint on the Vehicle's Nose:
-    Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
-
-    // Add a sensor to the nose hardpoint:
-    nosePoint.addSensor(sensorRadiusDist);
-
-    // Add the hardpoint to the ship:
-    hardpoints.add(nosePoint);
-
-    // Add a Modulator to the vehicle:
-    ModulatorIdentity mod = new ModulatorIdentity();
-    modulators.add(mod);
-
-    // Wire the hardpoint to the Modulator:
-    Wire sensWire = new Wire(0, 0, false, 1.0f);
-    sensorWires.add(sensWire);
-
-    // Wire the modulator to a Control Signal:
-    Wire contWire = new Wire(0, 2, false, 1.0f);
-    controlWires.add(contWire);
-  }
-}
-
-/*
-  Modeled after Braitenberg's Vehicle 1
-*/
-class BraitenbergVehicleOneTriangle extends BraitenbergVehicle {
-
-  // Constructor
-  public BraitenbergVehicleOneTriangle(GameState world) {
-    super(world);
-    this.lifetime = 0;
-    this.world = world;
-
-    // Hardcoded test of Hardpoints/Sensors/Wires:
-
-    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
-
-    // Hardpoint on the Vehicle's Nose:
-    Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
-
-    // Add a sensor to the nose hardpoint:
-    nosePoint.addSensor(sensorTriDist);
-
-    // Add the hardpoint to the ship:
-    hardpoints.add(nosePoint);
-
-    // Add a Modulator to the vehicle:
-    ModulatorIdentity mod = new ModulatorIdentity();
-    modulators.add(mod);
-
-    // Wire the hardpoint to the Modulator:
-    Wire sensWire = new Wire(0,0, false, 1.0f);
-    sensorWires.add(sensWire);
-
-    // Wire the modulator to a Control Signal:
-    Wire contWire = new Wire(0,2, false, 1.0f);
-    controlWires.add(contWire);
-  }
-}
-
-/*
-  Modeled after Braitenberg's Vehicle 2A
-*/
-class BraitenbergVehicleTwoARadius extends BraitenbergVehicle {
-
-  // Constructor
-  public BraitenbergVehicleTwoARadius(GameState world) {
-    super(world);
-    this.lifetime = 0;
-    this.world = world;
-
-    // Hardcoded Hardpoints/Sensors/Wires:
-
-    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
-
-    // Hardpoint on the Vehicle's Nose:
-    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
-    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
-
-    // Add a sensor to the nose hardpoints:
-    leftNosePoint.addSensor(sensorRadiusDist);
-    rightNosePoint.addSensor(sensorRadiusDist);
-
-    // Add the hardpoint to the ship:
-    hardpoints.add(leftNosePoint);
-    hardpoints.add(rightNosePoint);
-
-    // Add a Modulator to the vehicle:
-    ModulatorIdentity leftMod = new ModulatorIdentity();
-    ModulatorIdentity rightMod = new ModulatorIdentity();
-    modulators.add(leftMod);
-    modulators.add(rightMod);
-
-    // Wire the hardpoints to Modulators:
-    Wire leftSensWire =   new Wire(0,0, false, 1.0f);
-    Wire rightSensWire =  new Wire(1,1, false, 1.0f);
-    sensorWires.add(leftSensWire);
-    sensorWires.add(rightSensWire);
-
-    // Wire the modulator to a Control Signal:
-    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-    Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
-    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-    Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
-
-    controlWires.add(leftThrustWire);
-    controlWires.add(leftSteerWire);
-    controlWires.add(rightThrustWire);
-    controlWires.add(rightSteerWire);
-  }
-}
-
-/*
-  Modeled after Braitenberg's Vehicle 2A
-*/
-class BraitenbergVehicleTwoATriangle extends BraitenbergVehicle {
-
-  // Constructor
-  public BraitenbergVehicleTwoATriangle(GameState world) {
-    super(world);
-    this.lifetime = 0;
-    this.world = world;
-
-    // Hardcoded Hardpoints/Sensors/Wires:
-
-    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
-
-    // Hardpoint on the Vehicle's Nose:
-    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI/6);
-    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
-
-    // Add a sensor to the nose hardpoints:
-    leftNosePoint.addSensor(sensorTriDist);
-    rightNosePoint.addSensor(sensorTriDist);
-
-    // Add the hardpoint to the ship:
-    hardpoints.add(leftNosePoint);
-    hardpoints.add(rightNosePoint);
-
-    // Add a Modulator to the vehicle:
-    ModulatorIdentity leftMod = new ModulatorIdentity();
-    ModulatorIdentity rightMod = new ModulatorIdentity();
-    modulators.add(leftMod);
-    modulators.add(rightMod);
-
-    // Wire the hardpoints to Modulators:
-    Wire leftSensWire =   new Wire(0,0, false, 1.0f);
-    Wire rightSensWire =  new Wire(1,1, false, 1.0f);
-    sensorWires.add(leftSensWire);
-    sensorWires.add(rightSensWire);
-
-    // Wire the modulator to a Control Signal:
-    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-    Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
-    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-    Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
-
-    controlWires.add(leftThrustWire);
-    controlWires.add(leftSteerWire);
-    controlWires.add(rightThrustWire);
-    controlWires.add(rightSteerWire);
-  }
-}
-
-/*
-  Modeled after Braitenberg's Vehicle 2B
-*/
-class BraitenbergVehicleTwoBRadius extends BraitenbergVehicle {
-
-  // Constructor
-  public BraitenbergVehicleTwoBRadius(GameState world) {
-    super(world);
-    this.lifetime = 0;
-    this.world = world;
-
-    // Hardcoded Hardpoints/Sensors/Wires:
-
-    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
-
-    // Hardpoint on the Vehicle's Nose:
-    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
-    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
-
-    // Add a sensor to the nose hardpoints:
-    leftNosePoint.addSensor(sensorRadiusDist);
-    rightNosePoint.addSensor(sensorRadiusDist);
-
-    // Add the hardpoint to the ship:
-    hardpoints.add(leftNosePoint);
-    hardpoints.add(rightNosePoint);
-
-    // Add a Modulator to the vehicle:
-    ModulatorIdentity leftMod = new ModulatorIdentity();
-    ModulatorIdentity rightMod = new ModulatorIdentity();
-    modulators.add(leftMod);
-    modulators.add(rightMod);
-
-    // Wire the hardpoints to Modulators:
-    Wire leftSensWire = new   Wire(0,0, false, 1.0f);
-    Wire rightSensWire = new  Wire(1,1, false, 1.0f);
-    sensorWires.add(leftSensWire);
-    sensorWires.add(rightSensWire);
-
-    // Wire the modulator to a Control Signal:
-    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
-    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
-
-    controlWires.add(leftThrustWire);
-    controlWires.add(leftSteerWire);
-    controlWires.add(rightThrustWire);
-    controlWires.add(rightSteerWire);
-  }
-}
-
-/*
-  Modeled after Braitenberg's Vehicle 2B
-*/
-class BraitenbergVehicleTwoBTriangle extends BraitenbergVehicle {
-
-  // Constructor
-  public BraitenbergVehicleTwoBTriangle(GameState world) {
-    super(world);
-    this.lifetime = 0;
-    this.world = world;
-
-    // Hardcoded Hardpoints/Sensors/Wires:
-
-    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
-
-    // Hardpoint on the Vehicle's Nose:
-    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI/6);
-    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
-
-    // Add a sensor to the nose hardpoints:
-    leftNosePoint.addSensor(sensorTriDist);
-    rightNosePoint.addSensor(sensorTriDist);
-
-    // Add the hardpoint to the ship:
-    hardpoints.add(leftNosePoint);
-    hardpoints.add(rightNosePoint);
-
-    // Add a Modulator to the vehicle:
-    ModulatorIdentity leftMod = new ModulatorIdentity();
-    ModulatorIdentity rightMod = new ModulatorIdentity();
-    modulators.add(leftMod);
-    modulators.add(rightMod);
-
-    // Wire the hardpoints to Modulators:
-    Wire leftSensWire = new   Wire(0,0, false, 1.0f);
-    Wire rightSensWire = new  Wire(1,1, false, 1.0f);
-    sensorWires.add(leftSensWire);
-    sensorWires.add(rightSensWire);
-
-    // Wire the modulator to a Control Signal:
-    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
-    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
-
-    controlWires.add(leftThrustWire);
-    controlWires.add(leftSteerWire);
-    controlWires.add(rightThrustWire);
-    controlWires.add(rightSteerWire);
-  }
-}
-
-/*
-  Modeled after Braitenberg's Vehicle 3A
-*/
-class BraitenbergVehicleThreeARadius extends BraitenbergVehicle {
-
-  // Constructor
-  public BraitenbergVehicleThreeARadius(GameState world) {
-    super(world);
-    this.lifetime = 0;
-    this.world = world;
-
-    // Hardcoded Hardpoints/Sensors/Wires:
-
-    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
-
-    // Hardpoint on the Vehicle's Nose:
-    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
-    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
-
-    // Add a sensor to the nose hardpoints:
-    leftNosePoint.addSensor(sensorRadiusDist);
-    rightNosePoint.addSensor(sensorRadiusDist);
-
-    // Add the hardpoint to the ship:
-    hardpoints.add(leftNosePoint);
-    hardpoints.add(rightNosePoint);
-
-    // Add a Modulator to the vehicle:
-    ModulatorIdentity leftMod = new ModulatorIdentity();
-    ModulatorIdentity rightMod = new ModulatorIdentity();
-    modulators.add(leftMod);
-    modulators.add(rightMod);
-
-    // Wire the hardpoints to Modulators:
-    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
-    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
-    sensorWires.add(leftSensWire);
-    sensorWires.add(rightSensWire);
-
-    // Wire the modulator to a Control Signal:
-    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-    Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
-    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-    Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
-
-    controlWires.add(leftThrustWire);
-    controlWires.add(leftSteerWire);
-    controlWires.add(rightThrustWire);
-    controlWires.add(rightSteerWire);
-  }
-}
-
-/*
-  Modeled after Braitenberg's Vehicle 3A
-*/
-class BraitenbergVehicleThreeATriangle extends BraitenbergVehicle {
-
-  // Constructor
-  public BraitenbergVehicleThreeATriangle(GameState world) {
-    super(world);
-    this.lifetime = 0;
-    this.world = world;
-
-    // Hardcoded Hardpoints/Sensors/Wires:
-
-    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
-
-    // Hardpoint on the Vehicle's Nose:
-    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI/6);
-    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
-
-    // Add a sensor to the nose hardpoints:
-    leftNosePoint.addSensor(sensorTriDist);
-    rightNosePoint.addSensor(sensorTriDist);
-
-    // Add the hardpoint to the ship:
-    hardpoints.add(leftNosePoint);
-    hardpoints.add(rightNosePoint);
-
-    // Add a Modulator to the vehicle:
-    ModulatorIdentity leftMod = new ModulatorIdentity();
-    ModulatorIdentity rightMod = new ModulatorIdentity();
-    modulators.add(leftMod);
-    modulators.add(rightMod);
-
-    // Wire the hardpoints to Modulators:
-    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
-    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
-    sensorWires.add(leftSensWire);
-    sensorWires.add(rightSensWire);
-
-    // Wire the modulator to a Control Signal:
-    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-    Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
-    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-    Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
-
-    controlWires.add(leftThrustWire);
-    controlWires.add(leftSteerWire);
-    controlWires.add(rightThrustWire);
-    controlWires.add(rightSteerWire);
-  }
-}
-
-/*
-  Modeled after Braitenberg's Vehicle 3B
-*/
-class BraitenbergVehicleThreeBRadius extends BraitenbergVehicle {
-
-  // Constructor
-  public BraitenbergVehicleThreeBRadius(GameState world) {
-    super(world);
-    this.lifetime = 0;
-    this.world = world;
-
-    // Hardcoded Hardpoints/Sensors/Wires:
-
-    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
-
-    // Hardpoint on the Vehicle's Nose:
-    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
-    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
-
-    // Add a sensor to the nose hardpoints:
-    leftNosePoint.addSensor(sensorRadiusDist);
-    rightNosePoint.addSensor(sensorRadiusDist);
-
-    // Add the hardpoint to the ship:
-    hardpoints.add(leftNosePoint);
-    hardpoints.add(rightNosePoint);
-
-    // Add a Modulator to the vehicle:
-    ModulatorIdentity leftMod = new ModulatorIdentity();
-    ModulatorIdentity rightMod = new ModulatorIdentity();
-    modulators.add(leftMod);
-    modulators.add(rightMod);
-
-    // Wire the hardpoints to Modulators:
-    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
-    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
-    sensorWires.add(leftSensWire);
-    sensorWires.add(rightSensWire);
-
-    // Wire the modulator to a Control Signal:
-    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
-    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
-
-    controlWires.add(leftThrustWire);
-    controlWires.add(leftSteerWire);
-    controlWires.add(rightThrustWire);
-    controlWires.add(rightSteerWire);
-  }
-}
-
-/*
-  Modeled after Braitenberg's Vehicle 3B
-*/
-class BraitenbergVehicleThreeBTriangle extends BraitenbergVehicle {
-
-  // Constructor
-  public BraitenbergVehicleThreeBTriangle(GameState world) {
-    super(world);
-    this.lifetime = 0;
-    this.world = world;
-
-    // Hardcoded Hardpoints/Sensors/Wires:
-
-    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
-
-    // Hardpoint on the Vehicle's Nose:
-    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI/6);
-    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
-
-    // Add a sensor to the nose hardpoints:
-    leftNosePoint.addSensor(sensorTriDist);
-    rightNosePoint.addSensor(sensorTriDist);
-
-    // Add the hardpoint to the ship:
-    hardpoints.add(leftNosePoint);
-    hardpoints.add(rightNosePoint);
-
-    // Add a Modulator to the vehicle:
-    ModulatorIdentity leftMod = new ModulatorIdentity();
-    ModulatorIdentity rightMod = new ModulatorIdentity();
-    modulators.add(leftMod);
-    modulators.add(rightMod);
-
-    // Wire the hardpoints to Modulators:
-    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
-    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
-    sensorWires.add(leftSensWire);
-    sensorWires.add(rightSensWire);
-
-    // Wire the modulator to a Control Signal:
-    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
-    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
-
-    controlWires.add(leftThrustWire);
-    controlWires.add(leftSteerWire);
-    controlWires.add(rightThrustWire);
-    controlWires.add(rightSteerWire);
-  }
-}
-
-
-/*
-  Modeled after Braitenberg's Vehicle 4A
-*/
-class BraitenbergVehicleFourARadius extends BraitenbergVehicle {
-
-  // Constructor
-  public BraitenbergVehicleFourARadius(GameState world) {
-    super(world);
-    this.lifetime = 0;
-    this.world = world;
-
-    // Hardcoded Hardpoints/Sensors/Wires:
-
-    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
-
-    // Hardpoint on the Vehicle's Nose:
-    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
-    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
-
-    // Add a sensor to the nose hardpoints:
-    leftNosePoint.addSensor(sensorRadiusDist);
-    rightNosePoint.addSensor(sensorRadiusDist);
-
-    // Add the hardpoint to the ship:
-    hardpoints.add(leftNosePoint);
-    hardpoints.add(rightNosePoint);
-
-    // Add a Modulator to the vehicle:
-    ModulatorParabolic leftMod = new ModulatorParabolic();
-    ModulatorParabolic rightMod = new ModulatorParabolic();
-    modulators.add(leftMod);
-    modulators.add(rightMod);
-
-    // Wire the hardpoints to Modulators:
-    Wire leftSensWire =   new Wire(0,0, false, 1.0f);
-    Wire rightSensWire =  new Wire(1,1, false, 1.0f);
-    sensorWires.add(leftSensWire);
-    sensorWires.add(rightSensWire);
-
-    // Wire the modulator to a Control Signal:
-    Wire leftThrustWire =   new Wire(0,2, false, 0.5f);
-    Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
-    Wire rightThrustWire =  new Wire(1,2, false, 0.5f);
-    Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
-
-    controlWires.add(leftThrustWire);
-    controlWires.add(leftSteerWire);
-    controlWires.add(rightThrustWire);
-    controlWires.add(rightSteerWire);
-  }
-}
-
-/*
   BraitenbergVehicleFactory
   Creates Braitenberg Vehicles from components:
 */
@@ -1299,11 +716,475 @@ class BRVFactory {
 
     // Supply the ModulatorPile:
     ModulatorPile.add(new ModulatorIdentity());
+    ModulatorPile.add(new ModulatorParabolic());
 
     // Supply the chassis pile:
     chassisPile.add(makeStarfishChassis());
   }
 
+  BraitenbergVehicle makeVehicleOneRay () {
+	    BraitenbergVehicle vehicleOne = new BraitenbergVehicle(world);
+	    
+	    // Hardpoint on the Vehicle's Nose:
+	    Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
+
+	    // Add a sensor to the nose hardpoint:
+	    SensorRayLongDist sensorRayDist = new SensorRayLongDist();
+	    nosePoint.addSensor(sensorRayDist);
+
+	    // Add the hardpoint to the ship:
+	    vehicleOne.hardpoints.add(nosePoint);
+
+	    // Add a Modulator to the vehicle:
+	    ModulatorIdentity mod = new ModulatorIdentity();
+	    vehicleOne.modulators.add(mod);
+
+	    // Wire the hardpoint to the Modulator:
+	    Wire sensWire = new Wire(0,0, false, 1.0f);
+	    vehicleOne.sensorWires.add(sensWire);
+
+	    // Wire the modulator to a Control Signal:
+	    Wire contWire = new Wire(0,2, false, 1.0f);
+	    vehicleOne.controlWires.add(contWire);
+	    
+	    return vehicleOne;
+  }
+  
+  BraitenbergVehicle makeVehicleOneRadius() {
+	    BraitenbergVehicle vehicleOne = new BraitenbergVehicle(world);
+	    
+	    // Hardpoint on the Vehicle's Nose:
+	    Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
+
+	    // Add a sensor to the nose hardpoint:
+	    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+	    nosePoint.addSensor(sensorRadiusDist);
+
+	    // Add the hardpoint to the ship:
+	    vehicleOne.hardpoints.add(nosePoint);
+
+	    // Add a Modulator to the vehicle:
+	    ModulatorIdentity mod = new ModulatorIdentity();
+	    vehicleOne.modulators.add(mod);
+
+	    // Wire the hardpoint to the Modulator:
+	    Wire sensWire = new Wire(0,0, false, 1.0f);
+	    vehicleOne.sensorWires.add(sensWire);
+
+	    // Wire the modulator to a Control Signal:
+	    Wire contWire = new Wire(0,2, false, 1.0f);
+	    vehicleOne.controlWires.add(contWire);
+	    
+	    return vehicleOne;
+  }
+  
+  BraitenbergVehicle makeVehicleOneTriangle() {
+	    BraitenbergVehicle vehicleOne = new BraitenbergVehicle(world);
+	    
+	    // Hardpoint on the Vehicle's Nose:
+	    Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
+
+	    // Add a sensor to the nose hardpoint:
+	    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
+	    nosePoint.addSensor(sensorTriDist);
+
+	    // Add the hardpoint to the ship:
+	    vehicleOne.hardpoints.add(nosePoint);
+
+	    // Add a Modulator to the vehicle:
+	    ModulatorIdentity mod = new ModulatorIdentity();
+	    vehicleOne.modulators.add(mod);
+
+	    // Wire the hardpoint to the Modulator:
+	    Wire sensWire = new Wire(0,0, false, 1.0f);
+	    vehicleOne.sensorWires.add(sensWire);
+
+	    // Wire the modulator to a Control Signal:
+	    Wire contWire = new Wire(0,2, false, 1.0f);
+	    vehicleOne.controlWires.add(contWire);
+	    
+	    return vehicleOne;
+  }
+  
+  BraitenbergVehicle makeVehicleTwoARadius () {
+	    BraitenbergVehicle vehicleTwo = new BraitenbergVehicle(world);
+	    
+	    // Hardpoint on the Vehicle's Nose:
+	    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
+	    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
+
+	    // Add a sensor to the nose hardpoints:
+	    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+	    leftNosePoint.addSensor(sensorRadiusDist);
+	    rightNosePoint.addSensor(sensorRadiusDist);
+
+	    // Add the hardpoint to the ship:
+	    vehicleTwo.hardpoints.add(leftNosePoint);
+	    vehicleTwo.hardpoints.add(rightNosePoint);
+
+	    // Add a Modulator to the vehicle:
+	    ModulatorIdentity leftMod = new ModulatorIdentity();
+	    ModulatorIdentity rightMod = new ModulatorIdentity();
+	    vehicleTwo.modulators.add(leftMod);
+	    vehicleTwo.modulators.add(rightMod);
+
+	    // Wire the hardpoints to Modulators:
+	    Wire leftSensWire =   new Wire(0,0, false, 1.0f);
+	    Wire rightSensWire =  new Wire(1,1, false, 1.0f);
+	    vehicleTwo.sensorWires.add(leftSensWire);
+	    vehicleTwo.sensorWires.add(rightSensWire);
+
+	    // Wire the modulator to a Control Signal:
+	    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+	    Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
+	    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+	    Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
+
+	    vehicleTwo.controlWires.add(leftThrustWire);
+	    vehicleTwo.controlWires.add(leftSteerWire);
+	    vehicleTwo.controlWires.add(rightThrustWire);
+	    vehicleTwo.controlWires.add(rightSteerWire);
+	    
+	    return vehicleTwo;
+  }
+  
+  BraitenbergVehicle makeVehicleTwoATriangle () {
+	    BraitenbergVehicle vehicleTwo = new BraitenbergVehicle(world);
+
+	    // Hardpoint on the Vehicle's Nose:
+	    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI/6);
+	    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
+
+	    // Add a sensor to the nose hardpoints:
+	    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
+	    leftNosePoint.addSensor(sensorTriDist);
+	    rightNosePoint.addSensor(sensorTriDist);
+
+	    // Add the hardpoint to the ship:
+	    vehicleTwo.hardpoints.add(leftNosePoint);
+	    vehicleTwo.hardpoints.add(rightNosePoint);
+
+	    // Add a Modulator to the vehicle:
+	    ModulatorIdentity leftMod = new ModulatorIdentity();
+	    ModulatorIdentity rightMod = new ModulatorIdentity();
+	    vehicleTwo.modulators.add(leftMod);
+	    vehicleTwo.modulators.add(rightMod);
+
+	    // Wire the hardpoints to Modulators:
+	    Wire leftSensWire =   new Wire(0,0, false, 1.0f);
+	    Wire rightSensWire =  new Wire(1,1, false, 1.0f);
+	    vehicleTwo.sensorWires.add(leftSensWire);
+	    vehicleTwo.sensorWires.add(rightSensWire);
+
+	    // Wire the modulator to a Control Signal:
+	    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+	    Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
+	    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+	    Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
+
+	    vehicleTwo.controlWires.add(leftThrustWire);
+	    vehicleTwo.controlWires.add(leftSteerWire);
+	    vehicleTwo.controlWires.add(rightThrustWire);
+	    vehicleTwo.controlWires.add(rightSteerWire);
+	    
+	    return vehicleTwo;
+  }
+  
+  BraitenbergVehicle makeVehicleTwoBRadius () {
+	    BraitenbergVehicle vehicleTwo = new BraitenbergVehicle(world);
+
+	    // Hardpoint on the Vehicle's Nose:
+	    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+	    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
+	    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
+
+	    // Add a sensor to the nose hardpoints:
+	    leftNosePoint.addSensor(sensorRadiusDist);
+	    rightNosePoint.addSensor(sensorRadiusDist);
+
+	    // Add the hardpoint to the ship:
+	    vehicleTwo.hardpoints.add(leftNosePoint);
+	    vehicleTwo.hardpoints.add(rightNosePoint);
+
+	    // Add a Modulator to the vehicle:
+	    ModulatorIdentity leftMod = new ModulatorIdentity();
+	    ModulatorIdentity rightMod = new ModulatorIdentity();
+	    vehicleTwo.modulators.add(leftMod);
+	    vehicleTwo.modulators.add(rightMod);
+
+	    // Wire the hardpoints to Modulators:
+	    Wire leftSensWire = new   Wire(0,0, false, 1.0f);
+	    Wire rightSensWire = new  Wire(1,1, false, 1.0f);
+	    vehicleTwo.sensorWires.add(leftSensWire);
+	    vehicleTwo.sensorWires.add(rightSensWire);
+
+	    // Wire the modulator to a Control Signal:
+	    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+	    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
+	    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+	    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
+
+	    vehicleTwo.controlWires.add(leftThrustWire);
+	    vehicleTwo.controlWires.add(leftSteerWire);
+	    vehicleTwo.controlWires.add(rightThrustWire);
+	    vehicleTwo.controlWires.add(rightSteerWire);
+	    
+	    return vehicleTwo;
+  }
+  
+  BraitenbergVehicle makeVehicleTwoBTriangle () {
+	    BraitenbergVehicle vehicleTwo = new BraitenbergVehicle(world);
+
+	    // Hardpoint on the Vehicle's Nose:
+	    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI/6);
+	    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
+
+	    // Add a sensor to the nose hardpoints:
+	    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
+	    leftNosePoint.addSensor(sensorTriDist);
+	    rightNosePoint.addSensor(sensorTriDist);
+
+	    // Add the hardpoint to the ship:
+	    vehicleTwo.hardpoints.add(leftNosePoint);
+	    vehicleTwo.hardpoints.add(rightNosePoint);
+
+	    // Add a Modulator to the vehicle:
+	    ModulatorIdentity leftMod = new ModulatorIdentity();
+	    ModulatorIdentity rightMod = new ModulatorIdentity();
+	    vehicleTwo.modulators.add(leftMod);
+	    vehicleTwo.modulators.add(rightMod);
+
+	    // Wire the hardpoints to Modulators:
+	    Wire leftSensWire = new   Wire(0,0, false, 1.0f);
+	    Wire rightSensWire = new  Wire(1,1, false, 1.0f);
+	    vehicleTwo.sensorWires.add(leftSensWire);
+	    vehicleTwo.sensorWires.add(rightSensWire);
+
+	    // Wire the modulator to a Control Signal:
+	    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+	    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
+	    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+	    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
+
+	    vehicleTwo.controlWires.add(leftThrustWire);
+	    vehicleTwo.controlWires.add(leftSteerWire);
+	    vehicleTwo.controlWires.add(rightThrustWire);
+	    vehicleTwo.controlWires.add(rightSteerWire);
+	    
+	    return vehicleTwo;
+  }
+  
+  BraitenbergVehicle makeVehicleThreeARadius () {
+	    BraitenbergVehicle vehicleThree = new BraitenbergVehicle(world);
+	    
+	    // Hardpoint on the Vehicle's Nose:
+	    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
+	    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
+
+	    // Add a sensor to the nose hardpoints:
+	    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+	    leftNosePoint.addSensor(sensorRadiusDist);
+	    rightNosePoint.addSensor(sensorRadiusDist);
+
+	    // Add the hardpoint to the ship:
+	    vehicleThree.hardpoints.add(leftNosePoint);
+	    vehicleThree.hardpoints.add(rightNosePoint);
+
+	    // Add a Modulator to the vehicle:
+	    ModulatorIdentity leftMod = new ModulatorIdentity();
+	    ModulatorIdentity rightMod = new ModulatorIdentity();
+	    vehicleThree.modulators.add(leftMod);
+	    vehicleThree.modulators.add(rightMod);
+
+	    // Wire the hardpoints to Modulators:
+	    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
+	    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
+	    vehicleThree.sensorWires.add(leftSensWire);
+	    vehicleThree.sensorWires.add(rightSensWire);
+
+	    // Wire the modulator to a Control Signal:
+	    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+	    Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
+	    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+	    Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
+
+	    vehicleThree.controlWires.add(leftThrustWire);
+	    vehicleThree.controlWires.add(leftSteerWire);
+	    vehicleThree.controlWires.add(rightThrustWire);
+	    vehicleThree.controlWires.add(rightSteerWire);
+	    
+	    return vehicleThree;
+  }
+  
+  BraitenbergVehicle makeVehicleThreeBRadius () {
+	    BraitenbergVehicle vehicleThree = new BraitenbergVehicle(world);
+
+	    // Hardpoint on the Vehicle's Nose:
+	    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
+	    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
+
+	    // Add a sensor to the nose hardpoints:
+	    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+	    leftNosePoint.addSensor(sensorRadiusDist);
+	    rightNosePoint.addSensor(sensorRadiusDist);
+
+	    // Add the hardpoint to the ship:
+	    vehicleThree.hardpoints.add(leftNosePoint);
+	    vehicleThree.hardpoints.add(rightNosePoint);
+
+	    // Add a Modulator to the vehicle:
+	    ModulatorIdentity leftMod = new ModulatorIdentity();
+	    ModulatorIdentity rightMod = new ModulatorIdentity();
+	    vehicleThree.modulators.add(leftMod);
+	    vehicleThree.modulators.add(rightMod);
+
+	    // Wire the hardpoints to Modulators:
+	    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
+	    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
+	    vehicleThree.sensorWires.add(leftSensWire);
+	    vehicleThree.sensorWires.add(rightSensWire);
+
+	    // Wire the modulator to a Control Signal:
+	    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+	    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
+	    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+	    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
+
+	    vehicleThree.controlWires.add(leftThrustWire);
+	    vehicleThree.controlWires.add(leftSteerWire);
+	    vehicleThree.controlWires.add(rightThrustWire);
+	    vehicleThree.controlWires.add(rightSteerWire);
+	    
+	    return vehicleThree;
+  }
+  
+  BraitenbergVehicle makeVehicleThreeATriangle () {
+	    BraitenbergVehicle vehicleThree = new BraitenbergVehicle(world);
+
+	    // Hardpoint on the Vehicle's Nose:
+	    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI/6);
+	    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
+
+	    // Add a sensor to the nose hardpoints:
+	    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
+	    leftNosePoint.addSensor(sensorTriDist);
+	    rightNosePoint.addSensor(sensorTriDist);
+
+	    // Add the hardpoint to the ship:
+	    vehicleThree.hardpoints.add(leftNosePoint);
+	    vehicleThree.hardpoints.add(rightNosePoint);
+
+	    // Add a Modulator to the vehicle:
+	    ModulatorIdentity leftMod = new ModulatorIdentity();
+	    ModulatorIdentity rightMod = new ModulatorIdentity();
+	    vehicleThree.modulators.add(leftMod);
+	    vehicleThree.modulators.add(rightMod);
+
+	    // Wire the hardpoints to Modulators:
+	    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
+	    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
+	    vehicleThree.sensorWires.add(leftSensWire);
+	    vehicleThree.sensorWires.add(rightSensWire);
+
+	    // Wire the modulator to a Control Signal:
+	    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+	    Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
+	    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+	    Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
+
+	    vehicleThree.controlWires.add(leftThrustWire);
+	    vehicleThree.controlWires.add(leftSteerWire);
+	    vehicleThree.controlWires.add(rightThrustWire);
+	    vehicleThree.controlWires.add(rightSteerWire);
+	    
+	    return vehicleThree;
+}
+  
+  BraitenbergVehicle makeVehicleThreeBTriangle () {
+	    BraitenbergVehicle vehicleThree = new BraitenbergVehicle(world);
+
+	    // Hardpoint on the Vehicle's Nose:
+	    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI/6);
+	    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
+
+	    // Add a sensor to the nose hardpoints:
+	    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
+	    leftNosePoint.addSensor(sensorTriDist);
+	    rightNosePoint.addSensor(sensorTriDist);
+
+	    // Add the hardpoint to the ship:
+	    vehicleThree.hardpoints.add(leftNosePoint);
+	    vehicleThree.hardpoints.add(rightNosePoint);
+
+	    // Add a Modulator to the vehicle:
+	    ModulatorIdentity leftMod = new ModulatorIdentity();
+	    ModulatorIdentity rightMod = new ModulatorIdentity();
+	    vehicleThree.modulators.add(leftMod);
+	    vehicleThree.modulators.add(rightMod);
+
+	    // Wire the hardpoints to Modulators:
+	    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
+	    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
+	    vehicleThree.sensorWires.add(leftSensWire);
+	    vehicleThree.sensorWires.add(rightSensWire);
+
+	    // Wire the modulator to a Control Signal:
+	    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+	    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
+	    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+	    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
+
+	    vehicleThree.controlWires.add(leftThrustWire);
+	    vehicleThree.controlWires.add(leftSteerWire);
+	    vehicleThree.controlWires.add(rightThrustWire);
+	    vehicleThree.controlWires.add(rightSteerWire);
+	    
+	    return vehicleThree;
+}
+  
+  BraitenbergVehicle makeVehicleFourATriangle () {
+	    BraitenbergVehicle vehicleFour = new BraitenbergVehicle(world);
+
+	    // Hardpoint on the Vehicle's Nose:
+	    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI/6);
+	    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
+
+	    // Add a sensor to the nose hardpoints:
+	    SensorTriMedDist sensorTriDist = new SensorTriMedDist();
+	    leftNosePoint.addSensor(sensorTriDist);
+	    rightNosePoint.addSensor(sensorTriDist);
+
+	    // Add the hardpoint to the ship:
+	    vehicleFour.hardpoints.add(leftNosePoint);
+	    vehicleFour.hardpoints.add(rightNosePoint);
+
+	    // Add a Modulator to the vehicle:
+	    ModulatorParabolic leftMod = new ModulatorParabolic();
+	    ModulatorParabolic rightMod = new ModulatorParabolic();
+	    vehicleFour.modulators.add(leftMod);
+	    vehicleFour.modulators.add(rightMod);
+
+	    // Wire the hardpoints to Modulators:
+	    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
+	    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
+	    vehicleFour.sensorWires.add(leftSensWire);
+	    vehicleFour.sensorWires.add(rightSensWire);
+
+	    // Wire the modulator to a Control Signal:
+	    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+	    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
+	    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+	    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
+
+	    vehicleFour.controlWires.add(leftThrustWire);
+	    vehicleFour.controlWires.add(leftSteerWire);
+	    vehicleFour.controlWires.add(rightThrustWire);
+	    vehicleFour.controlWires.add(rightSteerWire);
+	    
+	    return vehicleFour;
+  }
+  
+  
   // TODO: Improve comments here...
   // TODO: Include all chassis??
   // Make starfish...
@@ -1878,6 +1759,7 @@ public static Frame frame = null;
 
   static final double CONTROL_SCALING = 2.0;
 
+  BRVFactory factory;
   BraitenbergVehicle pilot;
 
   // Debug information
@@ -1907,7 +1789,7 @@ public static Frame frame = null;
     Math.round(1000 / DELAY);
 
   static final int MAX_SHOTS =  12;          // Maximum number of sprites
-  static final int MAX_ROCKS =  30;          // for photons, asteroids and
+  static final int MAX_ROCKS =  6;          // for photons, asteroids and
   static final int MAX_SCRAP = 40;          // explosions.
 
   static final int SCRAP_COUNT  = 2 * FPS;  // Timer counter starting values
@@ -1923,7 +1805,7 @@ public static Frame frame = null;
   static final double MAX_ROCK_SPEED = 240.0 / FPS;
   static final double MAX_ROCK_SPIN  = Math.PI / FPS;
 
-  static final int MAX_SHIPS = 10;           // Starting number of ships for
+  static final int MAX_SHIPS = 5;           // Starting number of ships for
                                             // each game.
   static final int UFO_PASSES = 3;          // Number of passes for flying
                                             // saucer per appearance.
@@ -2152,8 +2034,8 @@ public static Frame frame = null;
                                   asteroids,
                                   missle,
                                   ufo);
-
-    pilot = new BraitenbergVehicleFourARadius(currentState);
+    factory = new BRVFactory(currentState);
+    pilot = factory.makeVehicleOneRadius();
 
     highScore = 0;
     detail = true;
@@ -2214,17 +2096,13 @@ public static Frame frame = null;
 		    startTime += DELAY;
 		    Thread.sleep(Math.max(0, startTime - System.currentTimeMillis()));
 		  }
-		  catch (InterruptedException e) {
-		    break;
-		  }
-    
-		if (!playing) {
-			//pilot = new BraitenbergVehicleOneRay(currentState)
-			initGame();
+		catch (InterruptedException e) {
+			break;
 		}
+
       debugInfo.clear();
 
-      if (!paused) {
+      if (!paused && playing) {
 
         // Move and process all sprites.
         updateControlSignals(pilot);
@@ -2280,9 +2158,6 @@ public static Frame frame = null;
               debugInfo.add(String.format("Asteroid %d rot: %,3.2f loc: %s", h, t, l));
             }
           }
-          
-          //debugInfo.add(String.format("Active Colliders: %s", 
-          //  currentState.getActiveColliders().size()));
 
           pilot.update();
           debugInfo.add(String.format("Lifetime: %,10d", pilot.getLifetime()));
