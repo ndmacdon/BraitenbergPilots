@@ -57,6 +57,16 @@ import java.util.List;
 import java.applet.Applet;
 import java.io.*;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateSequence;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineSegment;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.operation.distance.DistanceOp;
+
 
 /*
   Provides some standard Vector Operations such as dot product
@@ -151,17 +161,28 @@ interface Receiver  { void input(double input); }
   Defines the interface to a sensor device which returns a double when queried:
 */
 interface Sensor extends Source{
-  double SHORT_LENGTH = 20.0;
+  double SHORT_LENGTH = 200.0;
   double MEDIUM_LENGTH = 300.0;
   double LONG_LENGTH = 2000.0;
   double SLOW_SPEED = 5.0;
-  // Activate the sensor at location <l> with orientation <r> in <world>:
-  void sense(Vector2D l, double r, GameState world);
+  
+  // Sense some aspect of the GameState <world> given the sensor is at:
+  // <loc> with a heading of <rot>.
+  void sense(Point loc, double rot, GameState world);
 }
 
+
+/*
+   A sensor which analyzes the GameState and returns a Double <output> which is
+   some measure of the environment. The nature of <output> depends on the implementation
+   of the particular sensor.
+ */
 class DoubleSensor implements Sensor {
   double output = 0.0;
-  public void sense(Vector2D l, double r, GameState world) {}
+  
+  // Sense some aspect of the GameState <world> given the sensor is at:
+  // <loc> with a heading of <rot>.
+  public void sense(Point loc, double rot, GameState world) {}
   public double getOutput() { return output; }
 }
 
@@ -176,11 +197,11 @@ class DoubleSensor implements Sensor {
     ~values close to zero when objects are very far
     ~zero when all objects are outside of <detectionRadius>
 */
-class SensorRadiusMedDist extends DoubleSensor {
-  public void sense(Vector2D loc, double orientation, GameState world) {
-    double detectionRadius = MEDIUM_LENGTH; // Radius of the detection circle
+class SensorRadiusShortDist extends DoubleSensor {
+  public void sense(Point loc, double orientation, GameState world) {
+    double detectionRadius = SHORT_LENGTH; // Radius of the detection circle
     double result = 0.0f;
-
+    
     // List of AsteroidsSprites that intersect with a circle described by
     // <loc, distanceToNearest>
     List<AsteroidsSprite> intersected = 
@@ -191,7 +212,7 @@ class SensorRadiusMedDist extends DoubleSensor {
 
     // Calculate result if something was detected:
     if (nearest != null) {
-      double distanceToNearest = Vector2D.distance(loc, nearest.getLocation());
+      double distanceToNearest = loc.distance(nearest.sprite); 
       double fraction = distanceToNearest / detectionRadius;
       result = (fraction > 1.0) ? 0.0 : 1.0-fraction;
     }
@@ -212,30 +233,41 @@ class SensorRadiusMedDist extends DoubleSensor {
     ~zero when all objects are outside of <detectionRadius>
 */
 class SensorTriMedDist extends DoubleSensor {
-  public void sense(Vector2D loc, double orientation, GameState world) {
-    double sideLength = MEDIUM_LENGTH; // Side length of the triangle
+  public void sense(Point loc, double orientation, GameState world) {
+    double sideLength = MEDIUM_LENGTH;// Side length of the triangle
+    double spread = Math.PI/6;        // Angle of the corner: side-<loc>-side.
     double result = 0.0f;
 
-    Vector2D a = new Vector2D(loc);
-    Vector2D lp = new Vector2D(
-      loc.getX() -sideLength*Math.sin(orientation + (Math.PI/6)),
-      loc.getY() -sideLength*Math.cos(orientation + (Math.PI/6)) );
-
-    Vector2D rp = new Vector2D(
-      loc.getX() -sideLength*Math.sin(orientation - (Math.PI/6)),
-      loc.getY() -sideLength*Math.cos(orientation - (Math.PI/6)) );
-
+    // Generate the points of our detection triangle:
+    Coordinate[] coords = new Coordinate[4];
+    
+    coords[0] = new Coordinate(loc.getX(), loc.getY());
+    
+    coords[1] = new Coordinate(
+        loc.getX() - Math.sin(orientation + (spread/2)) * sideLength,
+        loc.getY() - Math.cos(orientation + (spread/2)) * sideLength);
+    
+    coords[2] = new Coordinate(
+        loc.getX() - Math.sin(orientation - (spread/2)) * sideLength,
+        loc.getY() - Math.cos(orientation - (spread/2)) * sideLength);
+    
+    // Close the polygon:
+    coords[3] = new Coordinate(coords[0]);
+    
+    Polygon detectionTri = AsteroidsSprite.gFactory.createPolygon(coords);
+    
     // List of AsteroidsSprites that intersect with a circle described by
     // <loc, distanceToNearest>
     List<AsteroidsSprite> intersected = 
-      world.intersectTri(a, lp, rp);
+      world.intersectTri(detectionTri);
 
-    // The nearest AsteroidsSprite:
+    // Find the nearest AsteroidsSprite:
     AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
 
-    // Calculate result if something was detected:
+    // Calculate result only if something was detected:
     if (nearest != null) {
-      double distanceToNearest = Vector2D.distance(loc, nearest.getLocation());
+      // Normalize the distance to <nearest>:
+      double distanceToNearest = loc.distance(nearest.sprite);
       double fraction = distanceToNearest / sideLength;
       result = (fraction > 1.0) ? 0.0 : 1.0-fraction;
     }
@@ -256,21 +288,32 @@ class SensorTriMedDist extends DoubleSensor {
     ~zero when all objects are outside of detection beam
 */
 class SensorRayLongDist extends DoubleSensor {
-  public void sense(Vector2D loc, double orientation, GameState world) {
+  public void sense(Point loc, double orientation, GameState world) {
     double lineLength = LONG_LENGTH; // Length of the detection-beam.
     double result = 0.0f;
 
-    // List of colliders that intersect with a line described by
-    // <lineLength, loc, orientation>
-    List<AsteroidsSprite> intersected = 
-      world.intersectLine(lineLength, loc, orientation);
+    // Generate the points of our detection line:
+    Coordinate[] coords = new Coordinate[2];
+    // Start point:
+    coords[0] = new Coordinate(loc.getX(), loc.getY());
+    
+    // End point:
+    coords[1] = new Coordinate(
+        loc.getX() -Math.sin(orientation)*lineLength, 
+        loc.getY() -Math.cos(orientation)*lineLength);
+    
+    LineString line = AsteroidsSprite.gFactory.createLineString(coords);
+    
+    // List of colliders that intersect with <line>:
+    List<AsteroidsSprite> intersected = world.intersectLine(line);
 
     // The nearest AsteroidsSprite:
     AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
 
     // Calculate result if something was detected:
     if (nearest != null) {
-      double distanceToNearest = Vector2D.distance(loc, nearest.getLocation());
+      // Normalize the distance to <nearest>:
+      double distanceToNearest = loc.distance(nearest.sprite);
       double fraction = distanceToNearest / lineLength;
       result = (fraction > 1.0) ? 0.0 : 1.0-fraction;
     }
@@ -291,21 +334,34 @@ class SensorRayLongDist extends DoubleSensor {
     ~zero when all objects are outside of detection beam
 */
 class SensorRayLongSpeed extends DoubleSensor {
-  public void sense(Vector2D loc, double orientation, GameState world) {
+  public void sense(Point loc, double orientation, GameState world) {
     double lineLength = LONG_LENGTH; // Length of the detection-beam.
     double baseSpeed = SLOW_SPEED;
-    double result = 0.0;
+    double result = 0.0f;
 
-    // List of colliders that intersect with a line described by
-    // <lineLength, loc, orientation>
-    List<AsteroidsSprite> intersected = 
-      world.intersectLine(lineLength, loc, orientation);
+    // Generate the points of our detection line:
+    Coordinate[] coords = new Coordinate[2];
+    // Start point:
+    coords[0] = new Coordinate(
+        loc.getX() + (AsteroidsSprite.width / 2), 
+        loc.getY() + (AsteroidsSprite.height / 2));
+    
+    // End point:
+    coords[1] = new Coordinate(
+        loc.getX() -Math.sin(orientation)*lineLength + (AsteroidsSprite.width / 2), 
+        loc.getY() -Math.cos(orientation)*lineLength + (AsteroidsSprite.height / 2));
+    
+    LineString line = AsteroidsSprite.gFactory.createLineString(coords);
+    
+    // List of colliders that intersect with <line>:
+    List<AsteroidsSprite> intersected = world.intersectLine(line);
 
     // The nearest AsteroidsSprite:
     AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
 
     // Calculate result if something was detected:
     if (nearest != null) {
+      // Normalize the speed of <nearest>:
       double speed = nearest.getSpeed();
       double fraction = speed / baseSpeed;
       result = (fraction > 1.0) ? 0.0 : 1.0-fraction;
@@ -442,7 +498,7 @@ class ModulatorParabolic extends ModulatorIdentity {
 
 /*
   Registers a connection between an output device and an input device:
-  If a wire is an inhibitor it inverts any signal passing through.
+  If a wire is an inhibiter it inverts any signal passing through.
 */
 class Wire {
   int source;
@@ -473,15 +529,15 @@ class Wire {
   Sensors added to Hardpoints may be queried.
 */
 class Hardpoint implements Source{
-  Vector2D locationOffset;  // Hardpoint location relative to vehicle's origin.
-  double rotationOffset;    // Hardpoint rotation relative to vehicle's orientation.
+  Vector2D locationOffset;   // Hardpoint location relative to vehicle's origin.
+  double rotationOffset;  // Hardpoint rotation relative to vehicle's orientation.
   Sensor sensor;      // Sensor attached to this Hardpoint.
   double output = 0.0;
 
   // Constructor:
-  public Hardpoint(Vector2D l, double r) {
-    locationOffset = l;
-    rotationOffset = r;
+  public Hardpoint(Vector2D loc, double rot) {
+    locationOffset = loc;
+    rotationOffset = rot;
   }
 
   // Copy Constructor:
@@ -498,13 +554,13 @@ class Hardpoint implements Source{
   }
 
   // Activate the 'attached' sensor and return the result:
-  void sense(GameState world, Vector2D location, double rotation) {
+  void sense(GameState world, Point loc, double orientation) {
     // Get the location of this hardpoint in world-space:
-    Vector2D worldLocation = getWorldLocation(location, rotation);
+    Point worldLocation = getWorldLocation(loc, orientation);
     double result = 0.0;
 
     if (sensor != null) {
-      sensor.sense(worldLocation, rotation + rotationOffset, world);
+      sensor.sense(worldLocation, orientation + rotationOffset, world);
       result = sensor.getOutput();
     }
 
@@ -516,20 +572,25 @@ class Hardpoint implements Source{
   }
 
   // Get the offset of this hardpoint in world-space:
-  Vector2D getWorldLocation(Vector2D location, double rotation) {
-    Vector2D xComponent = new Vector2D(
+  Point getWorldLocation(Point loc, double rotation) {
+    // Find the xComponent of the world-translation:
+    Coordinate xComponent = new Coordinate(
       Math.cos(rotation) * locationOffset.getX(),
       -Math.sin(rotation) * locationOffset.getX()
       );
 
-    Vector2D yComponent = new Vector2D(
+    // Find the yComponent of the world-translation:
+    Coordinate yComponent = new Coordinate(
       Math.sin(rotation) * locationOffset.getY(),
       Math.cos(rotation) * locationOffset.getY()
       );
 
-    Vector2D translatedOffset = Vector2D.sum(xComponent, yComponent);
-
-    return Vector2D.sum(location, translatedOffset);
+    // Add the original <loc> and the translation components:
+    Coordinate translatedOffset = new Coordinate(
+        xComponent.x + yComponent.x + loc.getX(),
+        xComponent.y + yComponent.y + loc.getY());
+    
+    return AsteroidsSprite.gFactory.createPoint(translatedOffset);
   }
 }
 
@@ -541,7 +602,6 @@ class BraitenbergVehicle {
   long lifetime;      // Number of updates this agent has survived.
   GameState world = null; // Gamestate representing this agent's environment.
 
-  // TODO: Consider replacing controlsignals with equality Modulators?
   // Control signals generated by the vehicle
   double[] controlSignals;
 
@@ -710,7 +770,7 @@ class BRVFactory {
     this.world = world;
 
     // Supply the sensor pile:
-    sensorPile.add(new SensorRadiusMedDist());
+    sensorPile.add(new SensorRadiusShortDist());
     sensorPile.add(new SensorRayLongDist());
     sensorPile.add(new SensorTriMedDist());
 
@@ -757,7 +817,7 @@ class BRVFactory {
 	    Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
 
 	    // Add a sensor to the nose hardpoint:
-	    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+	    SensorRadiusShortDist sensorRadiusDist = new SensorRadiusShortDist();
 	    nosePoint.addSensor(sensorRadiusDist);
 
 	    // Add the hardpoint to the ship:
@@ -800,7 +860,7 @@ class BRVFactory {
 	    vehicleOne.sensorWires.add(sensWire);
 
 	    // Wire the modulator to a Control Signal:
-	    Wire contWire = new Wire(0,2, false, 1.0f);
+	    Wire contWire = new Wire(0,1, false, 1.0f);
 	    vehicleOne.controlWires.add(contWire);
 	    
 	    return vehicleOne;
@@ -814,7 +874,7 @@ class BRVFactory {
 	    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
 
 	    // Add a sensor to the nose hardpoints:
-	    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+	    SensorRadiusShortDist sensorRadiusDist = new SensorRadiusShortDist();
 	    leftNosePoint.addSensor(sensorRadiusDist);
 	    rightNosePoint.addSensor(sensorRadiusDist);
 
@@ -894,7 +954,7 @@ class BRVFactory {
 	    BraitenbergVehicle vehicleTwo = new BraitenbergVehicle(world);
 
 	    // Hardpoint on the Vehicle's Nose:
-	    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+	    SensorRadiusShortDist sensorRadiusDist = new SensorRadiusShortDist();
 	    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
 	    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
 
@@ -982,7 +1042,7 @@ class BRVFactory {
 	    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
 
 	    // Add a sensor to the nose hardpoints:
-	    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+	    SensorRadiusShortDist sensorRadiusDist = new SensorRadiusShortDist();
 	    leftNosePoint.addSensor(sensorRadiusDist);
 	    rightNosePoint.addSensor(sensorRadiusDist);
 
@@ -1024,7 +1084,7 @@ class BRVFactory {
 	    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
 
 	    // Add a sensor to the nose hardpoints:
-	    SensorRadiusMedDist sensorRadiusDist = new SensorRadiusMedDist();
+	    SensorRadiusShortDist sensorRadiusDist = new SensorRadiusShortDist();
 	    leftNosePoint.addSensor(sensorRadiusDist);
 	    rightNosePoint.addSensor(sensorRadiusDist);
 
@@ -1186,7 +1246,6 @@ class BRVFactory {
   
   
   // TODO: Improve comments here...
-  // TODO: Include all chassis??
   // Make starfish...
   List<BraitenbergVehicle> makeStarfish() {
     List<BraitenbergVehicle> vehicles = equipSensors(chassisPile.get(0));
@@ -1366,6 +1425,7 @@ class BRVFactory {
   Provides a structured interface for reading the game's state.
 */
 class GameState {
+	GeometryFactory gFactory = new GeometryFactory();
   AsteroidsSprite ship = null;
   AsteroidsSprite ufo = null;
   AsteroidsSprite missle = null;
@@ -1412,23 +1472,18 @@ class GameState {
 
   // Return the AsteroidsSprites which intersect a circle defined by 
   // <loc, radius>:
-  public List<AsteroidsSprite> intersectRadius(double radius, Vector2D loc) {
+  public List<AsteroidsSprite> intersectRadius(double radius, Point loc) {
     // List of the colliders we inspect:
     List<AsteroidsSprite> activeColliders = this.getActiveColliders();
 
-    // List of colliders inside <loc, radius>:
+    // List of colliders within <loc, radius>:
     List<AsteroidsSprite> intersected = new ArrayList<AsteroidsSprite>();
 
-    // Check for intersection between <line> and every active-collider:
+    // Check for intersection between <loc, radius> and every active-collider:
     for (AsteroidsSprite cur : activeColliders) {
-        double curDistance = Vector2D.distance( loc,
-                                                new Vector2D(cur.x, cur.y) );
 
-        // Adding <cur>'s radius ensures that if any edge of <cur> could be
-        // within our intersection radius, we will detect <cur>.
-        // To increase intersection fidelity, add a check on the distance to
-        // each point in <cur> against <radius>.
-        if (curDistance <= radius+cur.getRadius()) {
+        // If distance between <cur> and <loc> is < radius:
+        if (loc.distance(cur.sprite) <= radius) {
           intersected.add(cur);
         }
     }
@@ -1436,34 +1491,20 @@ class GameState {
     return intersected;
   }
 
-  // Return the AsteroidsSprites which intersect a line defined by 
-  // <loc, length, orientation>:
-  public List<AsteroidsSprite> intersectLine(double length, Vector2D loc, 
-    double orientation) {
+  // Return the AsteroidsSprites which intersect a line defined by <line>:
+  public List<AsteroidsSprite> intersectLine(LineString line) {
     // List of the colliders we inspect:
     List<AsteroidsSprite> activeColliders = this.getActiveColliders();
 
     // List of colliders intersected by <line>:
     List<AsteroidsSprite> intersected = new ArrayList<AsteroidsSprite>();
 
-    // Start and end points of intersection <line>:
-    Point2D.Double start = new Point2D.Double(
-      loc.getX() + (AsteroidsSprite.width / 2),
-      loc.getY() + (AsteroidsSprite.height / 2));
-
-    Point2D.Double end = new Point2D.Double(
-      loc.getX() -Math.sin(orientation)*length + (AsteroidsSprite.width / 2),
-      loc.getY() -Math.cos(orientation)*length + (AsteroidsSprite.height / 2));
-
-    // <line> we are checking for intersection with colliders:
-    Line2D.Double line = new Line2D.Double(start, end);
-
     // Check for intersection between <line> and every active-collider:
     for (AsteroidsSprite cur : activeColliders) {
 
       // If <line> intersects <cur>:
       // Add <cur> to the list of intersected colliders.
-      if (intersects(cur.sprite, line)) {
+      if (cur.sprite.intersects(line) ) {
         intersected.add(cur);
       }
     }
@@ -1473,35 +1514,19 @@ class GameState {
 
   // Return the AsteroidsSprites which intersect a triangle defined by 
   // <locA, locB, locC>:
-  // Cheaper and simpler than sweeping a ray.
-  public List<AsteroidsSprite> intersectTri(Vector2D locA, Vector2D locB, 
-    Vector2D locC) {
+  public List<AsteroidsSprite> intersectTri(Polygon tri) {
     // List of the colliders we inspect:
     List<AsteroidsSprite> activeColliders = this.getActiveColliders();
 
     // List of colliders intersected by <triangle>:
     List<AsteroidsSprite> intersected = new ArrayList<AsteroidsSprite>();
 
-    Vector2D worldOffset = new Vector2D(
-      (AsteroidsSprite.width / 2), 
-      (AsteroidsSprite.height / 2));
-
-    locA = Vector2D.sum(locA, worldOffset);
-    locB = Vector2D.sum(locB, worldOffset);
-    locC = Vector2D.sum(locC, worldOffset);
-
-    // <triangle> we are checking for intersection with colliders:
-    Polygon triangle = new Polygon(
-      new int[]{(int)locA.getX(), (int)locB.getX(), (int)locC.getX()},
-      new int[]{(int)locA.getY(), (int)locB.getY(), (int)locC.getY()},
-      3);
-
     // Check for intersection between <triangle> and every active-collider:
     for (AsteroidsSprite cur : activeColliders) {
 
-      // If <triangle> intersects <cur>:
+      // If <tri> intersects <cur>:
       // Add <cur> to the list of intersected colliders.
-      if (intersects(triangle, cur.sprite)) {
+      if (tri.intersects(cur.sprite)) {
         intersected.add(cur);
       }
     }
@@ -1511,91 +1536,69 @@ class GameState {
 
   // Does <p1> intersect <p2>?
   public static boolean intersects(Polygon p1, Polygon p2) {
-    int i = 0;
-    for (i = 0; i < p2.npoints; i++)
-      if (p1.contains(p2.xpoints[i], p2.ypoints[i]))
-        return true;
-    for (i = 0; i < p1.npoints; i++)
-      if (p2.contains(p1.xpoints[i], p1.ypoints[i]))
-        return true;
-    return false;
+	  return p1.intersects(p2);
   }
 
   // Does <line> intersect <poly>?
   // Based on: http://bit.ly/1qIdDkf
-  public static boolean intersects(final Polygon poly, final Line2D.Double line) {
-    // Get an iterator along the polygon path
-    final PathIterator polyIt = poly.getPathIterator(null); 
-
-    // Double array with length 6 needed by iterator
-    final double[] coords = new double[6]; 
-
-    // First point (needed for closing polygon path)
-    final double[] firstCoords = new double[2];
-
-    // Previously visited point 
-    final double[] lastCoords = new double[2]; 
-    boolean intersects = false;
-
-    polyIt.currentSegment(firstCoords); // Get the first coordinate pair
-    lastCoords[0] = firstCoords[0]; // Prime the previous coordinate pair
-    lastCoords[1] = firstCoords[1];
-    polyIt.next();
-
-    while(!polyIt.isDone()) {
-        final int type = polyIt.currentSegment(coords);
-        switch(type) {
-            case PathIterator.SEG_LINETO : {
-                final Line2D.Double currentLine = new Line2D.Double(
-                                                        lastCoords[0], 
-                                                        lastCoords[1],
-                                                        coords[0],
-                                                        coords[1]);
-                if(currentLine.intersectsLine(line)) {
-                    intersects = true;
-                }
-
-                lastCoords[0] = coords[0];
-                lastCoords[1] = coords[1];
-                break;
-            }
-            case PathIterator.SEG_CLOSE : {
-                final Line2D.Double currentLine = new Line2D.Double(
-                                                        coords[0],
-                                                        coords[1],
-                                                        firstCoords[0],
-                                                        firstCoords[1]);
-                if(currentLine.intersectsLine(line)) {
-                  intersects = true;
-                }
-                break;
-            }
-        }
-        polyIt.next();
-    }
-    return intersects;
+  public static boolean intersects(final Polygon poly, LineString line) {//final Line2D.Double line) {
+	  
+	return poly.intersects(line);
   }
 }
 
+/*
+  Wraps JST Polygon with methods to provide interoperability between
+  JST Polygon and the JavaStandardLibrary Polygon class:
+*/
+@SuppressWarnings("serial")
+
+class PolyWrapper extends Polygon {
+  static GeometryFactory gFactory = new GeometryFactory();
+  
+  
+  public PolyWrapper(Polygon p) {
+     super((LinearRing)p.getExteriorRing(), (LinearRing[]) null, gFactory);
+  }
+
+  // Return the X or Y coordinates of this Polygon's
+  // vertices.
+  public int[] getPoints(char dimension) {
+    int[] points = new int[this.getNumPoints()];
+    Coordinate[] coords = this.getCoordinates();
+    
+    for (int i = 0; i < points.length; i++) {
+      if (dimension == 'x') { points[i] = (int)coords[i].x; }
+      if (dimension == 'y') { points[i] = (int)coords[i].y; }
+    }
+    
+    return points;
+  }
+  
+  public int[] xPoints() { return this.getPoints('x'); }
+  public int[] yPoints() { return this.getPoints('y'); }
+}
+
+
 /******************************************************************************
   The AsteroidsSprite class defines a game object, including it's shape,
-  position, movement and rotation. It also can detemine if two objects collide.
+  position, movement and rotation. It also can determine if two objects collide.
 ******************************************************************************/
 
 class AsteroidsSprite {
-
   // Fields:
-
+  
+  static GeometryFactory gFactory = new GeometryFactory();
   static int width;          // Dimensions of the graphics area.
   static int height;
 
-  Polygon shape;             // Base sprite shape, centered at the origin (0,0).
+  PolyWrapper shape;         // Base sprite shape, centered at the origin (0,0).
   boolean active;            // Active flag.
   double  angle;             // Current angle of rotation.
   double  deltaAngle;        // Amount to change the rotation angle.
   double  x, y;              // Current position on screen.
   double  deltaX, deltaY;    // Amount to change the screen position.
-  Polygon sprite;            // Final location and shape of sprite after
+  PolyWrapper sprite;        // Final location and shape of sprite after
                              // applying rotation and translation to get screen
                              // position. Used for drawing on the screen and in
                              // detecting collisions.
@@ -1604,7 +1607,12 @@ class AsteroidsSprite {
 
   public AsteroidsSprite() {
 
-    this.shape = new Polygon();
+    this.shape = new PolyWrapper(gFactory.createPolygon(
+        new Coordinate[] {
+            new Coordinate(0,0), 
+            new Coordinate(1,1),
+            new Coordinate(1,0),
+            new Coordinate(0,0)}) );
     this.active = false;
     this.angle = 0.0;
     this.deltaAngle = 0.0;
@@ -1612,14 +1620,17 @@ class AsteroidsSprite {
     this.y = 0.0;
     this.deltaX = 0.0;
     this.deltaY = 0.0;
-    this.sprite = new Polygon();
+    this.sprite =  new PolyWrapper( gFactory.createPolygon(
+        new Coordinate[] {
+            new Coordinate(0,0), 
+            new Coordinate(1,1),
+            new Coordinate(1,0),
+            new Coordinate(0,0)}) );
   }
 
   // Copy constructor
   public AsteroidsSprite(AsteroidsSprite p) {
-    this.shape = new Polygon( p.shape.xpoints.clone(), 
-                              p.shape.ypoints.clone(), 
-                              p.shape.npoints);
+    this.shape = new PolyWrapper( (Polygon)gFactory.createGeometry(p.shape) );
     this.active = p.active;
     this.angle = p.angle;
     this.deltaAngle = p.deltaAngle;
@@ -1627,9 +1638,7 @@ class AsteroidsSprite {
     this.y = p.y;
     this.deltaX = p.deltaX;
     this.deltaY = p.deltaY;
-    this.sprite = new Polygon(p.sprite.xpoints.clone(), 
-                              p.sprite.ypoints.clone(), 
-                              p.sprite.npoints);
+    this.sprite =  new PolyWrapper( (Polygon)gFactory.createGeometry(p.sprite));
   }
 
   // Methods:
@@ -1672,42 +1681,57 @@ class AsteroidsSprite {
 
   public void render() {
 
-    int i;
-
     // Render the sprite's shape and location by rotating it's base shape and
     // moving it to it's proper screen position.
-
-    this.sprite = new Polygon();
-    for (i = 0; i < this.shape.npoints; i++)
-      this.sprite.addPoint((int) Math.round(this.shape.xpoints[i] * Math.cos(this.angle) + this.shape.ypoints[i] * Math.sin(this.angle)) + (int) Math.round(this.x) + width / 2,
-                           (int) Math.round(this.shape.ypoints[i] * Math.cos(this.angle) - this.shape.xpoints[i] * Math.sin(this.angle)) + (int) Math.round(this.y) + height / 2);
+    
+    Coordinate[] coords = new Coordinate[this.shape.getNumPoints()];
+    for (int i = 0; i < this.shape.getNumPoints(); i++) {
+      
+      Double x =  (double) Math.round( 
+                              this.shape.xPoints()[i] * Math.cos(this.angle) + 
+                              this.shape.yPoints()[i] * Math.sin(this.angle) ) + 
+                              Math.round(this.x) + width / 2;
+      
+      Double y = (double) Math.round(
+                            this.shape.yPoints()[i] * Math.cos(this.angle) -
+                            this.shape.xPoints()[i] * Math.sin(this.angle) ) +
+                            Math.round(this.y) + height / 2;
+      
+      coords[i] = new Coordinate(x,y);
+    }
+    
+    this.sprite =  new PolyWrapper(gFactory.createPolygon(coords));
   }
 
-  public boolean isColliding(AsteroidsSprite s) {
+  //Determine if one sprite overlaps with another, i.e., if any vertices
+  // of one sprite lands inside the other.
+  public boolean isColliding(AsteroidsSprite s) { return s.sprite.intersects(this.sprite); }
 
-    int i;
-
-    // Determine if one sprite overlaps with another, i.e., if any vertice
-    // of one sprite lands inside the other.
-
-    for (i = 0; i < s.sprite.npoints; i++)
-      if (this.sprite.contains(s.sprite.xpoints[i], s.sprite.ypoints[i]))
-        return true;
-    for (i = 0; i < this.sprite.npoints; i++)
-      if (s.sprite.contains(this.sprite.xpoints[i], this.sprite.ypoints[i]))
-        return true;
-    return false;
+  // Return the AsteroidsSprite in <list> nearest to <sprite>:
+  public static AsteroidsSprite nearest(List<AsteroidsSprite> list, AsteroidsSprite sprite) {
+    AsteroidsSprite nearest = null;
+    double distanceToNearest = Double.MAX_VALUE;
+    double curDistance = 0;
+    
+    for (AsteroidsSprite cur : list) {
+      curDistance = DistanceOp.distance(sprite.sprite, cur.sprite);
+      
+      if (curDistance < distanceToNearest) {
+        distanceToNearest = curDistance;
+      }
+    }
+    
+    return nearest;
   }
-
+  
   // Return the AsteroidsSprite in <list> nearest to <loc>:
-  public static AsteroidsSprite nearest(Vector2D loc, 
-    List<AsteroidsSprite> list) {
+  public static AsteroidsSprite nearest(Point loc, List<AsteroidsSprite> list) {
     double distanceToNearest = Double.MAX_VALUE;
     AsteroidsSprite nearest = null;
 
     double curDistance;
     for (AsteroidsSprite cur : list) {
-      curDistance = Vector2D.distance(loc, cur.getLocation());
+      curDistance = loc.distance(cur.sprite);
 
       // If <cur> is the closest AsteroidsSprite yet:
       if (curDistance < distanceToNearest) {
@@ -1719,19 +1743,13 @@ class AsteroidsSprite {
     return nearest;
   }
 
-  public Vector2D getLocation() { return new Vector2D(x, y); }
+  public Point getLocation() { 
+    return AsteroidsSprite.gFactory.createPoint(new Coordinate(x + AsteroidsSprite.width/2, y + AsteroidsSprite.height/2));
+  }
 
   public double getSpeed() {
     double speed = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     return speed;
-  }
-
-  // Return the radius of a bounding circle:
-  public double getRadius() { 
-    double radius = Math.sqrt(shape.getBounds().width * shape.getBounds().width +
-                              shape.getBounds().height * shape.getBounds().height);
-
-      return radius;
   }
 }
 
@@ -1752,7 +1770,6 @@ public static Frame frame = null;
 
   // Statistics list.
   // Records details of an agent's life.
-  // TODO: Consider writing JSON instead...
   private List<String> lifeStatistics = new ArrayList<String>();
 
   // Agent Variables.
@@ -1789,7 +1806,7 @@ public static Frame frame = null;
     Math.round(1000 / DELAY);
 
   static final int MAX_SHOTS =  12;          // Maximum number of sprites
-  static final int MAX_ROCKS =  6;          // for photons, asteroids and
+  static final int MAX_ROCKS =  15;          // for photons, asteroids and
   static final int MAX_SCRAP = 40;          // explosions.
 
   static final int SCRAP_COUNT  = 2 * FPS;  // Timer counter starting values
@@ -1815,12 +1832,12 @@ public static Frame frame = null;
   static final double SHIP_ANGLE_STEP = Math.PI / FPS;
   static final double SHIP_SPEED_STEP = 15.0 / FPS;
   static final double MAX_SHIP_SPEED  = 1.5 * MAX_ROCK_SPEED;
-  static final double FRICTION        = .985;
+  static final double FRICTION        = .95;
 
   static final int FIRE_DELAY = 50;         // Minimum number of milliseconds
                                             // required between photon shots.
 
-  // Probablility of flying saucer firing a missle during any given frame
+  // Probability of flying saucer firing a missile during any given frame
   // (other conditions must be met).
 
   static final double MISSLE_PROBABILITY = 0.45 / FPS;
@@ -1893,9 +1910,9 @@ public static Frame frame = null;
   int ufoPassesLeft;    // Counter for number of flying saucer passes.
   int ufoCounter;       // Timer counter used to track each flying saucer pass.
 
-  // Missle data.
+  // Missile data.
 
-  int missleCounter;    // Counter for life of missle.
+  int missleCounter;    // Counter for life of missile.
 
   // Asteroid data.
 
@@ -1935,7 +1952,6 @@ public static Frame frame = null;
     lifeStatistics.add("Agent-Class,Lifespan,Points,Asteroid-Count\n");
 
     Dimension d = getSize();
-    int i;
 
     // Display copyright information.
 
@@ -1955,76 +1971,107 @@ public static Frame frame = null;
 
     numStars = AsteroidsSprite.width * AsteroidsSprite.height / 5000;
     stars = new Point[numStars];
-    for (i = 0; i < numStars; i++)
-      stars[i] = new Point((int) (Math.random() * AsteroidsSprite.width), (int) (Math.random() * AsteroidsSprite.height));
+    for (int i = 0; i < numStars; i++) {
+      stars[i] = AsteroidsSprite.gFactory.createPoint(
+          new Coordinate(Math.random() * AsteroidsSprite.width, (Math.random() * AsteroidsSprite.height))
+          );
+    }
 
     // Create shape for the ship sprite.
 
     ship = new AsteroidsSprite();
-    ship.shape.addPoint(0, -10);
-    ship.shape.addPoint(7, 10);
-    ship.shape.addPoint(-7, 10);
+    Coordinate[] shipCoords = {
+      new Coordinate(0, -10),
+      new Coordinate(7, 10),
+      new Coordinate(-7, 10),
+      new Coordinate(0, -10)
+    };
+    ship.shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(shipCoords));
 
     // Create shapes for the ship thrusters.
 
     fwdThruster = new AsteroidsSprite();
-    fwdThruster.shape.addPoint(0, 12);
-    fwdThruster.shape.addPoint(-3, 16);
-    fwdThruster.shape.addPoint(0, 26);
-    fwdThruster.shape.addPoint(3, 16);
+    Coordinate[] fwdCoords = {
+      new Coordinate(0, 12),
+      new Coordinate(-3, 16),
+      new Coordinate(0, 26),
+      new Coordinate(3, 16),
+      new Coordinate(0, 12)
+    };
+    fwdThruster.shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(fwdCoords));
+    
     revThruster = new AsteroidsSprite();
-    revThruster.shape.addPoint(-2, 12);
-    revThruster.shape.addPoint(-4, 14);
-    revThruster.shape.addPoint(-2, 20);
-    revThruster.shape.addPoint(0, 14);
-    revThruster.shape.addPoint(2, 12);
-    revThruster.shape.addPoint(4, 14);
-    revThruster.shape.addPoint(2, 20);
-    revThruster.shape.addPoint(0, 14);
+    Coordinate[] revCoords = {
+      new Coordinate(-2, 12),
+      new Coordinate(-4, 14),
+      new Coordinate(-2, 20),
+      new Coordinate(0, 14),
+      new Coordinate(2, 12),
+      new Coordinate(4, 14),
+      new Coordinate(2, 20),
+      new Coordinate(0, 14),
+      new Coordinate(-2, 12)
+    };
+    revThruster.shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(revCoords));
+    
 
     // Create shape for each photon sprites.
 
-    for (i = 0; i < MAX_SHOTS; i++) {
+    for (int i = 0; i < MAX_SHOTS; i++) {
       photons[i] = new AsteroidsSprite();
-      photons[i].shape.addPoint(1, 1);
-      photons[i].shape.addPoint(1, -1);
-      photons[i].shape.addPoint(-1, 1);
-      photons[i].shape.addPoint(-1, -1);
+      Coordinate[] photonCoord = {
+        new Coordinate(1, 1),
+        new Coordinate(1, -1),
+        new Coordinate(-1, 1),
+        new Coordinate(-1, -1),
+        new Coordinate(1, 1)
+      };
+      
+      photons[i].shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(photonCoord));
     }
 
     // Create shape for the flying saucer.
 
     ufo = new AsteroidsSprite();
-    ufo.shape.addPoint(-15, 0);
-    ufo.shape.addPoint(-10, -5);
-    ufo.shape.addPoint(-5, -5);
-    ufo.shape.addPoint(-5, -8);
-    ufo.shape.addPoint(5, -8);
-    ufo.shape.addPoint(5, -5);
-    ufo.shape.addPoint(10, -5);
-    ufo.shape.addPoint(15, 0);
-    ufo.shape.addPoint(10, 5);
-    ufo.shape.addPoint(-10, 5);
+    Coordinate[] ufoCoords = {
+        new Coordinate(-15, 0),
+        new Coordinate(-10, -5),
+        new Coordinate(-5, -5),
+        new Coordinate(-5, -8),
+        new Coordinate(5, -8),
+        new Coordinate(5, -5),
+        new Coordinate(10, -5),
+        new Coordinate(15, 0),
+        new Coordinate(10, 5),
+        new Coordinate(-10, 5),
+        new Coordinate(-15, 0)
+      };
+    ufo.shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(ufoCoords));
 
-    // Create shape for the guided missle.
+    // Create shape for the guided missile.
 
     missle = new AsteroidsSprite();
-    missle.shape.addPoint(0, -4);
-    missle.shape.addPoint(1, -3);
-    missle.shape.addPoint(1, 3);
-    missle.shape.addPoint(2, 4);
-    missle.shape.addPoint(-2, 4);
-    missle.shape.addPoint(-1, 3);
-    missle.shape.addPoint(-1, -3);
+    
+    Coordinate[] missleCoords = {
+        new Coordinate(0, -4),
+        new Coordinate(1, -3),
+        new Coordinate(1, 3),
+        new Coordinate(2, 4),
+        new Coordinate(-2, 4),
+        new Coordinate(-1, 3),
+        new Coordinate(-1, -3),
+        new Coordinate(0, -4)
+      };
+    missle.shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(missleCoords));
 
     // Create asteroid sprites.
 
-    for (i = 0; i < MAX_ROCKS; i++)
+    for (int i = 0; i < MAX_ROCKS; i++)
       asteroids[i] = new AsteroidsSprite();
 
     // Create explosion sprites.
 
-    for (i = 0; i < MAX_SCRAP; i++)
+    for (int i = 0; i < MAX_SCRAP; i++)
       explosions[i] = new AsteroidsSprite();
 
     // Initialize game data and put us in 'game over' mode.
@@ -2065,7 +2112,7 @@ public static Frame frame = null;
 
   public void endGame() {
 
-    // Stop ship, flying saucer, guided missle and associated sounds.
+    // Stop ship, flying saucer, guided missile and associated sounds.
 
     playing = false;
     stopShip();
@@ -2092,18 +2139,18 @@ public static Frame frame = null;
 
     // This is the main loop.
     while (thisThread == loopThread) {
-		try {
-		    startTime += DELAY;
-		    Thread.sleep(Math.max(0, startTime - System.currentTimeMillis()));
-		  }
-		catch (InterruptedException e) {
-			break;
-		}
-
+  		try {
+  		    startTime += DELAY;
+  		    Thread.sleep(Math.max(0, startTime - System.currentTimeMillis()));
+  		  }
+  		catch (InterruptedException e) {
+  			break;
+  		}
+  
       debugInfo.clear();
-
+  
       if (!paused && playing) {
-
+  
         // Move and process all sprites.
         updateControlSignals(pilot);
         updateShip();
@@ -2112,64 +2159,95 @@ public static Frame frame = null;
         updateMissle();
         updateAsteroids();
         updateExplosions();
-
+  
         // Check the score and advance high score, add a new ship or start the
         // flying saucer as necessary.
-
-        if (score > highScore)
+  
+        if (score > highScore) {
           highScore = score;
+        }
+        
         if (score > newShipScore) {
           newShipScore += NEW_SHIP_POINTS;
           shipsLeft++;
         }
-
+  
         if (playing && score > newUfoScore && !ufo.active) {
           newUfoScore += NEW_UFO_POINTS;
           ufoPassesLeft = UFO_PASSES;
           initUfo();
         }
-
+  
         // If all asteroids have been destroyed create a new batch.
-
-        if (asteroidsLeft <= 0)
-            if (--asteroidsCounter <= 0)
+  
+        if (asteroidsLeft <= 0) {
+            if (--asteroidsCounter <= 0) {
               initAsteroids();
-
-        // TODO: Remove blocking boolean
+            }
+        }
+  
         // Only Update the CurrentState && Agent while the game is playing:
         if (playing) {
-
-          if (ship.active) {
-            Vector2D shipL = new Vector2D(ship.x, ship.y);
-            double shipT = ship.angle;
-
-            debugInfo.add(String.format("Ship R  %4.2f X  %d Y  %d", shipT, ship.sprite.xpoints[0], ship.sprite.ypoints[0]));
-                      debugInfo.add(String.format("Hardpoint Loc: %s", pilot.hardpoints.get(0).getWorldLocation(shipL, shipT)));
-          }
-
-          
-          // Update each collider corresponding to an asteroid:
-          for (int h = 0; h != MAX_ROCKS; h++) {
-            if (asteroids[h].active) {
-              // Display the corresponding collider.
-              Vector2D l = new Vector2D(asteroids[h].sprite.xpoints[0], asteroids[h].sprite.ypoints[0]);
-              double t = asteroids[h].angle;
-
-              debugInfo.add(String.format("Asteroid %d rot: %,3.2f loc: %s", h, t, l));
-            }
-          }
-
           pilot.update();
-          debugInfo.add(String.format("Lifetime: %,10d", pilot.getLifetime()));
-          
         }
-      }
-
+  
       // Update the screen and set the timer for the next loop.
-
       repaint();
-
+  
+      }
     }
+  }
+  
+  public void debug() {
+    
+    // Record Ship lifetime
+    debugInfo.add(String.format("Lifetime: %,10d", pilot.getLifetime()));
+    
+    // Record Ship Control Signals:
+    debugInfo.add(String.format(
+        "Ship L: %3.2f R: %3.2f F: %3.2f B: %3.2f Fire: %b Hyper: %b",
+        pilot.getTurnLeft(), 
+        pilot.getTurnRight(), 
+        pilot.getAccForward(), 
+        pilot.getAccBackward(), 
+        pilot.getFirePhoton() >= 1,
+        pilot.getFireHyper()  >= 1) );
+    
+    // Record ship location:
+    if (true) {
+      Point shipLoc = AsteroidsSprite.gFactory.createPoint(new Coordinate(ship.x, ship.y));
+      double shipTheta = ship.angle;
+      Point shipHardLoc = pilot.hardpoints.get(0).getWorldLocation(shipLoc, shipTheta);
+      
+
+      debugInfo.add(String.format(
+          "Ship R  % -4.1f X % -4.1f Y  % -4.1f", 
+          shipTheta, 
+          ship.x, 
+          ship.y));
+      
+      debugInfo.add(String.format(
+          "Hardpoint X % -4.1f Y % -4.1f",
+          shipHardLoc.getX(), 
+          shipHardLoc.getY()) );
+    }
+    
+    // Record asteroid locations:
+    for (int h = 0; h != MAX_ROCKS; h++) {
+      if (asteroids[h].active) {
+        // Display the corresponding collider.
+        
+        double aTheta = asteroids[h].angle;
+
+        debugInfo.add(String.format(
+            "Asteroid % -5d X % 4.1f Y % 4d R % 4d", 
+            h,
+            aTheta, 
+            (int)asteroids[h].x, 
+            (int)asteroids[h].y));
+        }
+    }
+
   }
 
   public void initShip() {
@@ -2518,15 +2596,19 @@ public static Frame frame = null;
 
       // Create a jagged shape for the asteroid and give it a random rotation.
 
-      asteroids[i].shape = new Polygon();
+      
       s = MIN_ROCK_SIDES + (int) (Math.random() * (MAX_ROCK_SIDES - MIN_ROCK_SIDES));
+      Coordinate[] rockCoords = new Coordinate[s+1];
       for (j = 0; j < s; j ++) {
         theta = 2 * Math.PI / s * j;
         r = MIN_ROCK_SIZE + (int) (Math.random() * (MAX_ROCK_SIZE - MIN_ROCK_SIZE));
         x = (int) -Math.round(r * Math.sin(theta));
         y = (int)  Math.round(r * Math.cos(theta));
-        asteroids[i].shape.addPoint(x, y);
+        rockCoords[j] = new Coordinate(x, y);
       }
+      rockCoords[s] = rockCoords[0];
+      asteroids[i].shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(rockCoords));
+      
       asteroids[i].active = true;
       asteroids[i].angle = 0.0;
       asteroids[i].deltaAngle = Math.random() * 2 * MAX_ROCK_SPIN - MAX_ROCK_SPIN;
@@ -2584,16 +2666,18 @@ public static Frame frame = null;
     tempX = asteroids[n].x;
     tempY = asteroids[n].y;
     do {
-      if (!asteroids[i].active) {
-        asteroids[i].shape = new Polygon();
+      if (!asteroids[i].active) {        
         s = MIN_ROCK_SIDES + (int) (Math.random() * (MAX_ROCK_SIDES - MIN_ROCK_SIDES));
+        Coordinate[] sRockCoords = new Coordinate[s];
         for (j = 0; j < s; j ++) {
           theta = 2 * Math.PI / s * j;
           r = (MIN_ROCK_SIZE + (int) (Math.random() * (MAX_ROCK_SIZE - MIN_ROCK_SIZE))) / 2;
           x = (int) -Math.round(r * Math.sin(theta));
           y = (int)  Math.round(r * Math.cos(theta));
-          asteroids[i].shape.addPoint(x, y);
+          sRockCoords[i] = new Coordinate(x, y);
         }
+        asteroids[i].shape = (PolyWrapper) AsteroidsSprite.gFactory.createPolygon(sRockCoords);
+        
         asteroids[i].active = true;
         asteroids[i].angle = 0.0;
         asteroids[i].deltaAngle = Math.random() * 2 * MAX_ROCK_SPIN - MAX_ROCK_SPIN;
@@ -2655,7 +2739,13 @@ public static Frame frame = null;
     int i;
 
     for (i = 0; i < MAX_SCRAP; i++) {
-      explosions[i].shape = new Polygon();
+      explosions[i].shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(
+          new Coordinate[] {
+              new Coordinate(0,0),
+              new Coordinate(0,1),
+              new Coordinate(1,1),
+              new Coordinate(0,0)})
+          );
       explosions[i].active = false;
       explosionCounter[i] = 0;
     }
@@ -2663,7 +2753,8 @@ public static Frame frame = null;
   }
 
   public void explode(AsteroidsSprite s) {
-
+    // TODO: fix explosions...
+    /*
     int c, i, j;
     int cx, cy;
 
@@ -2673,25 +2764,33 @@ public static Frame frame = null;
 
     s.render();
     c = 2;
-    if (detail || s.sprite.npoints < 6)
+    if (detail || s.sprite.getNumPoints() < 6)
       c = 1;
-    for (i = 0; i < s.sprite.npoints; i += c) {
+    for (i = 0; i < s.sprite.getNumPoints(); i += c) {
       explosionIndex++;
-      if (explosionIndex >= MAX_SCRAP)
-        explosionIndex = 0;
+      if (explosionIndex >= MAX_SCRAP) { explosionIndex = 0; }
+      
       explosions[explosionIndex].active = true;
-      explosions[explosionIndex].shape = new Polygon();
+      
       j = i + 1;
-      if (j >= s.sprite.npoints)
-        j -= s.sprite.npoints;
+      if (j >= s.sprite.getNumPoints()) {
+        j -= s.sprite.getNumPoints();
+      }
+      cx = 
       cx = (int) ((s.shape.xpoints[i] + s.shape.xpoints[j]) / 2);
       cy = (int) ((s.shape.ypoints[i] + s.shape.ypoints[j]) / 2);
+      
+      Coordinate[] explosionCoords = new Coordinate[2];
+      
       explosions[explosionIndex].shape.addPoint(
         s.shape.xpoints[i] - cx,
         s.shape.ypoints[i] - cy);
       explosions[explosionIndex].shape.addPoint(
         s.shape.xpoints[j] - cx,
         s.shape.ypoints[j] - cy);
+      
+      explosions[explosionIndex].shape = new Polygon();
+      
       explosions[explosionIndex].x = s.x + cx;
       explosions[explosionIndex].y = s.y + cy;
       explosions[explosionIndex].angle = s.angle;
@@ -2699,7 +2798,8 @@ public static Frame frame = null;
       explosions[explosionIndex].deltaX = (Math.random() * 2 * MAX_ROCK_SPEED - MAX_ROCK_SPEED + s.deltaX) / 2;
       explosions[explosionIndex].deltaY = (Math.random() * 2 * MAX_ROCK_SPEED - MAX_ROCK_SPEED + s.deltaY) / 2;
       explosionCounter[explosionIndex] = SCRAP_COUNT;
-    }
+      
+    }*/
   }
 
   public void updateExplosions() {
@@ -2728,9 +2828,6 @@ public static Frame frame = null;
     accBackward = CONTROL_SCALING * pilot.getAccBackward();
     firePhoton =  (pilot.getFirePhoton() >= 1); // Convert the signal to a bool.
     fireHyper =   (pilot.getFireHyper() >= 1);  // Convert the signal to a bool.
-    debugInfo.add(String.format(
-      "Ship L: %3.2f R: %3.2f F: %3.2f B: %3.2f Fire: %b Hyper: %b",
-      turnLeft, turnRight, accForward, accBackward, firePhoton, fireHyper));
   }
 
   // Interpret Keyboard commands as utility functions:
@@ -2818,8 +2915,13 @@ public static Frame frame = null;
     offGraphics.fillRect(0, 0, d.width, d.height);
     if (detail) {
       offGraphics.setColor(Color.white);
-      for (i = 0; i < numStars; i++)
-        offGraphics.drawLine(stars[i].x, stars[i].y, stars[i].x, stars[i].y);
+      for (i = 0; i < numStars; i++) {
+        offGraphics.drawLine(
+            (int)stars[i].getCoordinate().x, 
+            (int)stars[i].getCoordinate().y, 
+            (int)stars[i].getCoordinate().x, 
+            (int)stars[i].getCoordinate().y);
+      }
     }
 
     // Draw photon bullets.
@@ -2827,7 +2929,10 @@ public static Frame frame = null;
     offGraphics.setColor(Color.white);
     for (i = 0; i < MAX_SHOTS; i++)
       if (photons[i].active)
-        offGraphics.drawPolygon(photons[i].sprite);
+        offGraphics.drawPolygon(
+            photons[i].sprite.xPoints(), 
+            photons[i].sprite.yPoints(), 
+            photons[i].sprite.getNumPoints());
 
     // Draw the guided missle, counter is used to quickly fade color to black
     // when near expiration.
@@ -2835,11 +2940,16 @@ public static Frame frame = null;
     c = Math.min(missleCounter * 24, 255);
     offGraphics.setColor(new Color(c, c, c));
     if (missle.active) {
-      offGraphics.drawPolygon(missle.sprite);
+      offGraphics.drawPolygon(
+          missle.sprite.xPoints(), 
+          missle.sprite.yPoints(), 
+          missle.sprite.getNumPoints());
+      
       offGraphics.drawLine(
-        missle.sprite.xpoints[missle.sprite.npoints - 1], 
-        missle.sprite.ypoints[missle.sprite.npoints - 1],
-        missle.sprite.xpoints[0], missle.sprite.ypoints[0]);
+        missle.sprite.xPoints()[missle.sprite.getNumPoints() - 1], 
+        missle.sprite.yPoints()[missle.sprite.getNumPoints() - 1],
+        missle.sprite.xPoints()[0], 
+        missle.sprite.yPoints()[0]);
     }
 
     // Draw the asteroids.
@@ -2848,15 +2958,23 @@ public static Frame frame = null;
       if (asteroids[i].active) {
         if (detail) {
           offGraphics.setColor(Color.black);
-          offGraphics.fillPolygon(asteroids[i].sprite);
+          offGraphics.fillPolygon(
+              asteroids[i].sprite.xPoints(),
+              asteroids[i].sprite.yPoints(),
+              asteroids[i].sprite.getNumPoints());
         }
+        
         offGraphics.setColor(Color.white);
-        offGraphics.drawPolygon(asteroids[i].sprite);
+        offGraphics.drawPolygon(
+            asteroids[i].sprite.xPoints(),
+            asteroids[i].sprite.yPoints(),
+            asteroids[i].sprite.getNumPoints());
+        
         offGraphics.drawLine(
-          asteroids[i].sprite.xpoints[asteroids[i].sprite.npoints - 1],
-          asteroids[i].sprite.ypoints[asteroids[i].sprite.npoints - 1],
-          asteroids[i].sprite.xpoints[0], 
-          asteroids[i].sprite.ypoints[0]);
+          asteroids[i].sprite.xPoints()[asteroids[i].sprite.getNumPoints() - 1],
+          asteroids[i].sprite.yPoints()[asteroids[i].sprite.getNumPoints() - 1],
+          asteroids[i].sprite.xPoints()[0], 
+          asteroids[i].sprite.yPoints()[0]);
       }
 
     // Draw the flying saucer.
@@ -2864,13 +2982,22 @@ public static Frame frame = null;
     if (ufo.active) {
       if (detail) {
         offGraphics.setColor(Color.black);
-        offGraphics.fillPolygon(ufo.sprite);
+        offGraphics.fillPolygon(
+            ufo.sprite.xPoints(),
+            ufo.sprite.xPoints(),
+            ufo.sprite.getNumPoints());
       }
+      
       offGraphics.setColor(Color.white);
-      offGraphics.drawPolygon(ufo.sprite);
-      offGraphics.drawLine( ufo.sprite.xpoints[ufo.sprite.npoints - 1], 
-                            ufo.sprite.ypoints[ufo.sprite.npoints - 1],
-                            ufo.sprite.xpoints[0], ufo.sprite.ypoints[0]);
+      offGraphics.drawPolygon(
+          ufo.sprite.xPoints(),
+          ufo.sprite.xPoints(),
+          ufo.sprite.getNumPoints());
+      
+      offGraphics.drawLine( ufo.sprite.xPoints()[ufo.sprite.getNumPoints() - 1], 
+                            ufo.sprite.yPoints()[ufo.sprite.getNumPoints() - 1],
+                            ufo.sprite.xPoints()[0],
+                            ufo.sprite.yPoints()[0]);
     }
 
     // Draw the ship, counter is used to fade color to white on hyperspace.
@@ -2879,29 +3006,47 @@ public static Frame frame = null;
     if (ship.active) {
       if (detail && hyperCounter == 0) {
         offGraphics.setColor(Color.black);
-        offGraphics.fillPolygon(ship.sprite);
+        offGraphics.fillPolygon(
+            ship.sprite.xPoints(),
+            ship.sprite.yPoints(),
+            ship.sprite.getNumPoints());
       }
       offGraphics.setColor(new Color(c, c, c));
-      offGraphics.drawPolygon(ship.sprite);
-      offGraphics.drawLine( ship.sprite.xpoints[ship.sprite.npoints - 1], 
-                            ship.sprite.ypoints[ship.sprite.npoints - 1],
-                            ship.sprite.xpoints[0], ship.sprite.ypoints[0]);
+      offGraphics.drawPolygon(
+          ship.sprite.xPoints(),
+          ship.sprite.yPoints(),
+          ship.sprite.getNumPoints());
+      
+      offGraphics.drawLine( ship.sprite.xPoints()[ship.sprite.getNumPoints() - 1], 
+                            ship.sprite.yPoints()[ship.sprite.getNumPoints() - 1],
+                            ship.sprite.xPoints()[0], 
+                            ship.sprite.yPoints()[0]);
 
       // Draw thruster exhaust if thrusters are on. Do it randomly to get a
       // flicker effect.
 
       if (!paused && detail && Math.random() < 0.5) {
         if (accForward > 0) {
-          offGraphics.drawPolygon(fwdThruster.sprite);
-          offGraphics.drawLine( fwdThruster.sprite.xpoints[fwdThruster.sprite.npoints - 1], 
-                                fwdThruster.sprite.ypoints[fwdThruster.sprite.npoints - 1],
-                                fwdThruster.sprite.xpoints[0], fwdThruster.sprite.ypoints[0]);
+          offGraphics.drawPolygon(
+              fwdThruster.sprite.xPoints(),
+              fwdThruster.sprite.yPoints(),
+              fwdThruster.sprite.getNumPoints());
+          
+          offGraphics.drawLine( fwdThruster.sprite.xPoints()[fwdThruster.sprite.getNumPoints() - 1], 
+                                fwdThruster.sprite.yPoints()[fwdThruster.sprite.getNumPoints() - 1],
+                                fwdThruster.sprite.xPoints()[0], 
+                                fwdThruster.sprite.yPoints()[0]);
         }
         if (accBackward > 0) {
-          offGraphics.drawPolygon(revThruster.sprite);
-          offGraphics.drawLine( revThruster.sprite.xpoints[revThruster.sprite.npoints - 1], 
-                                revThruster.sprite.ypoints[revThruster.sprite.npoints - 1],
-                                revThruster.sprite.xpoints[0], revThruster.sprite.ypoints[0]);
+          offGraphics.drawPolygon(
+              revThruster.sprite.xPoints(),
+              revThruster.sprite.xPoints(),
+              revThruster.sprite.getNumPoints());
+          
+          offGraphics.drawLine( revThruster.sprite.xPoints()[revThruster.sprite.getNumPoints() - 1], 
+                                revThruster.sprite.yPoints()[revThruster.sprite.getNumPoints() - 1],
+                                revThruster.sprite.xPoints()[0],
+                                revThruster.sprite.yPoints()[0]);
         }
       }
     }
@@ -2912,7 +3057,10 @@ public static Frame frame = null;
       if (explosions[i].active) {
         c = (255 / SCRAP_COUNT) * explosionCounter [i];
         offGraphics.setColor(new Color(c, c, c));
-        offGraphics.drawPolygon(explosions[i].sprite);
+        offGraphics.drawPolygon(
+            explosions[i].sprite.xPoints(),
+            explosions[i].sprite.xPoints(),
+            explosions[i].sprite.getNumPoints());
       }
 
     // Display status and messages.
@@ -2927,10 +3075,12 @@ public static Frame frame = null;
 
     // Display debug info:
     if (debugging) {
+      debug(); // Collect debug info
 
       int j = 0; // Index of the current item in the iteration.
-      for(Iterator<String> iter = debugInfo.iterator(); iter.hasNext(); ) {
-        s = iter.next();
+      ArrayList<String> copy = new ArrayList<String>(debugInfo);
+      for(String cur : copy) {
+        s = cur;
         offGraphics.drawString(
           s, 
           d.width - (fontWidth + fm.stringWidth(s)),
