@@ -1785,6 +1785,13 @@ public static Frame frame = null;
   boolean debugging = false;
   ArrayList<String> debugInfo = new ArrayList<String>();
 
+  
+  // Menu Information.
+  
+  ArrayList<String> menuInfo = new ArrayList<String>();
+  String menuInput;
+  
+  
   // Copyright information.
 
   String copyName = "Asteroids";
@@ -1806,7 +1813,7 @@ public static Frame frame = null;
     Math.round(1000 / DELAY);
 
   static final int MAX_SHOTS =  12;          // Maximum number of sprites
-  static final int MAX_ROCKS =  15;          // for photons, asteroids and
+  static final int MAX_ROCKS =  30;          // for photons, asteroids and
   static final int MAX_SCRAP = 40;          // explosions.
 
   static final int SCRAP_COUNT  = 2 * FPS;  // Timer counter starting values
@@ -1822,7 +1829,7 @@ public static Frame frame = null;
   static final double MAX_ROCK_SPEED = 240.0 / FPS;
   static final double MAX_ROCK_SPIN  = Math.PI / FPS;
 
-  static final int MAX_SHIPS = 5;           // Starting number of ships for
+  static final int MAX_SHIPS = 3;           // Starting number of ships for
                                             // each game.
   static final int UFO_PASSES = 3;          // Number of passes for flying
                                             // saucer per appearance.
@@ -1934,7 +1941,7 @@ public static Frame frame = null;
 
   // Data for the screen font.
 
-  Font font      = new Font("Helvetica", Font.BOLD, 12);
+  Font font      = new Font("monospaced", Font.PLAIN, 14);
   FontMetrics fm = getFontMetrics(font);
   int fontWidth  = fm.getMaxAdvance();
   int fontHeight = fm.getHeight();
@@ -1947,8 +1954,38 @@ public static Frame frame = null;
   }
 
   public void init() {
+    
+    menuInput = "";
+    
+    // Init menu info:
+    menuInfo.add("Braitenberg Pilots");
+    menuInfo.add("");
+    menuInfo.add("Select a vehicle to see it play the game:");
+    menuInfo.add("");
+    menuInfo.add("Key   Pilot");
+    menuInfo.add("-------------------");
+    menuInfo.add("1R    1  Radius");
+    menuInfo.add("1L    1  Laser");
+    menuInfo.add("2A    2A Triangle");
+    menuInfo.add("2B    2B Triangle");
+    menuInfo.add("3A    3A Triangle");
+    menuInfo.add("3B    3B Triangle");
+    menuInfo.add("4A    4A Triangle");
+    menuInfo.add("");
+    menuInfo.add("Press 'P' at any time to Pause.");
+    menuInfo.add("Press 'K' at any time to End the current game.");
+    menuInfo.add("Press 'Enter' to begin or clear current input.");
+    menuInfo.add("");
+    menuInfo.add("Input:");
+    menuInfo.add("");
+    menuInfo.add("");
+    menuInfo.add("Original Engine:");
+    menuInfo.add(copyName);
+    menuInfo.add(copyVers);
+    menuInfo.add(copyInfo);
+    menuInfo.add(copyLink);
 
-    // Add a header to our data:
+    // Add a header to agent life data:
     lifeStatistics.add("Agent-Class,Lifespan,Points,Asteroid-Count\n");
 
     Dimension d = getSize();
@@ -2082,7 +2119,6 @@ public static Frame frame = null;
                                   missle,
                                   ufo);
     factory = new BRVFactory(currentState);
-    pilot = factory.makeVehicleFourATriangle();
 
     highScore = 0;
     detail = true;
@@ -2148,11 +2184,15 @@ public static Frame frame = null;
   		}
   
       debugInfo.clear();
+      
+      // If a game hasn't begun:
+      if (!paused && !playing) {
+        // TODO: FILL IN VEHICLE SELECTION!
+      }
   
-      if (!paused && playing) {
+      if (!paused) {
   
         // Move and process all sprites.
-        updateControlSignals(pilot);
         updateShip();
         updatePhotons();
         updateUfo();
@@ -2188,6 +2228,7 @@ public static Frame frame = null;
   
         // Only Update the CurrentState && Agent while the game is playing:
         if (playing) {
+          updateControlSignals(pilot);
           pilot.update();
         }
   
@@ -2205,7 +2246,7 @@ public static Frame frame = null;
     
     // Record Ship Control Signals:
     debugInfo.add(String.format(
-        "Ship L: %3.2f R: %3.2f F: %3.2f B: %3.2f Fire: %b Hyper: %b",
+        "Ship L: % -4.2f R: % -4.2f F: % -4.2f B: % -4.2f Fire: %b Hyper: %b",
         pilot.getTurnLeft(), 
         pilot.getTurnRight(), 
         pilot.getAccForward(), 
@@ -2221,13 +2262,14 @@ public static Frame frame = null;
       
 
       debugInfo.add(String.format(
-          "Ship R  % -4.1f X % -4.1f Y  % -4.1f", 
+          "Ship R  % 4.0f X % 4.0f Y % 4.0f", 
           shipTheta, 
           ship.x, 
           ship.y));
       
       debugInfo.add(String.format(
-          "Hardpoint X % -4.1f Y % -4.1f",
+          "Hardpoint R % 4.0f X % 4.0f Y % 4.0f",
+          shipTheta,
           shipHardLoc.getX(), 
           shipHardLoc.getY()) );
     }
@@ -2240,11 +2282,11 @@ public static Frame frame = null;
         double aTheta = asteroids[h].angle;
 
         debugInfo.add(String.format(
-            "Asteroid % -5d X % 4.1f Y % 4d R % 4d", 
+            "Asteroid % -5d R % 4.1f X % 4.0f Y % 4.0f", 
             h,
             aTheta, 
-            (int)asteroids[h].x, 
-            (int)asteroids[h].y));
+            asteroids[h].x, 
+            asteroids[h].y));
         }
     }
 
@@ -2833,36 +2875,75 @@ public static Frame frame = null;
   // Interpret Keyboard commands as utility functions:
   public void keyPressed(KeyEvent e) {
     char c;
+    
+    // Allow upper or lower case characters for remaining keys.
+    c = Character.toUpperCase(e.getKeyChar());
 
-    // Toggle debug display:
+    menuInput = menuInput.concat(Character.toString(c));
+
+    // '/' Toggle debug display:
     if (e.getKeyCode() == KeyEvent.VK_SLASH) {
       debugging = !debugging;
     }
 
-    // Allow upper or lower case characters for remaining keys.
-    c = Character.toLowerCase(e.getKeyChar());
-
     // 'P' key: toggle pause mode.
-    if (c == 'p') {
+    if (e.getKeyCode() == KeyEvent.VK_P) {
       paused = !paused;
     }
 
     // 'D' key: toggle graphics detail on or off.
-    if (c == 'd') {
+    if (e.getKeyCode() == KeyEvent.VK_D) {
       detail = !detail;
     }
 
-    // 'S' key: start the game, if not already in progress.
-
-    if (c == 's' && !playing) {
-      initGame();
-    }
-
     // Record stored results and quit the game:
-    if (c == 'q') {
+    if (e.getKeyCode() == KeyEvent.VK_Q) {
       recordLifeData("results.txt");
       System.exit(0);
     }
+    
+    // End the game prematurely:
+    if (e.getKeyCode() == KeyEvent.VK_K) {
+      endGame();
+      menuInput = "";
+    }
+    
+    // 'Enter' key: start the game, if not already in progress.
+    if (e.getKeyCode() == KeyEvent.VK_ENTER && !playing) {
+      
+      if (menuInput.contains("1R")) {
+        pilot = factory.makeVehicleOneRadius();
+      }
+      else if (menuInput.contains("1L")) {
+        pilot = factory.makeVehicleOneRay();
+      }
+      else if (menuInput.contains("2A")) {
+        pilot = factory.makeVehicleTwoATriangle();
+      }
+      else if (menuInput.contains("2B")) {
+        pilot = factory.makeVehicleTwoBTriangle();
+      }
+      else if (menuInput.contains("3A")) {
+        pilot = factory.makeVehicleThreeATriangle();
+      }
+      else if (menuInput.contains("3B")) {
+        pilot = factory.makeVehicleThreeBTriangle();
+      }
+      else if (menuInput.contains("4A")) {
+        pilot = factory.makeVehicleFourATriangle();
+      } 
+      else {
+        menuInput = "";
+      }
+      
+      // If menuInput was a valid code:
+      if (menuInput != "") {
+        initGame();
+      }
+      menuInput = "";
+    }
+    
+
   }
 
 
@@ -3078,8 +3159,8 @@ public static Frame frame = null;
       debug(); // Collect debug info
 
       int j = 0; // Index of the current item in the iteration.
-      ArrayList<String> copy = new ArrayList<String>(debugInfo);
-      for(String cur : copy) {
+      ArrayList<String> debugCopy = new ArrayList<String>(debugInfo);
+      for(String cur : debugCopy) {
         s = cur;
         offGraphics.drawString(
           s, 
@@ -3089,43 +3170,29 @@ public static Frame frame = null;
         j++;
       }
     }
-
+    
+    // Display Menu:
     if (!playing) {
-      s = copyName;
-      offGraphics.drawString( 
-        s, 
-        (d.width - fm.stringWidth(s)) / 2, 
-        d.height / 2 - 2 * fontHeight);
-
-      s = copyVers;
-      offGraphics.drawString(
-        s, (d.width - fm.stringWidth(s)) / 2, 
-        d.height / 2 - fontHeight);
-
-      s = copyInfo;
+      
+      // Display menu input:
+      s = menuInput;
       offGraphics.drawString(
         s, 
-        (d.width - fm.stringWidth(s)) / 2, 
-        d.height / 2 + fontHeight);
+        d.width / 4,
+        d.height / 8 + fontHeight*(menuInfo.size()-7));
+      
+      // Display menu info:
+      int k = 0; // Index of the current line being displayed.
+      ArrayList<String> menuCopy = new ArrayList<String>(menuInfo);
+      for(String cur : menuCopy) {
+        s = cur;
+        offGraphics.drawString(
+          s, 
+          d.width / 4,
+          d.height / 8 + fontHeight*(k));
 
-      s = copyLink;
-      offGraphics.drawString(
-        s, 
-        (d.width - fm.stringWidth(s)) / 2, 
-        d.height / 2 + 2 * fontHeight);
-
-
-      s = "Game Over";
-      offGraphics.drawString(
-        s, 
-        (d.width - fm.stringWidth(s)) / 2, 
-        d.height / 4);
-
-      s = "'S' to Start";
-      offGraphics.drawString(
-        s, 
-        (d.width - fm.stringWidth(s)) / 2, 
-        d.height / 4 + fontHeight);
+        k++;
+      }
     }
     else if (paused) {
       s = "Game Paused";
