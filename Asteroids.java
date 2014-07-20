@@ -51,16 +51,13 @@
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.*;
 import java.util.*;
 import java.util.List;
 import java.applet.Applet;
 import java.io.*;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.CoordinateSequence;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
