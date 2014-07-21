@@ -1987,11 +1987,6 @@ public static Frame frame = null;
     // Add a header to agent life data:
     lifeStatistics.add("Agent-Class,Lifespan,Points,Asteroid-Count\n");
 
-    Dimension d = getSize();
-    
-    // Adjust the number of rocks based on the screen size but never exceed the arrays allocated by MAX_ROCKS:
-    maxSpawnableRocks = Math.min((int) Math.pow(d.height * d.width / 10000, .56), MAX_ROCKS);
-
     // Display copyright information.
 
     System.out.println(copyText);
@@ -2001,20 +1996,7 @@ public static Frame frame = null;
     addKeyListener(this);
     requestFocus();
 
-    // Save the screen size.
-
-    AsteroidsSprite.width = d.width;
-    AsteroidsSprite.height = d.height;
-
-    // Generate the starry background.
-
-    numStars = AsteroidsSprite.width * AsteroidsSprite.height / 5000;
-    stars = new Point[numStars];
-    for (int i = 0; i < numStars; i++) {
-      stars[i] = AsteroidsSprite.gFactory.createPoint(
-          new Coordinate(Math.random() * AsteroidsSprite.width, (Math.random() * AsteroidsSprite.height))
-          );
-    }
+    resizeScreen();
 
     // Create shape for the ship sprite.
 
@@ -2127,8 +2109,31 @@ public static Frame frame = null;
     initGame();
     endGame();
   }
+  
+  public void resizeScreen() {
+    // Save the screen size.
+    
+    Dimension d = getSize();
+    AsteroidsSprite.width = d.width;
+    AsteroidsSprite.height = d.height;
+    
+    // Adjust the number of rocks based on the screen size but never exceed the arrays allocated by MAX_ROCKS:
+    maxSpawnableRocks = Math.min((int) Math.pow(d.height * d.width / 10000, .56), MAX_ROCKS);
+
+    // Generate the starry background.
+
+    numStars = AsteroidsSprite.width * AsteroidsSprite.height / 5000;
+    stars = new Point[numStars];
+    for (int i = 0; i < numStars; i++) {
+      stars[i] = AsteroidsSprite.gFactory.createPoint(
+          new Coordinate(Math.random() * AsteroidsSprite.width, (Math.random() * AsteroidsSprite.height))
+          );
+    }
+  }
 
   public void initGame() {
+    
+    resizeScreen();
 
     // Initialize game data and sprites.
 
