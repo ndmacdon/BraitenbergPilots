@@ -1810,8 +1810,10 @@ public static Frame frame = null;
     Math.round(1000 / DELAY);
 
   static final int MAX_SHOTS =  12;          // Maximum number of sprites
-  static final int MAX_ROCKS =  30;          // for photons, asteroids and
+  static final int MAX_ROCKS =  40;          // for photons, asteroids and
   static final int MAX_SCRAP = 40;          // explosions.
+  
+  int maxSpawnableRocks;
 
   static final int SCRAP_COUNT  = 2 * FPS;  // Timer counter starting values
   static final int HYPER_COUNT  = 3 * FPS;  // calculated using number of
@@ -1986,6 +1988,9 @@ public static Frame frame = null;
     lifeStatistics.add("Agent-Class,Lifespan,Points,Asteroid-Count\n");
 
     Dimension d = getSize();
+    
+    // Adjust the number of rocks based on the screen size but never exceed the arrays allocated by MAX_ROCKS:
+    maxSpawnableRocks = Math.min((int) Math.pow(d.height * d.width / 10000, .56), MAX_ROCKS);
 
     // Display copyright information.
 
@@ -2631,7 +2636,7 @@ public static Frame frame = null;
 
     // Create random shapes, positions and movements for each asteroid.
 
-    for (i = 0; i < MAX_ROCKS; i++) {
+    for (i = 0; i < maxSpawnableRocks; i++) {
 
       // Create a jagged shape for the asteroid and give it a random rotation.
 
@@ -2730,7 +2735,7 @@ public static Frame frame = null;
         asteroidsLeft++;
       }
       i++;
-    } while (i < MAX_ROCKS && count < 2);
+    } while (i < maxSpawnableRocks && count < 2);
   }
 
   public void updateAsteroids() {
