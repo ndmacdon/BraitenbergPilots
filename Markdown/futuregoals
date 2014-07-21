@@ -9,9 +9,7 @@
 <body>
 
 <!--========================= HEADER =========================-->
-
 <!--==========================================================-->
-
 <div id="header_wrap" class="outer">
 <header class="inner">
 <a id="forkme_banner" href="https://github.com/ndmacdon/BraitenbergPilots" target="_blank">View on GitHub</a>
@@ -25,24 +23,22 @@
 </div>
 
 <!--========================= MAIN CONTENT =========================-->
-
 <!--================================================================-->
-
-<div class="outer" id="main_content_wrap">
+<div markdown="1" id="main_content_wrap" class="outer">
 <section markdown="1" id="main_content" class="inner">
 
-<h1 id="future-goals">Future Goals</h1>
-<h2 id="applet-issues">Applet Issues</h2>
-<p>Java Applets are in a state of decline; they are more difficult to deploy than competing solutions and they are losing support in certain browsers. Because of issues like these, and others, the project will be moving to JavaScript in the future.</p>
+# Future Goals
+
+## Applet Issues
+
+Java Applets are in a state of decline; they are more difficult to deploy than competing solutions and they are losing support in certain browsers. Because of issues like these, and others, the project will be moving to JavaScript in the future.
+
 </section>
 
-
-
 </div>
+
 <!--========================= FOOTER =========================-->
-
 <!--==========================================================-->
-
 <div id="footer_wrap" class="outer">
 <footer class="inner">
 <p class="copyright">
@@ -57,5 +53,5 @@ Original Engine by
 </footer>
 </div>
 
-<p></body>
-</html></p>
+</body>
+</html>

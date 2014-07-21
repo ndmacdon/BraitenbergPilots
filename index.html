@@ -1,422 +1,253 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-  <meta charset='utf-8' />
-  <meta name="description" content="Braitenberg Pilots : Asteroids Pilot-Bots based on Braitenberg vehicles." />
-
-  <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-  <title>Braitenberg Pilots | Home</title>
+<meta charset='utf-8' />
+<meta name="description" content="Braitenberg Pilots : Asteroids Pilot-Bots based on Braitenberg vehicles." />
+<link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+<title>Braitenberg Pilots | Home</title>
 </head>
-
 <body>
 
 <!--========================= HEADER =========================-->
+
 <!--==========================================================-->
+
 <div id="header_wrap" class="outer">
-    <header class="inner">
-      <a id="forkme_banner" href="https://github.com/ndmacdon/BraitenbergPilots" target="_blank">View on GitHub</a>
-
-      <h1 id="project_title"><a href=index.html>Braitenberg Pilots</a></h1>
-      <h2 id="project_tagline">Asteroids Pilot-Bots based on Braitenberg vehicles.</h2>
-
-        <section id="downloads">
-          <a class="zip_download_link" href="https://github.com/ndmacdon/BraitenbergPilots/zipball/master">Download this project as a .zip file</a>
-          <a class="tar_download_link" href="https://github.com/ndmacdon/BraitenbergPilots/tarball/master">Download this project as a tar.gz file</a>
-        </section>
-    </header>
+<header class="inner">
+<a id="forkme_banner" href="https://github.com/ndmacdon/BraitenbergPilots" target="_blank">View on GitHub</a>
+<h1 id="project_title"><a href=index.html>Braitenberg Pilots</a></h1>
+<h2 id="project_tagline">Asteroids Pilot-Bots based on Braitenberg vehicles.</h2>
+<section id="downloads">
+<a class="zip_download_link" href="https://github.com/ndmacdon/BraitenbergPilots/zipball/master">Download this project as a .zip file</a>
+<a class="tar_download_link" href="https://github.com/ndmacdon/BraitenbergPilots/tarball/master">Download this project as a tar.gz file</a>
+</section>
+</header>
 </div>
 
 <!--========================= MAIN CONTENT =========================-->
+
 <!--================================================================-->
-<div id="main_content_wrap" class="outer">
-  <section id="main_content" class="inner">
 
-    <h1>
-      <a id="project-description" class="anchor" href="#project-description"></a>
-      Project Description
-    </h1>
-
-    <h2>
-      <a id="preface" class="anchor" href="#preface"></a>
-      Preface
-    </h2>
-
-    <p>
-      This project uses an unsigned JAR file which may be disallowed by your default Java settings.
-      If you are not presented with a dialog asking for permission to run the Applets on this site, you will have to add an exception to your Java Security settings:
-    </p>
-    <p>
-      <a href="securityguide.html">60-Second-Guide to altering your Java Security Settings.</a>
-    </p>
-
-    <h2>
-      <a id="introduction" class="anchor" href="#introduction"></a>
-      Introduction
-    </h2>
-
-
-
-    <p>
-      Braitenberg Vehicles were created as a thought experiment by Valentino Braitenberg. Braitenberg sought to reveal the mechanisms of the mind with his Vehicles. He did this by combining simple (albeit fantastical) hardware to produce complex behaviors. In his book, Braitenberg develops 14 vehicles, each more sophisticated than the last. Braitenberg's Vehicles develop in turn: instincts, emotions, logic, concepts, ideas, foresight and egotism.
-    </p>
-
-    <p>
-      Braitenberg Pilots applies Braitenberg's Vehicle designs to the Asteroids game environment to see if they can effectively survive and achieve a high score in the game (i.e. are they fit for the environment). The goal is to design a very general robot which evolves to suit the environment, not to hand craft the best Asteroids AI possible. ~General-solution ~Evolution
-    </p>
-
-    <p>
-      The first few Braitenberg Vehicles described by Braitenberg in his book are reproduced below. These initial Vehicles introduce the components and concepts used in subsequent Vehicles. The Vehicles are introduced, observed and introduced in a style and format similar to the one used by Braitenberg in Vehicles~TITLE.
-    </p>
-
-
-    <!--========================= VEHICLE 1 =========================-->
-    <!--=============================================================-->
-    <h2><a class="anchor" href="#vehicle-one"></a>Vehicle I</h2>
-    
-    <h3><a class="anchor" href="#vehicle-one-description"></a>Description</h3>
-
-    <blockquote>
-      Vehicle 1 is equipped with one sensor and one motor.
-      <p><cite>Vehicles p. 3</cite></p>
-    </blockquote>
-
-    <a href="images/Sensor01.png"><img class="lonely-image" alt="Radius Sensor" src="images/Sensor01.png"></a>
-    
-    <h4><a class="anchor" href="#radius-sensor"></a>Radius Sensor</h4>
-
-    <p>
-      The sensor attached to Vehicle 1 detects objects in a radius extending from the sensor's origin. The sensor reports a normalized distance to the nearest detected object. To simplify implementation, the reported distance is measured from the detected object's origin to the sensor's origin. In this way, the sensor acts as a primitive antenna; focusing on the closest object in its field of detection.
-    </p>
-
-    <h4><a class="anchor" href="#forward-thruster"></a>Forward Thruster</h4>
-
-    <p>
-      Vehicle 1 is also equipped with a thruster capable of propelling the robot forward at varying speeds. The thruster is an example of a Motor component. Motor components receive an input signal and produce some effect.
-    </p>
-
-    <a href="images/Vehicle01.png"><img class="lonely-image" alt="Vehicle One" src="images/Vehicle01.png"></a>
-
-    <h4><a class="anchor" href="#vehicle-one-chasis"></a>Chasis</h4>
-
-    <p>
-      Vehicle 1's sensor is connected to the forward thruster. The forward thruster is depicted as a pentagon with an arrow indicating the exhaust direction. As stimulus excites the sensor, a signal is passed to the thruster. The connection is such that, the closer an object gets, the harder the thruster works. More-more connections like this are depicted in diagrams as red wires (as seen in figure 2).
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-one-observations"></a>Observations</h3>
-
-    <p>
-      Vehicle 1 floats casually at first but when an asteroid approaches, he begins to move forward. If approached from behind, he creeps ahead of the approaching asteroid, only just keeping it at the edge of his senses. If approached from the fore, he rapidly accelerates forward; often shooting himself into the approacher, occasionally slipping past into open space.
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-one-demonstration"></a>Demonstration</h3>
-
-    <embed
-      class="applet"
-      type="application/x-java-applet;version=1.6"
-      width="600" height="600" 
-      archive="applets/braitenoids_vehicle1.jar"
-      code="Asteroids.class"
-      pluginspage="http://java.com/download/"
-      myParam="" />
-
-    <p>
-      Select the Applet and press 'S' to start. Press 'P' to pause the Applet at any time.
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-one-analysis"></a>Analysis</h3>
-
-    <p>
-      Vehicle 1 is a simple creature. He loves wide open spaces. Crowded areas agitate him to flight. He is a fickle creature, always searching for a totally empty spot; never happy with almost perfect. He lacks strategy and would rather plough through a dense crowd ahead of him than bear the slightest company or move around it.
-    </p>
-
-    <hr />
-
-
-    <!--========================= VEHICLE 2 =========================-->
-    <!--=============================================================-->
-    <h2><a id="vehicle-two" class="anchor" href="#vehicle-two"></a>Vehicle 2</h2>
-
-    <h3><a class="anchor" href="#vehicle-two-description"></a>Description</h3>
-
-    <blockquote>
-      Vehicle 2 is generally similar to Vehicle 1 except that it has two sensors, one on each side, and two motors, right and left.
-      <p><cite>Vehicles p. 6</cite></p>
-    </blockquote>
-
-    <a href="images/Sensor02.png"><img class="lonely-image" alt="Cone Sensor" src="images/Sensor02.png"></a>
-
-    <h4><a class="anchor" href="#cone-sensor"></a>Cone Sensor</h4>
-
-    <p>
-      Vehicle 2 utilizes a Cone Sensor to acheive more focused behavior than is possible with the antenna-like Radius Sensor. Cone Sensors detect objects in a cone extending away from the sensor. Again, the sensor reports the normalized distance to the nearest detected object. The resulting sensor mimics a simple eye; concerned with only the nearest object.
-    </p>
-
-    <h4><a class="anchor" href="#gyroscope"></a>Gyroscope</h4>
-
-    <p>
-      Vehicle 2 comes equipped with two gyroscopes. Each gyroscope exerts force in the rotational direction indicated by a curved arrow. The gyroscopes rotate their Vehicle whenever they are passed a signal from an attached sensor. Gyroscopes conteract eachother such that if two opposing gyroscopes (one clock-wise and one counter-clockwise) are equally excited, no rotation will occur.
-    </p>
-
-    <a href="images/Vehicle02A.png"><img class="lonely-image" alt="Vehicle Two" src="images/Vehicle02A.png"></a>
-
-    <a href="images/Vehicle02B.png"><img class="lonely-image" alt="Vehicle Two" src="images/Vehicle02B.png"></a>
-
-    <h4><a class="anchor" href="#vehicle-two-chasis"></a>Chasis</h4>
-
-    <p>
-      Vehicle 2's cone sensors are tilted apart such that their field of view overlaps only slightly. Two significant wiring configurations are possible in this Vehicle. The left-facing sensor may be connected to the left-side gyroscope and the right-sensor with the right gyroscope (a so called uncrossed connection as in figure XXX). Alternatively, the connections may be crossed such that the left-facing sensor is connected with the right-side gyro and the right-facing sensor is connected with the left-side gyro (as in figure XXX). In either case, the thruster is connected to each sensor as in Vehicle 1.
-    </p>
-
-    <p>
-      For convenience, the uncrossed configuration will be refered to as Vehicle 2A and the crossed configuration 2B.
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-two-observations"></a>Observations</h3>
-
-    <p>
-      OBSERVATIONS
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-two-demonstration"></a>Demonstration</h3>
-
-    <embed
-      class="applet"
-      type="application/x-java-applet;version=1.6"
-      width="600" height="600" 
-      archive="applets/braitenoids_vehicleX.jar"
-      code="Asteroids.class"
-      pluginspage="http://java.com/download/"
-      myParam="" />
-
-    <p>
-      Select the Applet and press 'S' to start. Press 'P' to pause the Applet at any time.
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-two-analysis"></a>Analysis</h3>
-
-    <p>
-      ANALYSIS
-    </p>
-
-    <hr />
-
-
-    <!--========================= VEHICLE 3 =========================-->
-    <!--=============================================================-->
-    <h2><a id="vehicle-three" class="anchor" href="#vehicle-three"></a>Vehicle 3</h2>
-
-    <h3><a class="anchor" href="#vehicle-three-description"></a>Description</h3>
-
-    <blockquote>
-      There is something very crude about a vehicle that can only be excited by the things it smells (or sees or hears) and knows no soothing or relaxing stimuli.
-      <p><cite>Vehicles p. 10</cite></p>
-    </blockquote>
-
-    <a href="images/Vehicle03A.png"><img class="lonely-image" alt="Vehicle Three" src="images/Vehicle03A.png"></a>
-
-    <a href="images/Vehicle03B.png"><img class="lonely-image" alt="Vehicle Three" src="images/Vehicle03B.png"></a>
-
-    <h4><a class="anchor" href="#vehicle-three-chasis"></a>Chasis</h4>
-
-    <p>
-      Vehicles 3A and 3B are equipped with the same sensors and motors as Vehicles 2A and 2B but with a novel wiring scheme. Vehicle 3's connections are inverted such that; when a sensor is deprived of stimulus (there is nothing to detect) the attached Motor is fired at full capacity. When a sensor is excited, the attached component is inhibited and acts with less force. Such inverted connections are depicted in figure XXX as blue wires.
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-three-observations"></a>Observations</h3>
-
-    <p>
-      OBSERVATIONS
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-three-demonstration"></a>Demonstration</h3>
-
-    <embed
-      class="applet"
-      type="application/x-java-applet;version=1.6"
-      width="600" height="600" 
-      archive="applets/braitenoids_vehicleX.jar"
-      code="Asteroids.class"
-      pluginspage="http://java.com/download/"
-      myParam="" />
-
-    <p>
-      Select the Applet and press 'S' to start. Press 'P' to pause the Applet at any time.
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-three-analysis"></a>Analysis</h3>
-
-    <p>
-      ANALYSIS
-    </p>
-
-    <hr />
-
-    <!--========================= VEHICLE 4 =========================-->
-    <!--=============================================================-->
-    <h2><a id="vehicle-four" class="anchor" href="#vehicle-four"></a>Vehicle 4</h2>
-
-    <h3><a class="anchor" href="#vehicle-four-description"></a>Description</h3>
-
-    <blockquote>
-      Let us consider the following improvement. The activation of a certain sensor will make the corresponding motor run faster, but only up to a point, where the speed of the motor reaches a maximum. Beyond this point, if the sensor is activated even more strongly, the speed will decrease again.
-      <p><cite>Vehicles p. 15</cite></p>
-    </blockquote>
-    
-    <a href="images/Sensor02.png"><img class="lonely-image" alt="Cone Sensor" src="images/Sensor02.png"></a>
-
-    <h4><a class="anchor" href="#modulator"></a>Modulator</h4>
-
-    <p>
-      Vehicle 4 introduces Modulators to our wiring schemes. Past connections, inverted or not, assumed a linear relationship between sensor output and motor stimulation. Either, the more-stimulue the more-output or the more-stimulus the less-output. Modulators take a signal from a sensor, input the signal to a function, and return the result. Multiple Sensors can be connected to a single Modulator. In that case, all the Sensor signals will be added together and input to the modulator's function (similar to wiring batteries series to acheive higher voltage). Multiple motors may also be connected to the output of a modulator. Modulators are represented in our figures as a disc labeled f~cursive-symbol~. Modulators allow for a stunning array of behaviours and configurations.
-    </p>
-
-    <a href="images/Vehicle04A.png"><img class="lonely-image" alt="Vehicle Four" src="images/Vehicle04A.png"></a>
-
-    <a href="images/Vehicle04B.png"><img class="lonely-image" alt="Vehicle Four" src="images/Vehicle04B.png"></a>
-
-    <h4><a class="anchor" href="#vehicle-four-chasis"></a>Chasis</h4>
-
-    <p>
-      Vehicles 4A and 4B are equipped with the same sensors and motors as Vehicles 3A and 3B. However, Modulators intercept the connections between the Sensors and Motors of these new Vehicles. The Modulators used here are modeled by the curve shown in figure XXX (a parabolic curve of the form f(x)=-4(X^2-X) || MAYBE 4(X^2-X)+1 IS MORE INTERESTING???).
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-four-observations"></a>Observations</h3>
-
-    <p>
-      OBSERVATIONS
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-four-demonstration"></a>Demonstration</h3>
-
-    <embed
-      class="applet"
-      type="application/x-java-applet;version=1.6"
-      width="600" height="600" 
-      archive="applets/braitenoids_vehicleX.jar"
-      code="Asteroids.class"
-      pluginspage="http://java.com/download/"
-      myParam="" />
-
-    <p>
-      Select the Applet and press 'S' to start. Press 'P' to pause the Applet at any time.
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-four-analysis"></a>Analysis</h3>
-
-    <p>
-      ANALYSIS
-    </p>
-
-    <hr />
-
-    <!--========================= VEHICLE 5 =========================-->
-    <!--=============================================================-->
-    <h2><a id="vehicle-five" class="anchor" href="#vehicle-five"></a>Vehicle 5</h2>
-
-    <h3><a class="anchor" href="#vehicle-five-description"></a>Description</h3>
-
-    <blockquote>
-      The individual threshold device is of the simplest sort: it gives no output if its input line carries a signal below the threshold, and it gives full output beyond the threshold.
-      <p><cite>Vehicles p. 21</cite></p>
-    </blockquote>
-
-    <h4><a class="anchor" href="#cone-sensor"></a>Cone Sensor</h4>
-
-    <a href="images/Sensor02.png"><img class="lonely-image" alt="Cone Sensor" src="images/Sensor02.png"></a>
-
-    <p>
-      COMPONENT
-    </p>
-
-    <h4><a class="anchor" href="#vehicle-five-chasis"></a>Chasis</h4>
-
-    <a href="images/Vehicle05.png"><img class="lonely-image" alt="Vehicle Five" src="images/Vehicle05.png"></a>
-
-    <p>
-      DESCRIPTION
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-five-observations"></a>Observations</h3>
-
-    <p>
-      OBSERVATIONS
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-five-demonstration"></a>Demonstration</h3>
-
-    <embed
-      class="applet"
-      type="application/x-java-applet;version=1.6"
-      width="600" height="600" 
-      archive="applets/braitenoids_vehicle5.jar"
-      code="Asteroids.class"
-      pluginspage="http://java.com/download/"
-      myParam="" />
-
-    <p>
-      Select the Applet and press 'S' to start. Press 'P' to pause the Applet at any time.
-    </p>
-
-    <h3><a class="anchor" href="#vehicle-five-analysis"></a>Analysis</h3>
-
-    <p>
-      ANALYSIS
-    </p>
-
-    <hr />
-
-    <!--========================= Evolving Vehicles =========================-->
-    <!--=====================================================================-->
-    <h2>
-      <a id="evolving-new-vehicles" class="anchor" href="#evolving-new-vehicles">
-      </a>
-      Evolving New Vehicles
-    </h2>
-
-    <p>
-      Description of evolutionary algorithms used...
-    </p>
-
-
-
-
-
-    <h2>
-      <a id="future-goals" class="anchor" href="#future-goals">
-      </a>
-      Future Goals
-    </h2>
-    <p>
-      To see some of the future goals for the project visit the <a href="futuregoals.html">Future Goals</a> page.
-    </p>
-
-    <!--
-    <pre><code>
-      Developing....
-    </code></pre>
-    -->
-  </section>
+<div class="outer" id="main_content_wrap">
+<div class="toc"><span class="toctitle">Index</span><ul>
+<li><a href="#project-description">Project Description</a><ul>
+<li><a href="#preface">Preface</a><ul>
+<li><a href="#adding-a-security-exception-to-java">Adding A Security Exception To Java</a></li>
+</ul>
+</li>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#vehicle-1">Vehicle 1</a><ul>
+<li><a href="#description">Description</a><ul>
+<li><a href="#radius-sensor">Radius Sensor</a></li>
+<li><a href="#forward-thruster">Forward Thruster</a></li>
+<li><a href="#chasis">Chasis</a></li>
+</ul>
+</li>
+<li><a href="#observations">Observations</a></li>
+<li><a href="#demonstration">Demonstration</a></li>
+<li><a href="#analysis">Analysis</a></li>
+</ul>
+</li>
+<li><a href="#vehicle-2">Vehicle 2</a><ul>
+<li><a href="#description_1">Description</a><ul>
+<li><a href="#cone-sensor">Cone Sensor</a></li>
+<li><a href="#gyroscope">Gyroscope</a></li>
+<li><a href="#chasis_1">Chasis</a></li>
+</ul>
+</li>
+<li><a href="#observations_1">Observations</a></li>
+<li><a href="#demonstration_1">Demonstration</a></li>
+<li><a href="#analysis_1">Analysis</a></li>
+</ul>
+</li>
+<li><a href="#vehicle-3">Vehicle 3</a><ul>
+<li><a href="#description_2">Description</a><ul>
+<li><a href="#chasis_2">Chasis</a></li>
+</ul>
+</li>
+<li><a href="#observations_2">Observations</a></li>
+<li><a href="#demonstration_2">Demonstration</a></li>
+<li><a href="#analysis_2">Analysis</a></li>
+</ul>
+</li>
+<li><a href="#vehicle-4">Vehicle 4</a><ul>
+<li><a href="#description_3">Description</a><ul>
+<li><a href="#modulator">Modulator</a></li>
+<li><a href="#chasis_3">Chasis</a></li>
+</ul>
+</li>
+<li><a href="#observations_3">Observations</a></li>
+<li><a href="#demonstration_3">Demonstration</a></li>
+<li><a href="#analysis_3">Analysis</a></li>
+</ul>
+</li>
+<li><a href="#vehicle-5">Vehicle 5</a><ul>
+<li><a href="#description_4">Description</a><ul>
+<li><a href="#cone-sensor_1">Cone Sensor</a></li>
+<li><a href="#chasis_4">Chasis</a></li>
+</ul>
+</li>
+<li><a href="#observations_4">Observations</a></li>
+<li><a href="#demonstration_4">Demonstration</a></li>
+<li><a href="#analysis_4">Analysis</a></li>
+</ul>
+</li>
+<li><a href="#evolving-new-vehicles">Evolving New Vehicles</a></li>
+<li><a href="#future-goals">Future Goals</a></li>
+</ul>
+</li>
+</ul>
 </div>
-
+<section class="inner" id="main_content">
+<h1 id="project-description">Project Description</h1>
+<h2 id="preface">Preface</h2>
+<p>This project uses an unsigned JAR file which may be disallowed by your default Java settings.</p>
+<p>If you are not presented with a dialog asking for permission to run the Applets on this site, you will have to add an exception to your Java Security settings:</p>
+<h3 id="adding-a-security-exception-to-java">Adding A Security Exception To Java</h3>
+<blockquote>
+<ol>
+<li>Open the Java Control Panel (Windows users may search for <q>Configure Java</q> in Start)</li>
+<li>Select the Security Tab</li>
+<li>Edit the <q>Exception Site List</q> and add the line:</li>
+</ol>
+<p><pre><code>http://ndmacdon.github.io/</pre></code></p>
+<p><a href="https://www.java.com/en/download/help/java_blocked.xml">~Java Security Settings</a></p>
+</blockquote>
+<h2 id="introduction">Introduction</h2>
+<p>Braitenberg Vehicles were created as a thought experiment by Valentino Braitenberg. Braitenberg sought to reveal the mechanisms of the mind with his Vehicles. He did this by combining simple (albeit fantastical) hardware to produce complex behaviors. In his book, Braitenberg develops 14 vehicles, each more sophisticated than the last. Braitenberg&rsquo;s Vehicles develop in turn: instincts, emotions, logic, concepts, ideas, foresight and egotism.</p>
+<p>Braitenberg Pilots applies Braitenberg&rsquo;s Vehicle designs to the Asteroids game environment to see if they can effectively survive and achieve a high score in the game (i.e. are they fit for the environment). The goal is to design a very general robot which evolves to suit the environment, not to hand craft the best Asteroids AI possible. ~General-solution ~Evolution</p>
+<p>The first few Braitenberg Vehicles described by Braitenberg in his book are reproduced below. These initial Vehicles introduce the components and concepts used in subsequent Vehicles. The Vehicles are introduced, observed and introduced in a style and format similar to the one used by Braitenberg in Vehicles~TITLE.</p>
+<h2 id="vehicle-1">Vehicle 1</h2>
+<h3 id="description">Description</h3>
+<blockquote>
+<p>Vehicle 1 is equipped with one sensor and one motor.</p>
+<p><cite>Vehicles p. 3</cite></p>
+</blockquote>
+<p><a href="images/Sensor01.png"><img alt="Radius Sensor" src="images/Sensor01.png" /></a></p>
+<h4 id="radius-sensor">Radius Sensor</h4>
+<p>The sensor attached to Vehicle 1 detects objects in a radius extending from the sensor&rsquo;s origin. The sensor reports a normalized distance to the nearest detected object. To simplify implementation, the reported distance is measured from the detected object&rsquo;s origin to the sensor&rsquo;s origin. In this way, the sensor acts as a primitive antenna; focusing on the closest object in its field of detection.</p>
+<h4 id="forward-thruster">Forward Thruster</h4>
+<p>Vehicle 1 is also equipped with a thruster capable of propelling the robot forward at varying speeds. The thruster is an example of a Motor component. Motor components receive an input signal and produce some effect.</p>
+<p><a href="images/Vehicle01.png"><img alt="Vehicle 1" src="images/Vehicle01.png" /></a></p>
+<h4 id="chasis">Chasis</h4>
+<p>Vehicle 1&rsquo;s sensor is connected to the forward thruster. The forward thruster is depicted as a pentagon with an arrow indicating the exhaust direction. As stimulus excites the sensor, a signal is passed to the thruster. The connection is such that, the closer an object gets, the harder the thruster works. More-more connections like this are depicted in diagrams as red wires (as seen in figure 2).</p>
+<h3 id="observations">Observations</h3>
+<p>Vehicle 1 floats casually at first but when an asteroid approaches, he begins to move forward. If approached from behind, he creeps ahead of the approaching asteroid, only just keeping it at the edge of his senses. If approached from the fore, he rapidly accelerates forward; often shooting himself into the approacher, occasionally slipping past into open space.</p>
+<h3 id="demonstration">Demonstration</h3>
+<embed
+  class="applet"
+  type="application/x-java-applet;version=1.6"
+  width="600" height="600" 
+  archive="applets/braitenoids_selection.jar"
+  code="Asteroids.class"
+  pluginspage="http://java.com/download/"
+  myParam="" />
+      
+<p>Select the Applet and press &lsquo;S&rsquo; to start. Press &lsquo;P&rsquo; to pause the Applet at any time.</p>
+<h3 id="analysis">Analysis</h3>
+<p>Vehicle 1 is a simple creature. He loves wide open spaces. Crowded areas agitate him to flight. He is a fickle creature, always searching for a totally empty spot; never happy with almost perfect. He lacks strategy and would rather plough through a dense crowd ahead of him than bear the slightest company or move around it.</p>
+<hr />
+<h2 id="vehicle-2">Vehicle 2</h2>
+<h3 id="description_1">Description</h3>
+<blockquote>
+<p>Vehicle 2 is generally similar to Vehicle 1 except that it has two sensors, one on each side, and two motors, right and left.</p>
+<p><cite>Vehicles p. 6</cite></p>
+</blockquote>
+<p><a href="images/Sensor02.png"><img alt="Cone Sensor" src="images/Sensor02.png" /></a></p>
+<h4 id="cone-sensor">Cone Sensor</h4>
+<p>Vehicle 2 utilizes a Cone Sensor to acheive more focused behavior than is possible with the antenna-like Radius Sensor. Cone Sensors detect objects in a cone extending away from the sensor. Again, the sensor reports the normalized distance to the nearest detected object. The resulting sensor mimics a simple eye; concerned with only the nearest object.</p>
+<h4 id="gyroscope">Gyroscope</h4>
+<p>Vehicle 2 comes equipped with two gyroscopes. Each gyroscope exerts force in the rotational direction indicated by a curved arrow. The gyroscopes rotate their Vehicle whenever they are passed a signal from an attached sensor. Gyroscopes conteract eachother such that if two opposing gyroscopes (one clock-wise and one counter-clockwise) are equally excited, no rotation will occur.</p>
+<p><a href="images/Vehicle02A.png"><img alt="Vehicle 2A" src="images/Vehicle02A.png" /></a></p>
+<p><a href="images/Vehicle02B.png"><img alt="Vehicle 2B" src="images/Vehicle02B.png" /></a></p>
+<h4 id="chasis_1">Chasis</h4>
+<p>Vehicle 2&rsquo;s cone sensors are tilted apart such that their field of view overlaps only slightly. Two significant wiring configurations are possible in this Vehicle. The left-facing sensor may be connected to the left-side gyroscope and the right-sensor with the right gyroscope (a so called uncrossed connection as in figure XXX). Alternatively, the connections may be crossed such that the left-facing sensor is connected with the right-side gyro and the right-facing sensor is connected with the left-side gyro (as in figure XXX). In either case, the thruster is connected to each sensor as in Vehicle 1.</p>
+<p>For convenience, the uncrossed configuration will be refered to as Vehicle 2A and the crossed configuration 2B.</p>
+<h3 id="observations_1">Observations</h3>
+<p>OBSERVATIONS</p>
+<h3 id="demonstration_1">Demonstration</h3>
+<p>Select the Applet and press &lsquo;S&rsquo; to start. Press &lsquo;P&rsquo; to pause the Applet at any time.</p>
+<h3 id="analysis_1">Analysis</h3>
+<p>ANALYSIS</p>
+<hr />
+<h2 id="vehicle-3">Vehicle 3</h2>
+<h3 id="description_2">Description</h3>
+<blockquote>
+<p>There is something very crude about a vehicle that can only be excited by the things it smells (or sees or hears) and knows no soothing or relaxing stimuli.</p>
+<p><cite>Vehicles p. 10</cite></p>
+</blockquote>
+<p><a href="images/Vehicle3A.png"><img alt="Vehicle 3A" src="images/Vehicle3A.png" /></a></p>
+<p><a href="images/Vehicle3B.png"><img alt="Vehicle 3B" src="images/Vehicle3B.png" /></a></p>
+<h4 id="chasis_2">Chasis</h4>
+<p>Vehicles 3A and 3B are equipped with the same sensors and motors as Vehicles 2A and 2B but with a novel wiring scheme. Vehicle 3&rsquo;s connections are inverted such that; when a sensor is deprived of stimulus (there is nothing to detect) the attached Motor is fired at full capacity. When a sensor is excited, the attached component is inhibited and acts with less force. Such inverted connections are depicted in figure XXX as blue wires.</p>
+<h3 id="observations_2">Observations</h3>
+<p>OBSERVATIONS</p>
+<h3 id="demonstration_2">Demonstration</h3>
+<p>Select the Applet and press &lsquo;S&rsquo; to start. Press &lsquo;P&rsquo; to pause the Applet at any time.</p>
+<h3 id="analysis_2">Analysis</h3>
+<p>ANALYSIS</p>
+<hr />
+<h2 id="vehicle-4">Vehicle 4</h2>
+<h3 id="description_3">Description</h3>
+<blockquote>
+<p>Let us consider the following improvement. The activation of a certain sensor will make the corresponding motor run faster, but only up to a point, where the speed of the motor reaches a maximum. Beyond this point, if the sensor is activated even more strongly, the speed will decrease again.</p>
+<p><cite>Vehicles p. 15</cite></p>
+</blockquote>
+<p><a href="images/Sensor02.png"><img alt="Cone Sensor" src="images/Sensor02.png" /></a></p>
+<h4 id="modulator">Modulator</h4>
+<p>Vehicle 4 introduces Modulators to our wiring schemes. Past connections, inverted or not, assumed a linear relationship between sensor output and motor stimulation. Either, the more-stimulue the more-output or the more-stimulus the less-output. Modulators take a signal from a sensor, input the signal to a function, and return the result. Multiple Sensors can be connected to a single Modulator. In that case, all the Sensor signals will be added together and input to the modulator&rsquo;s function (similar to wiring batteries series to acheive higher voltage). Multiple motors may also be connected to the output of a modulator. Modulators are represented in our figures as a disc labeled f~cursive-symbol~. Modulators allow for a stunning array of behaviours and configurations.</p>
+<p><a href="images/Vehicle04A.png"><img alt="Vehicle 4A" src="images/Vehicle04A.png" /></a></p>
+<h4 id="chasis_3">Chasis</h4>
+<p>Vehicles 4A and 4B are equipped with the same sensors and motors as Vehicles 3A and 3B. However, Modulators intercept the connections between the Sensors and Motors of these new Vehicles. The Modulators used here are modeled by the curve shown in figure XXX (a parabolic curve of the form f(x)=-4(X^2-X) || MAYBE 4(X^2-X)+1 IS MORE INTERESTING???).</p>
+<h3 id="observations_3">Observations</h3>
+<p>OBSERVATIONS</p>
+<h3 id="demonstration_3">Demonstration</h3>
+<p>Select the Applet and press &lsquo;S&rsquo; to start. Press &lsquo;P&rsquo; to pause the Applet at any time.</p>
+<h3 id="analysis_3">Analysis</h3>
+<p>ANALYSIS</p>
+<hr />
+<h2 id="vehicle-5">Vehicle 5</h2>
+<h3 id="description_4">Description</h3>
+<blockquote>
+<p>The individual threshold device is of the simplest sort: it gives no output if its input line carries a signal below the threshold, and it gives full output beyond the threshold.</p>
+<p><cite>Vehicles p. 21</cite></p>
+</blockquote>
+<h4 id="cone-sensor_1">Cone Sensor</h4>
+<p><a href="images/Sensor02.png"><img alt="Cone Sensor" src="images/Sensor02.png" /></a></p>
+<p>COMPONENT</p>
+<h4 id="chasis_4">Chasis</h4>
+<p><a href="images/Vehicle05.png"><img alt="Vehicle 5" src="images/Vehicle05.png" /></a></p>
+<p>DESCRIPTION</p>
+<h3 id="observations_4">Observations</h3>
+<p>OBSERVATIONS</p>
+<h3 id="demonstration_4">Demonstration</h3>
+<p>Select the Applet and press &lsquo;S&rsquo; to start. Press &lsquo;P&rsquo; to pause the Applet at any time.</p>
+<h3 id="analysis_4">Analysis</h3>
+<p>ANALYSIS</p>
+<hr />
+<h2 id="evolving-new-vehicles">Evolving New Vehicles</h2>
+<p>Description of evolutionary algorithms used&hellip;</p>
+<h2 id="future-goals">Future Goals</h2>
+<p>To see some of the future goals for the project visit the <a href="futuregoals.html">Future Goals</a> page.</p>
+</section>
+</div>
 <!--========================= FOOTER =========================-->
+
 <!--==========================================================-->
+
 <div id="footer_wrap" class="outer">
-  <footer class="inner">
-    <p class="copyright">
-      Braitenberg Pilots maintained by 
-      <a href="https://nicholas-macdonald-5cun.squarespace.com/home" target="_blank">Nicholas Macdonald</a>
-    </p>
-
-    <p class="copyright">
-      Original Engine by 
-      <a href="http://www.brainjar.com/" target="_blank">Mike Hall</a>
-    </p>
-
-    <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-  </footer>
+<footer class="inner">
+<p class="copyright">
+Braitenberg Pilots maintained by 
+<a href="https://nicholas-macdonald-5cun.squarespace.com/home" target="_blank">Nicholas Macdonald</a>
+</p>
+<p class="copyright">
+Original Engine by 
+<a href="http://www.brainjar.com/" target="_blank">Mike Hall</a>
+</p>
+<p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+</footer>
 </div>
 
-</body>
-</html>
+<p></body>
+</html></p>

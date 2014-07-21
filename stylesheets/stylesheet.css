@@ -58,7 +58,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6, .toctitle {
   margin: 10px 0;
   font-weight: 700;
   color:#222222;
@@ -66,7 +66,7 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -1px;
 }
 
-h1, h2, h3 {
+h1, h2, h3, .toctitle {
   clear: both;
 }
 
@@ -81,7 +81,7 @@ h2 {
   background: url('../images/bg_hr.png') repeat-x bottom;
 }
 
-h3 {
+h3, .toctitle {
   font-size: 24px;
 }
 
@@ -175,7 +175,7 @@ pre, code {
 }
 
 pre {
-  width: 100%;
+  width: 90%;
   padding: 10px;
   box-shadow: 0 0 10px rgba(0,0,0,.1);
   overflow: auto;
@@ -358,16 +358,19 @@ Full-Width Styles
 }
 
 #main_content_wrap {
+  float: left;
   background: #f2f2f2;
   border-top: 1px solid #111;
   border-bottom: 1px solid #111;
 }
 
 #main_content {
+  float: left;
   padding-top: 40px;
 }
 
 #footer_wrap {
+  clear: both;
   background: #212121;
 }
 
@@ -377,10 +380,69 @@ Full-Width Styles
   margin-left: auto;
 }
 
-.lonely-image {
-  height: 15em;
+.toc {
+  display:block;
+  max-width: 20%;
+  float: left;
+  margin: .75em;
+  padding: .75em;
+
+  border: 1px solid #ddd;
+  box-shadow: 0 0 10px #ddd;
+  -webkit-box-shadow: 0 0 5px #ddd;
+  -moz-box-shadow: 0 0 5px #ddd;
+  -o-box-shadow: 0 0 5px #ddd;
+  -ms-box-shadow: 0 0 5px #ddd;
+}
+
+.toc ul {
+  counter-reset: item;
+  list-style: decimal
+}
+
+.toc li {
+  display: block;
+  position: relative;
+  margin-left: .5em;
+}
+
+.toc li:before {
+  content: counters(item, ".")".";
+  counter-increment: item;
+  position: absolute;
+  margin-right: 100%;
+  right: .5em; /* space between number and text */
+}
+
+/* Suppress fourth level of TOC */
+.toc ul>li>ul>li>ul>li>ul {
+  display: none;
+}
+
+
+
+.toctitle {
+}
+
+a>img {
   float: right;
   clear: right;
+  position: relative;
+  height: 15em;
+  max-width: 739px;
+  padding: 5px;
+  margin: 10px 0 10px 0;
+  
+  border: 1px solid #ddd;
+  box-shadow: 0 0 10px #ddd;
+  -webkit-box-shadow: 0 0 5px #ddd;
+  -moz-box-shadow: 0 0 5px #ddd;
+  -o-box-shadow: 0 0 5px #ddd;
+  -ms-box-shadow: 0 0 5px #ddd;
+
+  display: inline;
+  vertical-align: middle;
+  text-align: center;
 }
 
 
