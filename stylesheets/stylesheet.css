@@ -419,9 +419,30 @@ Full-Width Styles
   display: none;
 }
 
+.fullscreen {
+  width:100vw;
+  height: 100vh;
+  margin:3em 0 3em 0;
+  border-left: 0;
+  border-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
 
+embed {
+  padding: 5px;
+  margin: 10px 0 10px 0;
+  
+  border: 1px solid #ddd;
+  box-shadow: 0 0 10px #ddd;
+  -webkit-box-shadow: 0 0 5px #ddd;
+  -moz-box-shadow: 0 0 5px #ddd;
+  -o-box-shadow: 0 0 5px #ddd;
+  -ms-box-shadow: 0 0 5px #ddd;
 
-.toctitle {
+  display: inline;
+  vertical-align: middle;
+  text-align: center;
 }
 
 a>img {
