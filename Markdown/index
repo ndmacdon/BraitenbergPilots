@@ -37,11 +37,12 @@
 
 ## Preface
 
+### Adding A Security Exception To Java
+
 This project uses an unsigned JAR file which may be disallowed by your default Java settings.
 
 If you are not presented with a dialog asking for permission to run the Applets on this site, you will have to add an exception to your Java Security settings:
 
-### Adding A Security Exception To Java
 > 1. Open the Java Control Panel (Windows users may search for <q>Configure Java</q> in Start)
 > 1. Select the Security Tab
 > 1. Edit the <q>Exception Site List</q> and add the line:
@@ -49,6 +50,11 @@ If you are not presented with a dialog asking for permission to run the Applets 
 > <pre><code>http://ndmacdon.github.io/</pre></code>
 
 > [~Java Security Settings](https://www.java.com/en/download/help/java_blocked.xml)
+
+
+### Fullscreen Demonstration
+
+Visit the [Fullscreen Demo](fullscreen.html) page to see the program running in a larger window.
 
 ## Introduction
 
