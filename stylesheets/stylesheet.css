@@ -365,8 +365,8 @@ Full-Width Styles
 }
 
 #main_content {
+  width: 50%;
   float: left;
-  margin: 0 auto 0 auto;
   padding-top: 40px;
 }
 
@@ -383,10 +383,13 @@ Full-Width Styles
 
 .toc {
   display:block;
+  min-width: 8em;
   width: 20%;
+  max-width: 20em;
   float: left;
   margin: .75em;
   padding: .75em;
+  overflow: hidden;
 
   border: 1px solid #ddd;
   box-shadow: 0 0 10px #ddd;
