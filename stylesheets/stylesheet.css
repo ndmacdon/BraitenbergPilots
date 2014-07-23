@@ -365,7 +365,7 @@ Full-Width Styles
 }
 
 #main_content {
-  width: 50%;
+  width: 60%;
   float: left;
   padding-top: 40px;
 }
@@ -376,6 +376,7 @@ Full-Width Styles
 }
 
 .applet {
+  width: 100%;
   display: block;
   margin-right: auto;
   margin-left: auto;
