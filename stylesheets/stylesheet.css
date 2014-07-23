@@ -366,6 +366,7 @@ Full-Width Styles
 
 #main_content {
   float: left;
+  margin: 0 auto 0 auto;
   padding-top: 40px;
 }
 
@@ -382,7 +383,7 @@ Full-Width Styles
 
 .toc {
   display:block;
-  max-width: 20%;
+  width: 20%;
   float: left;
   margin: .75em;
   padding: .75em;
