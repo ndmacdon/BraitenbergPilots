@@ -54,7 +54,6 @@ import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 import java.applet.Applet;
-import java.io.*;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -718,8 +717,10 @@ class BraitenbergVehicle {
 
   // End the life of this vehicle and return its lifetime:
   public long expire() {
+    long preLifetime = lifetime;
     relax();
-    return lifetime;
+    lifetime = 0;
+    return preLifetime;
   }
 
   // Analyze the gamestate and generate commands:
@@ -1826,22 +1827,31 @@ class AsteroidsSprite {
 
 public class Asteroids extends Applet implements Runnable, KeyListener {
 
-private static final long serialVersionUID = 1L;
-
-public static Frame frame = null;
+  private static final long serialVersionUID = 1L;
+  
+  public static Frame frame = null;
 
   // Structured collection of AsteroidsSprites.
   // Used by agent's to provide awareness of game state.
   // MAXCOLLIDERS = MAX_ROCKS + 1 UFO + 1 MISSILE
   GameState currentState;
 
-  // Statistics list.
+  // Testing information.
+  // Used for performing tests and gathering statistics.
+  
   // Records details of an agent's life.
-  private List<String> lifeStatistics = new ArrayList<String>();
+  private List<String> lifeData = new ArrayList<String>(); 
+  
+  static final int STATISTICS_POLLRATE = 2; // Record statistics every n frames.
+  
+  public enum Stat {
+    SENSOR0SIGNAL,
+    FRAME
+  }
 
   // Agent Variables.
 
-  static final double CONTROL_SCALING = 2.0;
+  static final double CONTROL_SCALING = 2.0; // Amount to scale pilot's control signals by.
 
   BRVFactory factory;
   BraitenbergVehicle pilot;
@@ -1875,12 +1885,13 @@ public static Frame frame = null;
 
   // Constants
 
-  static final int DELAY = 15;             // Milliseconds between screen and
-  static final int FPS   =                 // the resulting frame rate.
-    Math.round(1000 / DELAY);
+  static final int FRAME_LENGTH = 100;     // Milliseconds in one frame.
+  static final int DELAY = 15;              // Milliseconds between screen and
+  static final int FPS   =                  // the resulting frame rate.
+    Math.round(FRAME_LENGTH / DELAY);
 
-  static final int MAX_SHOTS =  12;          // Maximum number of sprites
-  static final int MAX_ROCKS =  40;          // for photons, asteroids and
+  static final int MAX_SHOTS =  12;         // Maximum number of sprites
+  static final int MAX_ROCKS =  40;         // for photons, asteroids and
   static final int MAX_SCRAP = 40;          // explosions.
   
   int maxSpawnableRocks;
@@ -1908,7 +1919,7 @@ public static Frame frame = null;
   static final double SHIP_ANGLE_STEP = Math.PI / FPS;
   static final double SHIP_SPEED_STEP = 15.0 / FPS;
   static final double MAX_SHIP_SPEED  = 1.5 * MAX_ROCK_SPEED;
-  static final double FRICTION        = .95;
+  static final double FRICTION        = .95; // Applies only to the ship.
 
   static final int FIRE_DELAY = 50;         // Minimum number of milliseconds
                                             // required between photon shots.
@@ -1926,8 +1937,8 @@ public static Frame frame = null;
   // Number of points the must be scored to earn a new ship or to cause the
   // flying saucer to appear.
 
-  static final int NEW_SHIP_POINTS = Integer.MAX_VALUE;
-  static final int NEW_UFO_POINTS  = 500;
+  static final int NEW_SHIP_POINTS = 4000;
+  static final int NEW_UFO_POINTS  = 3000;
 
   // Background stars.
 
@@ -2022,14 +2033,15 @@ public static Frame frame = null;
     return(copyText);
   }
 
+  // Perform all necessary one-time instantiation:
   public void init() {
     
     menuInput = "";
     
-    // Init menu info:
+    // Initialize menu info:
     menuInfo.add("Braitenberg Pilots");
     menuInfo.add("");
-    menuInfo.add("Select a vehicle to see it play the game:");
+    menuInfo.add("Enter a two-character key and press 'Enter' to see that vehicle play the game:");
     menuInfo.add("");
     menuInfo.add("Braitenberg-Vehicles   |   Fit-Vehicles");
     menuInfo.add("Key   Pilot            |   Key   Pilot");
@@ -2055,18 +2067,10 @@ public static Frame frame = null;
     menuInfo.add(copyInfo);
     menuInfo.add(copyLink);
 
-    // Add a header to agent life data:
-    lifeStatistics.add("Agent-Class,Lifespan,Points,Asteroid-Count\n");
-
-    // Display copyright information.
-
-    System.out.println(copyText);
-
     // Set up key event handling and set focus to applet window.
 
     addKeyListener(this);
     requestFocus();
-
     resizeScreen();
 
     // Create shape for the ship sprite.
@@ -2123,7 +2127,6 @@ public static Frame frame = null;
     }
 
     // Create shape for the flying saucer.
-    // TODO: Revert UFO SHape
     ufo = new AsteroidsSprite();
     Coordinate[] ufoCoords = {
         new Coordinate(-15, 0),
@@ -2173,6 +2176,7 @@ public static Frame frame = null;
                                   asteroids,
                                   missle,
                                   ufo);
+    
     factory = new BRVFactory(currentState);
 
     highScore = 0;
@@ -2181,6 +2185,8 @@ public static Frame frame = null;
     endGame();
   }
   
+  // Reset the game bounds (display and active-play area) to
+  // the current applet-window bounds:
   public void resizeScreen() {
     // Save the screen size.
     
@@ -2188,8 +2194,11 @@ public static Frame frame = null;
     AsteroidsSprite.width = d.width;
     AsteroidsSprite.height = d.height;
     
-    // Adjust the number of rocks based on the screen size but never exceed the arrays allocated by MAX_ROCKS:
-    maxSpawnableRocks = Math.min((int) Math.pow(d.height * d.width / 10000, .56), MAX_ROCKS);
+    // Adjust the number of rocks based on 
+    // the screen size but never exceed the arrays allocated by MAX_ROCKS:
+    maxSpawnableRocks = Math.min(
+                          (int) Math.pow(d.height * d.width / 10000, .56), 
+                          MAX_ROCKS);
 
     // Generate the starry background.
 
@@ -2197,11 +2206,14 @@ public static Frame frame = null;
     stars = new Point[numStars];
     for (int i = 0; i < numStars; i++) {
       stars[i] = AsteroidsSprite.gFactory.createPoint(
-          new Coordinate(Math.random() * AsteroidsSprite.width, (Math.random() * AsteroidsSprite.height))
+          new Coordinate(
+              Math.random() * AsteroidsSprite.width, 
+              (Math.random() * AsteroidsSprite.height))
           );
     }
   }
 
+  // Reset for a new game:
   public void initGame() {
     
     resizeScreen();
@@ -2222,10 +2234,16 @@ public static Frame frame = null;
     playing = true;
     paused = false;
     photonTime = System.currentTimeMillis();
+    
+    lifeData.clear(); // Reset for a new vehicle.
   }
 
+  // Cleanup after a game:
   public void endGame() {
 
+    // Record statistics for the current game:
+    writeLifeData();
+    
     // Stop ship, flying saucer, guided missile and associated sounds.
 
     playing = false;
@@ -2243,6 +2261,7 @@ public static Frame frame = null;
     loopThread = null;
   }
 
+  // Main execution loop:
   public void run() {
     long startTime;
     Thread thisThread = Thread.currentThread();
@@ -2263,11 +2282,7 @@ public static Frame frame = null;
   
       debugInfo.clear();
       
-      // If a game hasn't begun:
-      if (!paused && !playing) {
-        // TODO: FILL IN VEHICLE SELECTION!
-      }
-  
+      // Update the game:
       if (!paused) {
   
         // Move and process all sprites.
@@ -2304,19 +2319,46 @@ public static Frame frame = null;
             }
         }
   
-        // Only Update the CurrentState && Agent while the game is playing:
-        if (playing) {
+        // Only Update the CurrentState && Pilot while the game is playing:
+        if (playing && ship.active) {
+          
           updateControlSignals(pilot);
           pilot.update();
+          
+          // TODO: CONFIGURE THE FOLLOWING FOR THE CURRENT TEST:
+          // Record data every nth frame:
+          if (pilot.lifetime % STATISTICS_POLLRATE == 0) {
+            //logStatistic(Stat.FRAME);
+            //logStatistic(Stat.SENSOR0SIGNAL);
+          }
         }
   
-      // Update the screen and set the timer for the next loop.
-      repaint();
+        // Update the screen and set the timer for the next loop.
+        repaint();
   
       }
     }
   }
   
+  // Record some statistics:
+  // Only for testing (inefficient).
+  public void logStatistic(Stat stat) {
+    
+    switch(stat) {
+    case FRAME:
+      lifeData.add("F:" + String.valueOf(pilot.lifetime) + ",");
+      break;
+      
+    case SENSOR0SIGNAL:
+      lifeData.add("S0S:" + String.valueOf(pilot.hardpoints.get(0).getOutput()) + ",");
+      break;
+    
+    
+    }
+    
+  }
+  
+  // Write debug information to the debug buffer:
   public void debug() {
     
     // Record Ship lifetime
@@ -2370,6 +2412,7 @@ public static Frame frame = null;
 
   }
 
+  // Reset the ship for a new life:
   public void initShip() {
 
     // Reset the ship sprite at the center of the screen.
@@ -2506,19 +2549,18 @@ public static Frame frame = null;
 
   public void stopShip() {
 
-    // Avoid recording erroneous data:
+    // Record data for an ended life:
     if (playing == true && pilot.getLifetime() > 0) {
       String lifeRecord = String.format(
-      "%s,%d,%d,%d\n", 
-      pilot.getClass().getSimpleName(), 
-      pilot.expire(),
-      this.score,
-      maxSpawnableRocks);
+        "class:%s,lifetime:%d,score:%d,maxRocks:%d\n", 
+        pilot.getClass().getSimpleName(), 
+        pilot.expire(),
+        this.score,
+        maxSpawnableRocks);
 
-      lifeStatistics.add(lifeRecord);
-      System.out.println(lifeRecord);
+      lifeData.add(lifeRecord);
     }
-
+    
     ship.active = false;
     shipCounter = SCRAP_COUNT;
     if (shipsLeft > 0)
@@ -2596,7 +2638,7 @@ public static Frame frame = null;
             score += UFO_POINTS;
           }
 
-          // On occassion, fire a missle at the ship if the saucer is not too
+          // On occasion, fire a missile at the ship if the saucer is not too
           // close to it.
 
           d = (int) Math.max(Math.abs(ufo.x - ship.x), Math.abs(ufo.y - ship.y));
@@ -2875,7 +2917,8 @@ public static Frame frame = null;
   }
 
   public void explode(AsteroidsSprite s) {
-    // TODO: fix explosions...
+    // TODO: Explosions interfere with sensors.
+    //       Leaving them out seems to be the best option.
     /*
     int c, i, j;
     int cx, cy;
@@ -2954,10 +2997,8 @@ public static Frame frame = null;
 
   // Interpret Keyboard commands as utility functions:
   public void keyPressed(KeyEvent e) {
-    char c;
     
-    // Allow upper or lower case characters for remaining keys.
-    c = Character.toUpperCase(e.getKeyChar());
+    char c = Character.toUpperCase(e.getKeyChar());
 
     menuInput = menuInput.concat(Character.toString(c));
 
@@ -2974,12 +3015,6 @@ public static Frame frame = null;
     // 'D' key: toggle graphics detail on or off.
     if (e.getKeyCode() == KeyEvent.VK_D) {
       detail = !detail;
-    }
-
-    // Record stored results and quit the game:
-    if (e.getKeyCode() == KeyEvent.VK_Q) {
-      recordLifeData("results.txt");
-      System.exit(0);
     }
     
     // End the game prematurely:
@@ -3027,32 +3062,19 @@ public static Frame frame = null;
     }
   }
 
-
   public void keyReleased(KeyEvent e) {}
   public void keyTyped(KeyEvent e) {}
   public void update(Graphics g) { paint(g); }
 
-  // Record the strings in <lifeStatistics> into a file called '<fileName>':
-  private void recordLifeData(String fileName) {
-    BufferedWriter writer = null;
-    try {
-        writer = new BufferedWriter(new FileWriter("./" + fileName) );
-        for (String str : lifeStatistics) {
-          writer.write(str);
-        }
-
-
-    } catch (IOException e) {
-        System.err.println(e);
-    } finally {
-        if (writer != null) {
-            try {
-                writer.close();
-            } catch (IOException e) {
-                System.err.println(e);
-            }
-        }
+  // Write the data in <lifeData> to the console and clear <lifeStatistics>:
+  private void writeLifeData() {
+    
+    // Write the current vehicles life data on one line:
+    for (String str : lifeData) {
+      System.out.print(str);
     }
+    
+    System.out.print("\n\n"); // Start a new line for the next vehicle.
   }
 
   public void paint(Graphics g) {
