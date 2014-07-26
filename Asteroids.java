@@ -62,7 +62,34 @@ import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.operation.distance.DistanceOp;
+import com.vividsolutions.jts.util.GeometricShapeFactory;
 
+
+// A singleton used to generate Geometry objects in JTS:
+class SingleGeometryFactory {
+  static final int NUM_POINTS = 30;
+
+  private static GeometryFactory gFactory = null;
+  
+  protected SingleGeometryFactory() { /* Prevent instantiaton */ }
+  public static GeometryFactory getFactory() {
+    // Lazily instantiate a factory:
+    if(gFactory == null) {
+      gFactory = new GeometryFactory();
+    }
+    return gFactory;
+  }
+  
+  private static GeometricShapeFactory sFactory = null;
+  public static GeometricShapeFactory getShapeFactory() {
+    // Lazily instantiate a factory:
+    if(sFactory == null) {
+      sFactory = new GeometricShapeFactory(getFactory());
+      sFactory.setNumPoints(NUM_POINTS);
+    }
+    return sFactory;
+  }
+}
 
 /*
   Provides some standard Vector Operations such as dot product
@@ -165,6 +192,9 @@ interface Sensor extends Source{
   // Sense some aspect of the GameState <world> given the sensor is at:
   // <loc> with a heading of <rot>.
   void sense(Point loc, double rot, GameState world);
+  
+  // Return a polygon in the shape of the detection field of the sensor:
+  PolyWrapper getShape();
 }
 
 
@@ -175,11 +205,13 @@ interface Sensor extends Source{
  */
 class DoubleSensor implements Sensor {
   double output = 0.0;
+  PolyWrapper shape;
   
   // Sense some aspect of the GameState <world> given the sensor is at:
   // <loc> with a heading of <rot>.
   public void sense(Point loc, double rot, GameState world) {}
   public double getOutput() { return output; }
+  public PolyWrapper getShape() { return shape; }
 }
 
 /*
@@ -202,6 +234,14 @@ class SensorRadiusShortDist extends DoubleSensor {
     // <loc, distanceToNearest>
     List<AsteroidsSprite> intersected = 
       world.intersectRadius(detectionRadius, loc);
+    
+    // Update the sensor's shape:
+    SingleGeometryFactory.getShapeFactory().setSize(detectionRadius*2);
+    SingleGeometryFactory.getShapeFactory().setBase(new Coordinate(
+        loc.getX()-SHORT_LENGTH, 
+        loc.getY()-SHORT_LENGTH));
+    
+    shape = new PolyWrapper(SingleGeometryFactory.getShapeFactory().createCircle());
 
     // The nearest AsteroidsSprite:
     AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
@@ -250,7 +290,7 @@ class SensorTriMedDist extends DoubleSensor {
     // Close the polygon:
     coords[3] = new Coordinate(coords[0]);
     
-    Polygon detectionTri = AsteroidsSprite.gFactory.createPolygon(coords);
+    Polygon detectionTri = SingleGeometryFactory.getFactory().createPolygon(coords);
     
     // List of AsteroidsSprites that intersect with a circle described by
     // <loc, distanceToNearest>
@@ -298,7 +338,7 @@ class SensorRayLongDist extends DoubleSensor {
         loc.getX() -Math.sin(orientation)*lineLength, 
         loc.getY() -Math.cos(orientation)*lineLength);
     
-    LineString line = AsteroidsSprite.gFactory.createLineString(coords);
+    LineString line = SingleGeometryFactory.getFactory().createLineString(coords);
     
     // List of colliders that intersect with <line>:
     List<AsteroidsSprite> intersected = world.intersectLine(line);
@@ -347,7 +387,7 @@ class SensorRayLongSpeed extends DoubleSensor {
         loc.getX() -Math.sin(orientation)*lineLength + (AsteroidsSprite.width / 2), 
         loc.getY() -Math.cos(orientation)*lineLength + (AsteroidsSprite.height / 2));
     
-    LineString line = AsteroidsSprite.gFactory.createLineString(coords);
+    LineString line = SingleGeometryFactory.getFactory().createLineString(coords);
     
     // List of colliders that intersect with <line>:
     List<AsteroidsSprite> intersected = world.intersectLine(line);
@@ -586,7 +626,7 @@ class Hardpoint implements Source{
         xComponent.x + yComponent.x + loc.getX(),
         xComponent.y + yComponent.y + loc.getY());
     
-    return AsteroidsSprite.gFactory.createPoint(translatedOffset);
+    return SingleGeometryFactory.getFactory().createPoint(translatedOffset);
   }
 }
 
@@ -1491,7 +1531,6 @@ class BRVFactory {
   Provides a structured interface for reading the game's state.
 */
 class GameState {
-	GeometryFactory gFactory = new GeometryFactory();
   AsteroidsSprite ship = null;
   AsteroidsSprite ufo = null;
   AsteroidsSprite missle = null;
@@ -1622,11 +1661,12 @@ class GameState {
 @SuppressWarnings("serial")
 
 class PolyWrapper extends Polygon {
-  static GeometryFactory gFactory = new GeometryFactory();
-  
   
   public PolyWrapper(Polygon p) {
-     super((LinearRing)p.getExteriorRing(), (LinearRing[]) null, gFactory);
+     super(
+         (LinearRing)p.getExteriorRing(), 
+         (LinearRing[]) null, 
+         SingleGeometryFactory.getFactory());
   }
 
   // Return the X or Y coordinates of this Polygon's
@@ -1656,7 +1696,6 @@ class PolyWrapper extends Polygon {
 class AsteroidsSprite {
   // Fields:
   
-  static GeometryFactory gFactory = new GeometryFactory();
   static int width;          // Dimensions of the graphics area.
   static int height;
 
@@ -1675,7 +1714,7 @@ class AsteroidsSprite {
 
   public AsteroidsSprite() {
 
-    this.shape = new PolyWrapper(gFactory.createPolygon(
+    this.shape = new PolyWrapper(SingleGeometryFactory.getFactory().createPolygon(
         new Coordinate[] {
             new Coordinate(0,0), 
             new Coordinate(1,1),
@@ -1688,7 +1727,7 @@ class AsteroidsSprite {
     this.y = 0.0;
     this.deltaX = 0.0;
     this.deltaY = 0.0;
-    this.sprite =  new PolyWrapper( gFactory.createPolygon(
+    this.sprite =  new PolyWrapper( SingleGeometryFactory.getFactory().createPolygon(
         new Coordinate[] {
             new Coordinate(0,0), 
             new Coordinate(1,1),
@@ -1698,7 +1737,7 @@ class AsteroidsSprite {
 
   // Copy constructor
   public AsteroidsSprite(AsteroidsSprite p) {
-    this.shape = new PolyWrapper( (Polygon)gFactory.createGeometry(p.shape) );
+    this.shape = new PolyWrapper( (Polygon)SingleGeometryFactory.getFactory().createGeometry(p.shape) );
     this.active = p.active;
     this.angle = p.angle;
     this.deltaAngle = p.deltaAngle;
@@ -1706,7 +1745,7 @@ class AsteroidsSprite {
     this.y = p.y;
     this.deltaX = p.deltaX;
     this.deltaY = p.deltaY;
-    this.sprite =  new PolyWrapper( (Polygon)gFactory.createGeometry(p.sprite));
+    this.sprite =  new PolyWrapper( (Polygon)SingleGeometryFactory.getFactory().createGeometry(p.sprite));
   }
 
   // Methods:
@@ -1768,7 +1807,7 @@ class AsteroidsSprite {
       coords[i] = new Coordinate(x,y);
     }
     
-    this.sprite =  new PolyWrapper(gFactory.createPolygon(coords));
+    this.sprite =  new PolyWrapper(SingleGeometryFactory.getFactory().createPolygon(coords));
   }
 
   //Determine if one sprite overlaps with another, i.e., if any vertices
@@ -1812,7 +1851,7 @@ class AsteroidsSprite {
   }
 
   public Point getLocation() { 
-    return AsteroidsSprite.gFactory.createPoint(new Coordinate(x + AsteroidsSprite.width/2, y + AsteroidsSprite.height/2));
+    return SingleGeometryFactory.getFactory().createPoint(new Coordinate(x + AsteroidsSprite.width/2, y + AsteroidsSprite.height/2));
   }
 
   public double getSpeed() {
@@ -1860,6 +1899,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   static final int MAX_DEBUG_LINES = 10;
   boolean debugging = false;
+  boolean sensorsShown = false;
   ArrayList<String> debugInfo = new ArrayList<String>();
 
   
@@ -1885,13 +1925,13 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   // Constants
 
-  static final int FRAME_LENGTH = 100;     // Milliseconds in one frame.
+  static final int FRAME_LENGTH = 1000;     // Milliseconds in one frame.
   static final int DELAY = 15;              // Milliseconds between screen and
   static final int FPS   =                  // the resulting frame rate.
     Math.round(FRAME_LENGTH / DELAY);
 
   static final int MAX_SHOTS =  12;         // Maximum number of sprites
-  static final int MAX_ROCKS =  40;         // for photons, asteroids and
+  static final int MAX_ROCKS =  1;         // for photons, asteroids and
   static final int MAX_SCRAP = 40;          // explosions.
   
   int maxSpawnableRocks;
@@ -2082,7 +2122,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       new Coordinate(-7, 10),
       new Coordinate(0, -10)
     };
-    ship.shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(shipCoords));
+    ship.shape = new PolyWrapper(SingleGeometryFactory.getFactory().createPolygon(shipCoords));
 
     // Create shapes for the ship thrusters.
 
@@ -2094,7 +2134,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       new Coordinate(3, 16),
       new Coordinate(0, 12)
     };
-    fwdThruster.shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(fwdCoords));
+    fwdThruster.shape = new PolyWrapper(SingleGeometryFactory.getFactory().createPolygon(fwdCoords));
     
     revThruster = new AsteroidsSprite();
     Coordinate[] revCoords = {
@@ -2108,7 +2148,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       new Coordinate(0, 14),
       new Coordinate(-2, 12)
     };
-    revThruster.shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(revCoords));
+    revThruster.shape = new PolyWrapper(SingleGeometryFactory.getFactory().createPolygon(revCoords));
     
 
     // Create shape for each photon sprites.
@@ -2123,7 +2163,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         new Coordinate(1, 1)
       };
       
-      photons[i].shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(photonCoord));
+      photons[i].shape = new PolyWrapper(SingleGeometryFactory.getFactory().createPolygon(photonCoord));
     }
 
     // Create shape for the flying saucer.
@@ -2141,7 +2181,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         new Coordinate(-10, 5),
         new Coordinate(-15, 0)
       };
-    ufo.shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(ufoCoords));
+    ufo.shape = new PolyWrapper(SingleGeometryFactory.getFactory().createPolygon(ufoCoords));
 
     // Create shape for the guided missile.
 
@@ -2157,7 +2197,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         new Coordinate(-1, -3),
         new Coordinate(0, -4)
       };
-    missle.shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(missleCoords));
+    missle.shape = new PolyWrapper(SingleGeometryFactory.getFactory().createPolygon(missleCoords));
 
     // Create asteroid sprites.
 
@@ -2205,7 +2245,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     numStars = AsteroidsSprite.width * AsteroidsSprite.height / 5000;
     stars = new Point[numStars];
     for (int i = 0; i < numStars; i++) {
-      stars[i] = AsteroidsSprite.gFactory.createPoint(
+      stars[i] = SingleGeometryFactory.getFactory().createPoint(
           new Coordinate(
               Math.random() * AsteroidsSprite.width, 
               (Math.random() * AsteroidsSprite.height))
@@ -2328,8 +2368,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
           // TODO: CONFIGURE THE FOLLOWING FOR THE CURRENT TEST:
           // Record data every nth frame:
           if (pilot.lifetime % STATISTICS_POLLRATE == 0) {
-            //logStatistic(Stat.FRAME);
-            //logStatistic(Stat.SENSOR0SIGNAL);
+            logStatistic(Stat.FRAME);
+            logStatistic(Stat.SENSOR0SIGNAL);
           }
         }
   
@@ -2376,7 +2416,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     
     // Record ship location:
     if (true) {
-      Point shipLoc = AsteroidsSprite.gFactory.createPoint(new Coordinate(ship.x, ship.y));
+      Point shipLoc = SingleGeometryFactory.getFactory().createPoint(new Coordinate(ship.x, ship.y));
       double shipTheta = ship.angle;
       Point shipHardLoc = pilot.hardpoints.get(0).getWorldLocation(shipLoc, shipTheta);
       
@@ -2769,7 +2809,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         rockCoords[j] = new Coordinate(x, y);
       }
       rockCoords[s] = rockCoords[0];
-      asteroids[i].shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(rockCoords));
+      asteroids[i].shape = new PolyWrapper(SingleGeometryFactory.getFactory().createPolygon(rockCoords));
       
       asteroids[i].active = true;
       asteroids[i].angle = 0.0;
@@ -2840,7 +2880,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         }
         sRockCoords[s] = new Coordinate(sRockCoords[0]);
         
-        asteroids[i].shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(sRockCoords));
+        asteroids[i].shape = new PolyWrapper(SingleGeometryFactory.getFactory().createPolygon(sRockCoords));
         
         asteroids[i].active = true;
         asteroids[i].angle = 0.0;
@@ -2903,13 +2943,14 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     int i;
 
     for (i = 0; i < MAX_SCRAP; i++) {
-      explosions[i].shape = new PolyWrapper(AsteroidsSprite.gFactory.createPolygon(
-          new Coordinate[] {
-              new Coordinate(0,0),
-              new Coordinate(0,1),
-              new Coordinate(1,1),
-              new Coordinate(0,0)})
-          );
+      explosions[i].shape = new PolyWrapper(
+          SingleGeometryFactory.getFactory().createPolygon(
+            new Coordinate[] {
+                new Coordinate(0,0),
+                new Coordinate(0,1),
+                new Coordinate(1,1),
+                new Coordinate(0,0)})
+            );
       explosions[i].active = false;
       explosionCounter[i] = 0;
     }
@@ -3006,6 +3047,11 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     if (e.getKeyCode() == KeyEvent.VK_SLASH) {
       debugging = !debugging;
     }
+    
+    // '.' Toggle sensor display:
+    if (e.getKeyCode() == KeyEvent.VK_PERIOD) {
+      sensorsShown = !sensorsShown;
+    }
 
     // 'P' key: toggle pause mode.
     if (e.getKeyCode() == KeyEvent.VK_P) {
@@ -3069,8 +3115,9 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   // Write the data in <lifeData> to the console and clear <lifeStatistics>:
   private void writeLifeData() {
     
+    ArrayList<String> copy = new ArrayList<String>(lifeData);
     // Write the current vehicles life data on one line:
-    for (String str : lifeData) {
+    for (String str : copy) {
       System.out.print(str);
     }
     
@@ -3206,6 +3253,25 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
                             ship.sprite.xPoints()[0], 
                             ship.sprite.yPoints()[0]);
 
+      // Draw the ship's sensors:
+      if (sensorsShown) {
+        /* Fill the sensor:
+        offGraphics.setColor(Color.red);
+        offGraphics.fillPolygon(
+            pilot.hardpoints.get(0).sensor.getShape().xPoints(),
+            pilot.hardpoints.get(0).sensor.getShape().yPoints(),
+            pilot.hardpoints.get(0).sensor.getShape().getNumPoints());
+         */
+        
+        offGraphics.setColor(Color.red);
+        offGraphics.drawPolygon(
+            pilot.hardpoints.get(0).sensor.getShape().xPoints(),
+            pilot.hardpoints.get(0).sensor.getShape().yPoints(),
+            pilot.hardpoints.get(0).sensor.getShape().getNumPoints());
+      }
+      
+      
+      
       // Draw thruster exhaust if thrusters are on. Do it randomly to get a
       // flicker effect.
 
