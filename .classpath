@@ -2,10 +2,10 @@
 <classpath>
 	<classpathentry kind="src" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/jts-1.13.jar"/>
 	<classpathentry kind="lib" path="lib/acme.jar"/>
 	<classpathentry kind="lib" path="lib/jdom.jar"/>
 	<classpathentry kind="lib" path="lib/JTS_Test.jar"/>
+	<classpathentry kind="lib" path="lib/jts-1.13.jar"/>
 	<classpathentry kind="lib" path="lib/jtsio-1.13.jar"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
 	<classpathentry kind="lib" path="lib/xerces.jar"/>
