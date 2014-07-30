@@ -757,7 +757,7 @@ class BRVFactory {
       return v;
   }
   
-  BraitenbergVehicle makeVehicleTwoATriangle () {
+  BraitenbergVehicle makeVehicleTwoACone () {
       BraitenbergVehicle v = new BraitenbergVehicle(world);
 
       // Hardpoint on the Vehicle's Nose:
@@ -843,7 +843,7 @@ class BRVFactory {
       return v;
   }
   
-  BraitenbergVehicle makeVehicleTwoBTriangle () {
+  BraitenbergVehicle makeVehicleTwoBCone () {
       BraitenbergVehicle v = new BraitenbergVehicle(world);
 
       // Hardpoint on the Vehicle's Nose:
@@ -972,7 +972,7 @@ class BRVFactory {
       return v;
   }
   
-  BraitenbergVehicle makeVehicleThreeATriangle () {
+  BraitenbergVehicle makeVehicleThreeACone () {
       BraitenbergVehicle v = new BraitenbergVehicle(world);
 
       // Hardpoint on the Vehicle's Nose:
@@ -1015,7 +1015,7 @@ class BRVFactory {
       return v;
 }
   
-  BraitenbergVehicle makeVehicleThreeBTriangle () {
+  BraitenbergVehicle makeVehicleThreeBCone () {
       BraitenbergVehicle v = new BraitenbergVehicle(world);
 
       // Hardpoint on the Vehicle's Nose:
@@ -1058,7 +1058,7 @@ class BRVFactory {
       return v;
 }
   
-  BraitenbergVehicle makeVehicleFourATriangle () {
+  BraitenbergVehicle makeVehicleFourACone () {
       BraitenbergVehicle v = new BraitenbergVehicle(world);
 
       // Hardpoint on the Vehicle's Nose:
@@ -1165,8 +1165,67 @@ class BRVFactory {
     }
     
     return v;
-}
+  }
+
   
+  BraitenbergVehicle makeVehicleDividedCones() {
+    BraitenbergVehicle v = new BraitenbergVehicle(world);
+
+    // Hardpoint on the Vehicle's Nose:
+    Hardpoint forwardNose = new Hardpoint(new Vector2D(0,-10), 0);
+    Hardpoint forwardProx = new Hardpoint(new Vector2D(0,0), 0);
+    Hardpoint rightProx   = new Hardpoint(new Vector2D(0,0), HALF_PI);
+    Hardpoint rearProx    = new Hardpoint(new Vector2D(0,0), Math.PI);
+    Hardpoint leftProx    = new Hardpoint(new Vector2D(0,0), Math.PI + HALF_PI);
+    Hardpoint centreJump  = new Hardpoint(new Vector2D(0,0), 0);
+
+    // Add a sensor to the hardpoints:
+    DistanceSensor sensor1 = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
+    DistanceSensor sensor2 = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, HALF_PI);
+    DistanceSensor sensor3 = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, HALF_PI);
+    DistanceSensor sensor4 = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, HALF_PI);
+    DistanceSensor sensor5 = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, HALF_PI);
+    DistanceSensor sensor6 = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, 2*Math.PI);
+    forwardNose.addSensor(sensor1);
+    forwardProx.addSensor(sensor2);
+    rightProx.addSensor(sensor3);
+    rearProx.addSensor(sensor4);
+    leftProx.addSensor(sensor5);
+    centreJump.addSensor(sensor6);
+
+    // Add the hardpoint to the ship:
+    v.hardpoints.add(forwardNose);
+    v.hardpoints.add(forwardProx);
+    v.hardpoints.add(rightProx);
+    v.hardpoints.add(rearProx);
+    v.hardpoints.add(leftProx);
+    v.hardpoints.add(centreJump);
+/*
+    // Add a Modulator to the vehicle:
+    ModulatorIdentity leftMod = new ModulatorIdentity();
+    ModulatorIdentity rightMod = new ModulatorIdentity();
+    v.modulators.add(leftMod);
+    v.modulators.add(rightMod);
+
+    // Wire the hardpoints to Modulators:
+    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
+    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
+    v.sensorWires.add(leftSensWire);
+    v.sensorWires.add(rightSensWire);
+
+    // Wire the modulator to a Control Signal:
+    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
+    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
+    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
+    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
+
+    v.controlWires.add(leftThrustWire);
+    v.controlWires.add(leftSteerWire);
+    v.controlWires.add(rightThrustWire);
+    v.controlWires.add(rightSteerWire);
+    */
+    return v;
+  }
   
   // TODO: Improve comments here...
   // Make starfish...

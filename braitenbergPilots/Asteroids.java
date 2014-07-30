@@ -1439,22 +1439,25 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         pilot = factory.makeVehicleOneCone();
       }
       else if (menuInput.contains("2A")) {
-        pilot = factory.makeVehicleTwoATriangle();
+        pilot = factory.makeVehicleTwoACone();
       }
       else if (menuInput.contains("2B")) {
-        pilot = factory.makeVehicleTwoBTriangle();
+        pilot = factory.makeVehicleTwoBCone();
       }
       else if (menuInput.contains("3A")) {
-        pilot = factory.makeVehicleThreeATriangle();
+        pilot = factory.makeVehicleThreeACone();
       }
       else if (menuInput.contains("3B")) {
-        pilot = factory.makeVehicleThreeBTriangle();
+        pilot = factory.makeVehicleThreeBCone();
       }
       else if (menuInput.contains("4A")) {
-        pilot = factory.makeVehicleFourATriangle();
+        pilot = factory.makeVehicleFourACone();
       }
       else if (menuInput.contains("1F")) {
         pilot = factory.makeVehicleRayEye();
+      }
+      else if (menuInput.contains("2F")) {
+        pilot = factory.makeVehicleDividedCones();
       } 
       else {
         menuInput = "";
