@@ -620,7 +620,7 @@ class BRVFactory {
     this.world = world;
 
     // Supply the sensor pile:
-    sensorPile.add(SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI));
+    sensorPile.add(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6));
 
     // Supply the ModulatorPile:
     ModulatorPile.add(new ModulatorIdentity());
@@ -637,7 +637,7 @@ class BRVFactory {
       Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
 
       // Add a sensor to the nose hardpoint:
-      DistanceSensor sensor = SensorFactory.makeDistanceRaySensor(MEDIUM_LENGTH);
+      DistanceSensor sensor = SensorFactory.makeDistanceRaySensor(SHORT_LENGTH);
       nosePoint.addSensor(sensor);
 
       // Add the hardpoint to the ship:
@@ -658,6 +658,22 @@ class BRVFactory {
       return v;
   }
   
+  BraitenbergVehicle makeVehicleSensorTestRadius() {
+    BraitenbergVehicle v = new BraitenbergVehicle(world);
+    
+    // Hardpoint on the Vehicle's Nose:
+    Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
+
+    // Add a sensor to the nose hardpoint:
+    DistanceSensor sensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
+    nosePoint.addSensor(sensor);
+
+    // Add the hardpoint to the ship:
+    v.hardpoints.add(nosePoint);
+    
+    return v;
+}
+  
   BraitenbergVehicle makeVehicleOneRadius() {
       BraitenbergVehicle v = new BraitenbergVehicle(world);
       
@@ -665,7 +681,7 @@ class BRVFactory {
       Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
 
       // Add a sensor to the nose hardpoint:
-      DistanceSensor sensor = SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH);
+      DistanceSensor sensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
       nosePoint.addSensor(sensor);
 
       // Add the hardpoint to the ship:
@@ -693,7 +709,7 @@ class BRVFactory {
       Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
 
       // Add a sensor to the nose hardpoint:
-      DistanceSensor sensor = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
+      DistanceSensor sensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
       nosePoint.addSensor(sensor);
 
       // Add the hardpoint to the ship:
@@ -722,8 +738,8 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH);
+      DistanceSensor leftSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
+      DistanceSensor rightSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
       leftNosePoint.addSensor(leftSensor);
       rightNosePoint.addSensor(rightSensor);
 
@@ -765,8 +781,8 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
+      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
+      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
       leftNosePoint.addSensor(leftSensor);
       rightNosePoint.addSensor(rightSensor);
 
@@ -808,8 +824,8 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH);
+      DistanceSensor leftSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
+      DistanceSensor rightSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
       leftNosePoint.addSensor(leftSensor);
       rightNosePoint.addSensor(rightSensor);
 
@@ -851,8 +867,8 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
+      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
+      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
       leftNosePoint.addSensor(leftSensor);
       rightNosePoint.addSensor(rightSensor);
 
@@ -894,8 +910,8 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH);
+      DistanceSensor leftSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
+      DistanceSensor rightSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
       leftNosePoint.addSensor(leftSensor);
       rightNosePoint.addSensor(rightSensor);
 
@@ -937,8 +953,8 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH);
+      DistanceSensor leftSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
+      DistanceSensor rightSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
       leftNosePoint.addSensor(leftSensor);
       rightNosePoint.addSensor(rightSensor);
 
@@ -980,8 +996,8 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
+      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
+      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
       leftNosePoint.addSensor(leftSensor);
       rightNosePoint.addSensor(rightSensor);
 
@@ -1023,8 +1039,8 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
+      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
+      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
       leftNosePoint.addSensor(leftSensor);
       rightNosePoint.addSensor(rightSensor);
 
@@ -1066,8 +1082,8 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
+      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, QUARTER_PI);
+      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, QUARTER_PI);
       leftNosePoint.addSensor(leftSensor);
       rightNosePoint.addSensor(rightSensor);
 
@@ -1168,62 +1184,83 @@ class BRVFactory {
   }
 
   
-  BraitenbergVehicle makeVehicleDividedCones() {
+  BraitenbergVehicle makeVehiclePolarRegions() {
     BraitenbergVehicle v = new BraitenbergVehicle(world);
 
-    // Hardpoint on the Vehicle's Nose:
+    // Hardpoints on the Vehicle:
     Hardpoint forwardNose = new Hardpoint(new Vector2D(0,-10), 0);
     Hardpoint forwardProx = new Hardpoint(new Vector2D(0,0), 0);
     Hardpoint rightProx   = new Hardpoint(new Vector2D(0,0), HALF_PI);
     Hardpoint rearProx    = new Hardpoint(new Vector2D(0,0), Math.PI);
     Hardpoint leftProx    = new Hardpoint(new Vector2D(0,0), Math.PI + HALF_PI);
-    Hardpoint centreJump  = new Hardpoint(new Vector2D(0,0), 0);
+    Hardpoint nearJump  = new Hardpoint(new Vector2D(0,0), 0);
 
-    // Add a sensor to the hardpoints:
-    DistanceSensor sensor1 = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
-    DistanceSensor sensor2 = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, HALF_PI);
-    DistanceSensor sensor3 = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, HALF_PI);
-    DistanceSensor sensor4 = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, HALF_PI);
-    DistanceSensor sensor5 = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, HALF_PI);
-    DistanceSensor sensor6 = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, 2*Math.PI);
-    forwardNose.addSensor(sensor1);
-    forwardProx.addSensor(sensor2);
-    rightProx.addSensor(sensor3);
-    rearProx.addSensor(sensor4);
-    leftProx.addSensor(sensor5);
-    centreJump.addSensor(sensor6);
+    // Add sensors to the hardpoints:
+    DistanceSensor sensor0 = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
+    DistanceSensor sensor1 = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, HALF_PI);
+    DistanceSensor sensor2 = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, HALF_PI);
+    DistanceSensor sensor3 = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, HALF_PI);
+    DistanceSensor sensor4 = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, HALF_PI);
+    DistanceSensor sensor5 = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH/3, 2*Math.PI);
+    forwardNose.addSensor(sensor0);
+    forwardProx.addSensor(sensor1);
+    rightProx.addSensor(sensor2);
+    rearProx.addSensor(sensor3);
+    leftProx.addSensor(sensor4);
+    nearJump.addSensor(sensor5);
 
-    // Add the hardpoint to the ship:
+    // Add the hardpoints to the ship:
     v.hardpoints.add(forwardNose);
     v.hardpoints.add(forwardProx);
     v.hardpoints.add(rightProx);
     v.hardpoints.add(rearProx);
     v.hardpoints.add(leftProx);
-    v.hardpoints.add(centreJump);
-/*
-    // Add a Modulator to the vehicle:
-    ModulatorIdentity leftMod = new ModulatorIdentity();
-    ModulatorIdentity rightMod = new ModulatorIdentity();
-    v.modulators.add(leftMod);
-    v.modulators.add(rightMod);
+    v.hardpoints.add(nearJump);
+
+    // Add Modulators to the vehicle:
+    ModulatorBinary mod0 = new ModulatorBinary();
+    ModulatorIdentity mod1 = new ModulatorIdentity();
+    ModulatorIdentity mod2 = new ModulatorIdentity();
+    ModulatorIdentity mod3 = new ModulatorIdentity();
+    ModulatorIdentity mod4 = new ModulatorIdentity();
+    ModulatorBinary mod5 = new ModulatorBinary();
+    v.modulators.add(mod0);
+    v.modulators.add(mod1);
+    v.modulators.add(mod2);
+    v.modulators.add(mod3);
+    v.modulators.add(mod4);
+    v.modulators.add(mod5);
 
     // Wire the hardpoints to Modulators:
-    Wire leftSensWire =   new Wire(0,0, true, 1.0f);
-    Wire rightSensWire =  new Wire(1,1, true, 1.0f);
-    v.sensorWires.add(leftSensWire);
-    v.sensorWires.add(rightSensWire);
+    Wire sensWire0 =   new Wire(0,0, false, 1.0f);
+    Wire sensWire1 =   new Wire(1,1, false, 1.0f);
+    Wire sensWire2 =   new Wire(2,2, false, 1.0f);
+    Wire sensWire3 =   new Wire(3,3, true, 1.0f);
+    Wire sensWire4 =   new Wire(4,4, false, 1.0f);
+    Wire sensWire5 =   new Wire(5,5, false, 1.0f);
+    v.sensorWires.add(sensWire0);
+    v.sensorWires.add(sensWire1);
+    v.sensorWires.add(sensWire2);
+    v.sensorWires.add(sensWire3);
+    v.sensorWires.add(sensWire4);
+    v.sensorWires.add(sensWire5);
 
     // Wire the modulator to a Control Signal:
-    Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-    Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
-    Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-    Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
+    Wire shootWire      = new Wire(0,4, false, 3.0f);
+    Wire reverseWire    = new Wire(1,3, false, 1.0f);
+    Wire steerRightWire = new Wire(2,1, false, 1.0f);
+    Wire forwardWire    = new Wire(3,2, false, .3f);
+    Wire steerLeftWire  = new Wire(4,0, false, 1.0f);
+    Wire jumpWire       = new Wire(5,5, false, 5.0f);
+    
 
-    v.controlWires.add(leftThrustWire);
-    v.controlWires.add(leftSteerWire);
-    v.controlWires.add(rightThrustWire);
-    v.controlWires.add(rightSteerWire);
-    */
+    v.controlWires.add(shootWire);
+    v.controlWires.add(forwardWire);
+    v.controlWires.add(steerRightWire);
+    v.controlWires.add(reverseWire);
+    v.controlWires.add(steerLeftWire);
+    v.controlWires.add(jumpWire);
+    
     return v;
   }
   

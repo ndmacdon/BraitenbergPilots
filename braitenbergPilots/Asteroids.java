@@ -237,7 +237,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   // Records details of an agent's life.
   private List<String> lifeData = new ArrayList<String>(); 
   
-  static final int STATISTICS_POLLRATE = 2; // Record statistics every n frames.
+  static final int STATISTICS_POLLRATE = 1; // Record statistics every n frames.
   
   public enum Stat {
     SENSOR0SIGNAL,
@@ -444,7 +444,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     menuInfo.add("Key   Pilot            |   Key   Pilot");
     menuInfo.add("-----------------------|--------------------");
     menuInfo.add("1R    1  Radius        |   1F    Ray Eye");
-    menuInfo.add("1L    1  Laser         |   2F");
+    menuInfo.add("1L    1  Laser         |   2F    Polar Hopper");
     menuInfo.add("2A    2A Triangle      |   3F");
     menuInfo.add("2B    2B Triangle      |   4F");
     menuInfo.add("3A    3A Triangle      |   5F");
@@ -454,6 +454,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     menuInfo.add("Press 'P' at any time to Pause.");
     menuInfo.add("Press 'K' at any time to End the current game.");
     menuInfo.add("Press 'Enter' to begin or clear current input.");
+    menuInfo.add("Press '.' to toggle sensor display.");
     menuInfo.add("");
     menuInfo.add("Input:");
     menuInfo.add("");
@@ -743,11 +744,15 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     
     switch(stat) {
     case FRAME:
-      lifeData.add("F:" + String.valueOf(pilot.lifetime) + ",");
+      while (lifeData.size() < 1) { lifeData.add("F:"); }
+      
+      lifeData.set(0, lifeData.get(0).concat(String.valueOf(pilot.lifetime) + ",")); 
       break;
       
     case SENSOR0SIGNAL:
-      lifeData.add("S0S:" + String.valueOf(pilot.hardpoints.get(0).getOutput()) + ",");
+      while (lifeData.size() < 2) { lifeData.add("S0S:"); }
+      
+      lifeData.set(1, lifeData.get(1).concat(String.valueOf(pilot.hardpoints.get(0).getOutput()) + ","));
       break;
     
     
@@ -949,7 +954,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     // Record data for an ended life:
     if (playing == true && pilot.getLifetime() > 0) {
       String lifeRecord = String.format(
-        "class:%s,lifetime:%d,score:%d,maxRocks:%d\n", 
+        "class:%s,lifetime:%d,score:%d,maxRocks:%d", 
         pilot.getClass().getSimpleName(), 
         pilot.expire(),
         this.score,
@@ -1457,7 +1462,10 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         pilot = factory.makeVehicleRayEye();
       }
       else if (menuInput.contains("2F")) {
-        pilot = factory.makeVehicleDividedCones();
+        pilot = factory.makeVehiclePolarRegions();
+      }
+      else if (menuInput.contains("1T")) {
+        pilot = factory.makeVehicleSensorTestRadius();
       } 
       else {
         menuInput = "";
@@ -1481,10 +1489,10 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     ArrayList<String> copy = new ArrayList<String>(lifeData);
     // Write the current vehicles life data on one line:
     for (String str : copy) {
-      System.out.print(str);
+      System.out.println(str);
     }
     
-    System.out.print("\n\n"); // Start a new line for the next vehicle.
+    System.out.print("\n"); // Start a new line for the next vehicle.
   }
 
   public void paint(Graphics g) {
