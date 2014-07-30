@@ -365,7 +365,7 @@ Full-Width Styles
 }
 
 #main_content {
-  width: 60%;
+  width: 70%;
   float: left;
   padding-top: 40px;
 }
@@ -454,7 +454,7 @@ a>img {
   float: right;
   clear: right;
   position: relative;
-  height: 15em;
+  max-height: 35em;
   max-width: 739px;
   padding: 5px;
   margin: 10px 0 10px 0;

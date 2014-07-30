@@ -30,77 +30,39 @@
 
 <div class="outer" id="main_content_wrap">
 <div class="toc"><span class="toctitle">Index</span><ul>
-<li><a href="#project-description">Project Description</a><ul>
+<li><a href="#playing-asteroids-with-vehicles">Playing Asteroids with Vehicles</a><ul>
 <li><a href="#preface">Preface</a><ul>
 <li><a href="#adding-a-security-exception-to-java">Adding A Security Exception To Java</a></li>
 <li><a href="#fullscreen-demonstration">Fullscreen Demonstration</a></li>
 </ul>
 </li>
+<li><a href="#abstract">Abstract</a></li>
 <li><a href="#introduction">Introduction</a></li>
-<li><a href="#vehicle-1">Vehicle 1</a><ul>
-<li><a href="#description">Description</a><ul>
+<li><a href="#introduction-to-braitenberg-vehicles">Introduction to Braitenberg Vehicles</a></li>
+<li><a href="#introduction-to-asteroids">Introduction To Asteroids</a></li>
+<li><a href="#braitenberg-vehicles-that-play-asteroids">Braitenberg Vehicles that Play Asteroids</a><ul>
+<li><a href="#sensors">Sensors</a><ul>
 <li><a href="#radius-sensor">Radius Sensor</a></li>
-<li><a href="#forward-thruster">Forward Thruster</a></li>
-<li><a href="#chasis">Chasis</a></li>
 </ul>
 </li>
-<li><a href="#observations">Observations</a></li>
-<li><a href="#demonstration">Demonstration</a></li>
-<li><a href="#analysis">Analysis</a></li>
 </ul>
 </li>
-<li><a href="#vehicle-2">Vehicle 2</a><ul>
-<li><a href="#description_1">Description</a><ul>
-<li><a href="#cone-sensor">Cone Sensor</a></li>
-<li><a href="#gyroscope">Gyroscope</a></li>
-<li><a href="#chasis_1">Chasis</a></li>
-</ul>
-</li>
-<li><a href="#observations_1">Observations</a></li>
-<li><a href="#demonstration_1">Demonstration</a></li>
-<li><a href="#analysis_1">Analysis</a></li>
-</ul>
-</li>
-<li><a href="#vehicle-3">Vehicle 3</a><ul>
-<li><a href="#description_2">Description</a><ul>
-<li><a href="#chasis_2">Chasis</a></li>
-</ul>
-</li>
-<li><a href="#observations_2">Observations</a></li>
-<li><a href="#demonstration_2">Demonstration</a></li>
-<li><a href="#analysis_2">Analysis</a></li>
-</ul>
-</li>
-<li><a href="#vehicle-4">Vehicle 4</a><ul>
-<li><a href="#description_3">Description</a><ul>
-<li><a href="#modulator">Modulator</a></li>
-<li><a href="#chasis_3">Chasis</a></li>
-</ul>
-</li>
-<li><a href="#observations_3">Observations</a></li>
-<li><a href="#demonstration_3">Demonstration</a></li>
-<li><a href="#analysis_3">Analysis</a></li>
-</ul>
-</li>
-<li><a href="#vehicle-5">Vehicle 5</a><ul>
-<li><a href="#description_4">Description</a><ul>
-<li><a href="#cone-sensor_1">Cone Sensor</a></li>
-<li><a href="#chasis_4">Chasis</a></li>
-</ul>
-</li>
-<li><a href="#observations_4">Observations</a></li>
-<li><a href="#demonstration_4">Demonstration</a></li>
-<li><a href="#analysis_4">Analysis</a></li>
-</ul>
-</li>
-<li><a href="#evolving-new-vehicles">Evolving New Vehicles</a></li>
-<li><a href="#future-goals">Future Goals</a></li>
+<li><a href="#some-designs-of-vehicles-that-play-asteroids">Some Designs of Vehicles that play Asteroids</a></li>
+<li><a href="#evolving-vehicles-that-play-asteroids">Evolving Vehicles that Play Asteroids</a></li>
+<li><a href="#experiments-with-vehicles-that-play-asteroids">Experiments with Vehicles that Play Asteroids</a></li>
+<li><a href="#related-work">Related Work</a></li>
+<li><a href="#ideas-for-future-work">Ideas for Future Work</a></li>
+<li><a href="#summary">Summary</a></li>
+<li><a href="#appendix-using-the-asteroids-software">Appendix: Using the Asteroids Software</a></li>
+<li><a href="#bibliography">Bibliography</a></li>
 </ul>
 </li>
 </ul>
 </div>
 <section class="inner" id="main_content">
-<h1 id="project-description">Project Description</h1>
+<h1 id="playing-asteroids-with-vehicles">Playing Asteroids with Vehicles</h1>
+<p>RELOCATE THE FOLLOWING TO SIDEBAR</p>
+<embed class="applet" type="application/x-java-applet;version=1.6" width="700" height="700" archive="braitenoids_selection.jar,lib/jts-1.13.jar" code="braitenbergPilots.Asteroids.class" pluginspage="http://java.com/download/" myparam="">
 <h2 id="preface">Preface</h2>
 <h3 id="adding-a-security-exception-to-java">Adding A Security Exception To Java</h3>
 <p>This project uses an unsigned JAR file which may be disallowed by your default Java settings.</p>
@@ -116,113 +78,47 @@
 </blockquote>
 <h3 id="fullscreen-demonstration">Fullscreen Demonstration</h3>
 <p>Visit the <a href="fullscreen.html">Fullscreen Demo</a> page to see the program running in a larger window.</p>
+<p>BEGIN BODY</p>
+<h2 id="abstract">Abstract</h2>
+<p>TODO</p>
 <h2 id="introduction">Introduction</h2>
-<p>Braitenberg Vehicles were created as a thought experiment by Valentino Braitenberg. Braitenberg sought to reveal the mechanisms of the mind with his Vehicles. He did this by combining simple (albeit fantastical) hardware to produce complex behaviors. In his book, Braitenberg develops 14 vehicles, each more sophisticated than the last. Braitenberg&rsquo;s Vehicles develop in turn: instincts, emotions, logic, concepts, ideas, foresight and egotism.</p>
-<p>Braitenberg Pilots applies Braitenberg&rsquo;s Vehicle designs to the Asteroids game environment to see if they can effectively survive and achieve a high score in the game (i.e. are they fit for the environment). The goal is to design a very general robot which evolves to suit the environment, not to hand craft the best Asteroids AI possible. ~General-solution ~Evolution</p>
-<p>The first few Braitenberg Vehicles described by Braitenberg in his book are reproduced below. These initial Vehicles introduce the components and concepts used in subsequent Vehicles. The Vehicles are introduced, observed and introduced in a style and format similar to the one used by Braitenberg in Vehicles~TITLE.</p>
-<h2 id="vehicle-1">Vehicle 1</h2>
-<h3 id="description">Description</h3>
-<blockquote>
-<p>Vehicle 1 is equipped with one sensor and one motor.</p>
-<p><cite>Vehicles p. 3</cite></p>
-</blockquote>
-<p><a href="images/Sensor01.png"><img alt="Radius Sensor" src="images/Sensor01.png" /></a></p>
+<h2 id="introduction-to-braitenberg-vehicles">Introduction to Braitenberg Vehicles</h2>
+<p>Braitenberg vehicles were created as a biologically inspired thought experiment by Valentino Braitenberg. Braitenberg&rsquo;s vehicles are, in essence reactive, agents with robot bodies. In his book, Vehicles~TITLE, Braitenberg develops 14 vehicles, each more sophisticated than the last. The early vehicles are constructed of a few simple components wired together in different configurations. The components and combinations of each vehicle are carried forward to subsequent vehicles. Later vehicles are built by an evolutionary process of duplication and mutation rather than being designed by hand. Braitenberg attributes lifelike qualities to his vehicles as they progress and they gain in turn: intincts, emotions, logic, concepts, ideas, foresight and egotism.</p>
+<p>Braitenberg takes a relaxed approach to the realities of his vehicles but he does so with decades of experience working as a neuroscientist. The basic components of Braitenberg vehicles are very simple; sensors sensitive to some quality of the environment, wired-connections with various properties (e.g. signal inversion, temperature-variable resistance etc.) and threshold devices (circuits which output a signal only when fed certain inputs) which act as the building blocks of vehicle logic. Braitenberg casually introduces each component making Vehicles~TITLE feel like a creative exploration of ideas. Yet, each component has been carefully selected to approximate a real biological structure present in nature.
+~~~</p>
+<p>Vehicles begins with a very simple design involving a single sensor and motor. Depicted in figure XXX, vehicle one senses the absolute temperature of its environment. The sensor sends signals to a single motor at the rear of the vehicle. The result is a vehicle that moves quickly through hot areas and slows down in cold ones. Braitenberg describes the motivations of his vehicle as follows:</p>
+<p>It is restless, you would say, and does not like warm water. But it is quite stupid, since it is not able to turn back to the nice cold spot it overshot in its restlessness. Anyway you would say, it is ALIVE, since you have never seen a particle of dead matter move around like that.
+  Vehicles p. 5</p>
+<p>Braitenberg develops his vehicles by introducing a new component and combining it with the advances of the existing vehicles. Each component is very simple on its own. Yet, this technique of compounded design results in complex behaviours attributable to living organisms.</p>
+<p>VEHICLE 7</p>
+<h2 id="introduction-to-asteroids">Introduction To Asteroids</h2>
+<p><a href="images/vanilla-asteroids.gif"><img alt="Asteroids" src="images/vanilla-asteroids.gif" /></a></p>
+<p>Asteroids is a two-dimensional action video game. Players control a triangular ship inside a field of drifting asteroids. The ship can turn left and right, can fire forward and reverse thrusters (which apply force to the ship according to the direction it is facing), can shoot a cannon, and may teleport to a random location on the screen.</p>
+<p>Players are pitted against asteroids, UFOs and missiles. Asteroids are represented by  circular polygons. Each asteroid is created with a movement vector which is static, random and specific to that particular asteroid. Players can shoot an asteroid, UFO or missile with thier cannon to destroy it. Destroyed asteroids may fragment into multiple smaller asteroids. UFOs shoot missiles which home to the player&rsquo;s location. Colliding with an asteroid, UFO or missile is fatal to the player.</p>
+<p>Objects in Asteroids &lsquo;wrap&rsquo; around the edges of the screen. So when an object passes out of the left boundary of the screen it appears on the right side of the screen. The same wrapping applies to the vertical direction. In this way we can imagine Asteroids as taking place on the surface of a sphere. </p>
+<p>Players receive points for destroying asteroids with their cannon. Players start with three lives to try and obtain as many points as possible; points persist between lives but are reset to zero when lives are depleted. If the player earns 4000 points they receive another life, if the player earns 2750 points a UFO is spawned.</p>
+<h2 id="braitenberg-vehicles-that-play-asteroids">Braitenberg Vehicles that Play Asteroids</h2>
+<p>In my work, I apply Braitenberg&rsquo;s ideas to create an agent that effectively plays the classic video game Asteroids. The goal is to design a very general robot that is effective in the environment, not design an AI which is narrowly focused on the implementation details of this particular game. Braitenberg&rsquo;s book was designed as a thought experiment; free from the realities of an implementation. My work is implemented in an existing game engine. Because of this, there are some necessary differences between my work and Braitenberg&rsquo;s.</p>
+<p>Braitenberg&rsquo;s vehicles had rectangular bodies. However, the player ship in asteroids is a triangle. I retain the triangular ship of Asteroids because the shape affects the collision model. Changing this model has strategic implications for the gameplay and I wanted to stay as true to the original Asteroids game as possible.</p>
+<p>Developing appropriate sensors for my work was a major issue. Braitenberg describes the sensors of his vehicles with elegance and brevity but his descriptions lack the specificity required for a direct implementation. As a result my sensors are the product of many iterations.</p>
+<p>Two characteristics define the sensors in my work: the field of detection and the quality being detected.</p>
+<h3 id="sensors">Sensors</h3>
 <h4 id="radius-sensor">Radius Sensor</h4>
-<p>The sensor attached to Vehicle 1 detects objects in a radius extending from the sensor&rsquo;s origin. The sensor reports a normalized distance to the nearest detected object. To simplify implementation, the reported distance is measured from the detected object&rsquo;s origin to the sensor&rsquo;s origin. In this way, the sensor acts as a primitive antenna; focusing on the closest object in its field of detection.</p>
-<h4 id="forward-thruster">Forward Thruster</h4>
-<p>Vehicle 1 is also equipped with a thruster capable of propelling the robot forward at varying speeds. The thruster is an example of a Motor component. Motor components receive an input signal and produce some effect.</p>
-<p><a href="images/Vehicle01.png"><img alt="Vehicle 1" src="images/Vehicle01.png" /></a></p>
-<h4 id="chasis">Chasis</h4>
-<p>Vehicle 1&rsquo;s sensor is connected to the forward thruster. The forward thruster is depicted as a pentagon with an arrow indicating the exhaust direction. As stimulus excites the sensor, a signal is passed to the thruster. The connection is such that, the closer an object gets, the harder the thruster works. More-more connections like this are depicted in diagrams as red wires (as seen in figure 2).</p>
-<h3 id="observations">Observations</h3>
-<p>Vehicle 1 floats casually at first but when an asteroid approaches, he begins to move forward. If approached from behind, he creeps ahead of the approaching asteroid, only just keeping it at the edge of his senses. If approached from the fore, he rapidly accelerates forward; often shooting himself into the approacher, occasionally slipping past into open space.</p>
-<h3 id="demonstration">Demonstration</h3>
-<embed class="applet" type="application/x-java-applet;version=1.6" width="700" height="700" archive="applets/braitenoids_selection.jar,applets/lib/jts-1.13.jar" code="Asteroids.class" pluginspage="http://java.com/download/" myparam="">
-<h3 id="analysis">Analysis</h3>
-<p>Vehicle 1 is a simple creature. He loves wide open spaces. Crowded areas agitate him to flight. He is a fickle creature, always searching for a totally empty spot; never happy with almost perfect. He lacks strategy and would rather plough through a dense crowd ahead of him than bear the slightest company or move around it.</p>
-<hr />
-<h2 id="vehicle-2">Vehicle 2</h2>
-<h3 id="description_1">Description</h3>
-<blockquote>
-<p>Vehicle 2 is generally similar to Vehicle 1 except that it has two sensors, one on each side, and two motors, right and left.</p>
-<p><cite>Vehicles p. 6</cite></p>
-</blockquote>
-<p><a href="images/Sensor02.png"><img alt="Cone Sensor" src="images/Sensor02.png" /></a></p>
-<h4 id="cone-sensor">Cone Sensor</h4>
-<p>Vehicle 2 utilizes a Cone Sensor to acheive more focused behavior than is possible with the antenna-like Radius Sensor. Cone Sensors detect objects in a cone extending away from the sensor. Again, the sensor reports the normalized distance to the nearest detected object. The resulting sensor mimics a simple eye; concerned with only the nearest object.</p>
-<h4 id="gyroscope">Gyroscope</h4>
-<p>Vehicle 2 comes equipped with two gyroscopes. Each gyroscope exerts force in the rotational direction indicated by a curved arrow. The gyroscopes rotate their Vehicle whenever they are passed a signal from an attached sensor. Gyroscopes conteract eachother such that if two opposing gyroscopes (one clock-wise and one counter-clockwise) are equally excited, no rotation will occur.</p>
-<p><a href="images/Vehicle02A.png"><img alt="Vehicle 2A" src="images/Vehicle02A.png" /></a></p>
-<p><a href="images/Vehicle02B.png"><img alt="Vehicle 2B" src="images/Vehicle02B.png" /></a></p>
-<h4 id="chasis_1">Chasis</h4>
-<p>Vehicle 2&rsquo;s cone sensors are tilted apart such that their field of view overlaps only slightly. Two significant wiring configurations are possible in this Vehicle. The left-facing sensor may be connected to the left-side gyroscope and the right-sensor with the right gyroscope (a so called uncrossed connection as in figure XXX). Alternatively, the connections may be crossed such that the left-facing sensor is connected with the right-side gyro and the right-facing sensor is connected with the left-side gyro (as in figure XXX). In either case, the thruster is connected to each sensor as in Vehicle 1.</p>
-<p>For convenience, the uncrossed configuration will be refered to as Vehicle 2A and the crossed configuration 2B.</p>
-<h3 id="observations_1">Observations</h3>
-<p>OBSERVATIONS</p>
-<h3 id="demonstration_1">Demonstration</h3>
-<embed class="applet" type="application/x-java-applet;version=1.6" width="700" height="700" archive="applets/braitenoids_selection.jar,applets/lib/jts-1.13.jar" code="Asteroids.class" pluginspage="http://java.com/download/" myparam="">
-<h3 id="analysis_1">Analysis</h3>
-<p>ANALYSIS</p>
-<hr />
-<h2 id="vehicle-3">Vehicle 3</h2>
-<h3 id="description_2">Description</h3>
-<blockquote>
-<p>There is something very crude about a vehicle that can only be excited by the things it smells (or sees or hears) and knows no soothing or relaxing stimuli.</p>
-<p><cite>Vehicles p. 10</cite></p>
-</blockquote>
-<p><a href="images/Vehicle3A.png"><img alt="Vehicle 3A" src="images/Vehicle3A.png" /></a></p>
-<p><a href="images/Vehicle3B.png"><img alt="Vehicle 3B" src="images/Vehicle3B.png" /></a></p>
-<h4 id="chasis_2">Chasis</h4>
-<p>Vehicles 3A and 3B are equipped with the same sensors and motors as Vehicles 2A and 2B but with a novel wiring scheme. Vehicle 3&rsquo;s connections are inverted such that; when a sensor is deprived of stimulus (there is nothing to detect) the attached Motor is fired at full capacity. When a sensor is excited, the attached component is inhibited and acts with less force. Such inverted connections are depicted in figure XXX as blue wires.</p>
-<h3 id="observations_2">Observations</h3>
-<p>OBSERVATIONS</p>
-<h3 id="demonstration_2">Demonstration</h3>
-<embed class="applet" type="application/x-java-applet;version=1.6" width="700" height="700" archive="applets/braitenoids_selection.jar,applets/lib/jts-1.13.jar" code="Asteroids.class" pluginspage="http://java.com/download/" myparam="">
-<h3 id="analysis_2">Analysis</h3>
-<p>ANALYSIS</p>
-<hr />
-<h2 id="vehicle-4">Vehicle 4</h2>
-<h3 id="description_3">Description</h3>
-<blockquote>
-<p>Let us consider the following improvement. The activation of a certain sensor will make the corresponding motor run faster, but only up to a point, where the speed of the motor reaches a maximum. Beyond this point, if the sensor is activated even more strongly, the speed will decrease again.</p>
-<p><cite>Vehicles p. 15</cite></p>
-</blockquote>
-<p><a href="images/Sensor02.png"><img alt="Cone Sensor" src="images/Sensor02.png" /></a></p>
-<h4 id="modulator">Modulator</h4>
-<p>Vehicle 4 introduces Modulators to our wiring schemes. Past connections, inverted or not, assumed a linear relationship between sensor output and motor stimulation. Either, the more-stimulue the more-output or the more-stimulus the less-output. Modulators take a signal from a sensor, input the signal to a function, and return the result. Multiple Sensors can be connected to a single Modulator. In that case, all the Sensor signals will be added together and input to the modulator&rsquo;s function (similar to wiring batteries series to acheive higher voltage). Multiple motors may also be connected to the output of a modulator. Modulators are represented in our figures as a disc labeled f~cursive-symbol~. Modulators allow for a stunning array of behaviours and configurations.</p>
-<p><a href="images/Vehicle04A.png"><img alt="Vehicle 4A" src="images/Vehicle04A.png" /></a></p>
-<h4 id="chasis_3">Chasis</h4>
-<p>Vehicles 4A and 4B are equipped with the same sensors and motors as Vehicles 3A and 3B. However, Modulators intercept the connections between the Sensors and Motors of these new Vehicles. The Modulators used here are modeled by the curve shown in figure XXX (a parabolic curve of the form f(x)=-4(X^2-X) || MAYBE 4(X^2-X)+1 IS MORE INTERESTING???).</p>
-<h3 id="observations_3">Observations</h3>
-<p>OBSERVATIONS</p>
-<h3 id="demonstration_3">Demonstration</h3>
-<embed class="applet" type="application/x-java-applet;version=1.6" width="700" height="700" archive="applets/braitenoids_selection.jar,applets/lib/jts-1.13.jar" code="Asteroids.class" pluginspage="http://java.com/download/" myparam="">
-<h3 id="analysis_3">Analysis</h3>
-<p>ANALYSIS</p>
-<hr />
-<h2 id="vehicle-5">Vehicle 5</h2>
-<h3 id="description_4">Description</h3>
-<blockquote>
-<p>The individual threshold device is of the simplest sort: it gives no output if its input line carries a signal below the threshold, and it gives full output beyond the threshold.</p>
-<p><cite>Vehicles p. 21</cite></p>
-</blockquote>
-<h4 id="cone-sensor_1">Cone Sensor</h4>
-<p><a href="images/Sensor02.png"><img alt="Cone Sensor" src="images/Sensor02.png" /></a></p>
-<p>COMPONENT</p>
-<h4 id="chasis_4">Chasis</h4>
-<p><a href="images/Vehicle05.png"><img alt="Vehicle 5" src="images/Vehicle05.png" /></a></p>
-<p>DESCRIPTION</p>
-<h3 id="observations_4">Observations</h3>
-<p>OBSERVATIONS</p>
-<h3 id="demonstration_4">Demonstration</h3>
-<embed class="applet" type="application/x-java-applet;version=1.6" width="700" height="700" archive="applets/braitenoids_selection.jar,applets/lib/jts-1.13.jar" code="Asteroids.class" pluginspage="http://java.com/download/" myparam="">
-<h3 id="analysis_4">Analysis</h3>
-<p>ANALYSIS</p>
-<hr />
-<h2 id="evolving-new-vehicles">Evolving New Vehicles</h2>
-<p>Description of evolutionary algorithms used&hellip;</p>
-<h2 id="future-goals">Future Goals</h2>
-<p>To see some of the future goals for the project visit the <a href="futuregoals.html">Future Goals</a> page.</p>
+<p><a href="images/plot-radius01.gif"><img alt="Asteroids" src="images/plot-radius01.gif" /></a></p>
+<h2 id="some-designs-of-vehicles-that-play-asteroids">Some Designs of Vehicles that play Asteroids</h2>
+<h2 id="evolving-vehicles-that-play-asteroids">Evolving Vehicles that Play Asteroids</h2>
+<h2 id="experiments-with-vehicles-that-play-asteroids">Experiments with Vehicles that Play Asteroids</h2>
+<h2 id="related-work">Related Work</h2>
+<p>http://people.cs.uchicago.edu/~wiseman/vehicles/
+http://braitenbergsim.sourceforge.net/
+https://wiki.qut.edu.au/display/cyphy/Braitenberg+Vehicle+Simulator
+http://www.florajs.com/</p>
+<h2 id="ideas-for-future-work">Ideas for Future Work</h2>
+<p>First and foremost, the project needs a new technology platform. The Java Applet is a dying technology. It is poorly supported by modern browsers and is no longer seeing active developments. Porting to another more suitable platform should be the first priority of any efforts to continue the project (JavaScript being the obvious choice).</p>
+<p>The agents developed here are interesting to watch but they pose some interesting questions for further consideration. Reactive agents like my pilots have complex dynamic behaviour patterns which make them excellent in dealing with unpredictable environments. They might be well suited to things like crowd navigation. We can imagine similar designs used in a courier-bot delivering packages through city streets. It uses a long term planning algorithm to reach its destination but switches on a reactive crowd-navigation sub-routine when surrounded by too many people. However, it is these complex emergent behaviours which make Braitenberg Pilots poorly suited to high stakes tasks like driving a vehicle. In such tasks, we prefer a robot which does not do anything unexpected and one which will perform consistently regardless of minor changes to its components. This unpredictability would however make Braitenberg Pilots an excellent childrens toy. With simple interchangeable components; a few simple motors, sensors and modulators, one could construct any number of curious, scurrying robotic creatures. By making slight changes to sensor or modulator knobs a vast array of behaviours would keep curious tinkerers endlessly busy. The primary attraction of such robots would be twofold: designing with intention and observing novel behaviours created by chance.</p>
+<h2 id="summary">Summary</h2>
+<h2 id="appendix-using-the-asteroids-software">Appendix: Using the Asteroids Software</h2>
+<h2 id="bibliography">Bibliography</h2>
 </section>
 </div>
 <!--========================= FOOTER =========================-->
