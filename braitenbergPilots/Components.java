@@ -20,7 +20,6 @@ package braitenbergPilots;
 import java.util.*;
 import java.util.List;
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
@@ -86,6 +85,19 @@ class SensorFactory {
     return sensor;
   }
   
+  // Return a sensor:
+  public static ShipSpeedSensor makeShipSpeedSensor() {
+    // Create a sensor.
+    ShipSpeedSensor sensor = new ShipSpeedSensor();
+    SingleGeometryFactory.getShapeFactory().setSize(4);
+    SingleGeometryFactory.getShapeFactory().setBase(new Coordinate(0,0));
+    
+    Polygon circle = new PolyWrapper(SingleGeometryFactory.getShapeFactory().createCircle());
+    sensor.localShape = circle;
+    sensor.maxSpeed = Asteroids.MAX_SHIP_SPEED; // Set the speed limit.
+    return sensor;
+  }
+  
 }
 
 
@@ -94,19 +106,37 @@ class SensorFactory {
   some measure of the environment. The nature of <output> depends on the implementation
   of the particular sensor.
 */
-interface Sensor extends Source{
-  // TODO: REMOVE THESE
-  static final double SHORT_LENGTH = 200.0;
-  static final double  MEDIUM_LENGTH = 300.0;
-  static final double  LONG_LENGTH = 2000.0;
-  static final double  SLOW_SPEED = 5.0;
+abstract class Sensor {
+  double output = 0.0;
+  PolyWrapper worldShape;
+  Polygon localShape;
   
   // Sense some aspect of the GameState <world> given the sensor is at:
   // <loc> with a heading of <rot>.
-  void sense(Point loc, double rot, GameState world);
+  abstract void sense(Point loc, double rot, GameState world);
+  
+  // Return the AsteroidsSprite which intersects worldShape and is nearest to <loc>:
+  public AsteroidsSprite getNearestIntersected(Point loc, double rot, GameState world) {
+    
+    // Create worldTransform to transform to the local-space shape to world-space:
+    AffineTransformation trans = new AffineTransformation();
+    trans.rotate(-rot);
+    trans.translate(loc.getX(), loc.getY());
+    worldShape = new PolyWrapper((Polygon)trans.transform(localShape));
+    
+    // List of AsteroidsSprites that intersect with a circle described by
+    // <loc, distanceToNearest>
+    List<AsteroidsSprite> intersected = world.intersects(worldShape);
+    
+    // Nearest AsteroidsSprite:
+    AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
+
+    return nearest;
+  }
   
   // Return a polygon in the shape of the detection field of the sensor:
-  PolyWrapper getWorldShape();
+  PolyWrapper getWorldShape() { return worldShape; }
+  public double getOutput() { return output; }
 }
 
 
@@ -125,29 +155,14 @@ interface Sensor extends Source{
     ~values close to zero when objects are very far
     ~zero when all objects are outside of <detectionRadius>
 */
-class DistanceSensor implements Sensor {
-  double output = 0.0;
-  double shapeSize;
-  PolyWrapper worldShape;
-  Polygon localShape;
+class DistanceSensor extends Sensor {
+  double shapeSize; // Upper limit on distance.
   
   // Sense some aspect of the GameState <world> given the sensor is at:
   // <loc> with a heading of <rot>.
   public void sense(Point loc, double rot, GameState world) {
+    AsteroidsSprite nearest = this.getNearestIntersected(loc, rot, world);
     double result = 0.0f;
-    
-    // Create a worldTransform to apply to the local shape:
-    AffineTransformation trans = new AffineTransformation();
-    trans.rotate(-rot);
-    trans.translate(loc.getX(), loc.getY());
-    worldShape = new PolyWrapper((Polygon)trans.transform(localShape));
-    
-    // List of AsteroidsSprites that intersect with a circle described by
-    // <loc, distanceToNearest>
-    List<AsteroidsSprite> intersected = world.intersects(worldShape);
-    
-    // Nearest AsteroidsSprite:
-    AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
     
     // Calculate result if something was detected:
     if (nearest != null) {
@@ -158,8 +173,6 @@ class DistanceSensor implements Sensor {
 
     output = result;
   }
-  public double getOutput() { return output; }
-  public PolyWrapper getWorldShape() { return worldShape; }
 }
 
 
@@ -167,47 +180,48 @@ class DistanceSensor implements Sensor {
   Detects all colliders intersecting a line described by <loc, orientation>.
   Assigns <output> the complement of the speed to the nearest intersected collider 
   as a fraction of <baseSpeed>.
-  i.e. <output> = 1 - (<speed> / <baseSpeed>)
+  i.e. <output> = 1 - (<speed> / <maxSpeed>)
   This gives:
-    ~one when objects are moving at speed >= <baseSpeed>
-    ~values close to one when objects are moving at nearly <baseSpeed>
+    ~one when objects are moving at speed >= <maxSpeed>
+    ~values close to one when objects are moving at nearly <maxSpeed>
     ~values close to zero when objects are moving at nearly zero
     ~zero when all objects are outside of detection beam
 */
-class SensorRayLongSpeed extends DistanceSensor {
-  public void sense(Point loc, double orientation, GameState world) {
-    double lineLength = LONG_LENGTH; // Length of the detection-beam.
-    double baseSpeed = SLOW_SPEED;
+class SpeedSensor extends Sensor {
+  double maxSpeed; // Upper limit on speed.
+  
+  public void sense(Point loc, double rot, GameState world) {
     double result = 0.0f;
-
-    // Generate the points of our detection line:
-    Coordinate[] coords = new Coordinate[2];
-    // Start point:
-    coords[0] = new Coordinate(
-        loc.getX() + (AsteroidsSprite.width / 2), 
-        loc.getY() + (AsteroidsSprite.height / 2));
+    AsteroidsSprite nearest = this.getNearestIntersected(loc, rot, world);
     
-    // End point:
-    coords[1] = new Coordinate(
-        loc.getX() -Math.sin(orientation)*lineLength + (AsteroidsSprite.width / 2), 
-        loc.getY() -Math.cos(orientation)*lineLength + (AsteroidsSprite.height / 2));
-    
-    LineString line = SingleGeometryFactory.getFactory().createLineString(coords);
-    
-    // List of colliders that intersect with <line>:
-    List<AsteroidsSprite> intersected = world.intersectLine(line);
-
-    // The nearest AsteroidsSprite:
-    AsteroidsSprite nearest = AsteroidsSprite.nearest(loc, intersected);
-
     // Calculate result if something was detected:
     if (nearest != null) {
       // Normalize the speed of <nearest>:
       double speed = nearest.getSpeed();
-      double fraction = speed / baseSpeed;
+      double fraction = speed / maxSpeed;
       result = (fraction > 1.0) ? 0.0 : 1.0-fraction;
     }
 
+    output = result;
+  }
+}
+
+/*
+  Detects the ships current speed.
+  Assigns <output> the normalized speed of the ship.
+  i.e. <output> = 1 - (<speed> / <baseSpeed>)
+  This gives:
+    ~one when ship is moving at speed >= <maxSpeed>
+    ~values close to one when ship is moving at nearly <maxSpeed>
+    ~values close to zero when ship is moving slowly
+    ~zero when ship is stationary
+*/
+class ShipSpeedSensor extends Sensor {
+  double maxSpeed; // Upper limit on speed.
+  
+  public void sense(Point loc, double rot, GameState world) {
+    this.getNearestIntersected(loc, rot, world);
+    double result = world.ship.getSpeed();
     output = result;
   }
 }
@@ -280,8 +294,7 @@ class ModulatorBinary extends ModulatorIdentity {
   // Return the output of the accumulated charge:
   public double getOutput() {
     // Clamp output between +-MAX_OUTPUT:
-    output = (charge > 0) ? MAX_OUTPUT : charge;
-    output = (charge < 0) ? -MAX_OUTPUT : charge;
+    output = (charge > 0) ? MAX_OUTPUT : 0;
     return output;
   }
 }
@@ -337,9 +350,33 @@ class ModulatorParabolic extends ModulatorIdentity {
   }
 }
 
+
+
+/*
+Models a function where:
+- f(x) = ( (x - .5)^3 ) * 8
+- f(0)  = -1
+- f(.5) = 0
+- f(1)  = 1
+*/
+class ModulatorPolynomial extends ModulatorIdentity {
+// Returns a new instance of this class:
+public Modulator copy() { return new ModulatorParabolic(); }
+
+// Return the output of the accumulated charge:
+public double getOutput() {
+  output = Math.pow(charge-.5f, 3) * 8;
+  
+  // Clamp output between +-MAX_OUTPUT:
+  output = (output > MAX_OUTPUT) ? MAX_OUTPUT : output;
+  output = (output < -MAX_OUTPUT) ? -MAX_OUTPUT : output;
+  return output;
+}
+}
+
 /*
   Registers a connection between an output device and an input device:
-  If a wire is an inhibiter it inverts any signal passing through.
+  If a wire is an inhibiter it returns the reciprocal of any signal passing through.
 */
 class Wire {
   int source;
@@ -413,17 +450,17 @@ class Hardpoint implements Source{
   }
 
   // Get the offset of this hardpoint in world-space:
-  Point getWorldLocation(Point loc, double rotation) {
+  Point getWorldLocation(Point loc, double rot) {
     // Find the xComponent of the world-translation:
     Coordinate xComponent = new Coordinate(
-      Math.cos(rotation) * locationOffset.getX(),
-      -Math.sin(rotation) * locationOffset.getX()
+      Math.cos(rot) * locationOffset.getX(),
+      -Math.sin(rot) * locationOffset.getX()
       );
 
     // Find the yComponent of the world-translation:
     Coordinate yComponent = new Coordinate(
-      Math.sin(rotation) * locationOffset.getY(),
-      Math.cos(rotation) * locationOffset.getY()
+      Math.sin(rot) * locationOffset.getY(),
+      Math.cos(rot) * locationOffset.getY()
       );
 
     // Add the original <loc> and the translation components:
@@ -523,6 +560,7 @@ class BraitenbergVehicle {
 
       // If <wire> is an inhibitor, negate the output:
       output = (wire.inhibitor) ? 1.0-output : output;
+      output = (output < 0) ? 0 : output;
 
       // Apply source's output to the destination:
       destination.input(output);
@@ -540,6 +578,7 @@ class BraitenbergVehicle {
 
       // If wire <wire> is an inhibitor, invert the result:
       output = (wire.inhibitor) ? 1.0-output : output;
+      output = (output < 0) ? 0 : output;
 
       // Apply source's output to the destination:
       controlSignals[wire.destination] += output;
@@ -577,7 +616,7 @@ class BraitenbergVehicle {
     signal();
   }
 
-  // Accessors
+  // Accessors:
   long   getLifetime()     { return lifetime; }
   double getTurnLeft()     { return controlSignals[0]; }
   double getTurnRight()    { return controlSignals[1]; }
@@ -586,6 +625,7 @@ class BraitenbergVehicle {
   double getFirePhoton()   { return controlSignals[4]; }
   double getFireHyper()    { return controlSignals[5]; }
 }
+
 
 /*
   BraitenbergVehicleFactory
@@ -949,41 +989,30 @@ class BRVFactory {
       BraitenbergVehicle v = new BraitenbergVehicle(world);
 
       // Hardpoint on the Vehicle's Nose:
-      Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
-      Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
+      Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-30,-10), 0.0);
+      Hardpoint rightNosePoint = new Hardpoint(new Vector2D(30,-10), 0.0);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
-      leftNosePoint.addSensor(leftSensor);
-      rightNosePoint.addSensor(rightSensor);
+      leftNosePoint.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH));
+      rightNosePoint.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH));
 
       // Add the hardpoint to the ship:
       v.hardpoints.add(leftNosePoint);
       v.hardpoints.add(rightNosePoint);
 
       // Add a Modulator to the vehicle:
-      ModulatorIdentity leftMod = new ModulatorIdentity();
-      ModulatorIdentity rightMod = new ModulatorIdentity();
-      v.modulators.add(leftMod);
-      v.modulators.add(rightMod);
+      v.modulators.add(new ModulatorParabolic());
+      v.modulators.add(new ModulatorParabolic());
 
       // Wire the hardpoints to Modulators:
-      Wire leftSensWire =   new Wire(0,0, true, 1.0f);
-      Wire rightSensWire =  new Wire(1,1, true, 1.0f);
-      v.sensorWires.add(leftSensWire);
-      v.sensorWires.add(rightSensWire);
+      v.sensorWires.add(new Wire(0,0, false, 1f));
+      v.sensorWires.add(new Wire(1,1, false, 1f));
 
       // Wire the modulator to a Control Signal:
-      Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-      Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
-      Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-      Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
-
-      v.controlWires.add(leftThrustWire);
-      v.controlWires.add(leftSteerWire);
-      v.controlWires.add(rightThrustWire);
-      v.controlWires.add(rightSteerWire);
+      v.controlWires.add(new Wire(0,2, true, 1.35f)); // leftThrustWire
+      v.controlWires.add(new Wire(0,1, true, 1.0f)); // rightSteerWire
+      v.controlWires.add(new Wire(1,2, true, 1.35f)); // rightThrustWire
+      v.controlWires.add(new Wire(1,0, true, 1.0f)); // leftSteerWire
       
       return v;
   }
@@ -1074,110 +1103,142 @@ class BRVFactory {
       return v;
 }
   
-  BraitenbergVehicle makeVehicleFourACone () {
+  BraitenbergVehicle makeVehicleFourARadius () {
       BraitenbergVehicle v = new BraitenbergVehicle(world);
 
-      // Hardpoint on the Vehicle's Nose:
-      Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI/6);
-      Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
-
-      // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, QUARTER_PI);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, QUARTER_PI);
-      leftNosePoint.addSensor(leftSensor);
-      rightNosePoint.addSensor(rightSensor);
-
-      // Add the hardpoint to the ship:
+      // Left nose point:
+      Hardpoint leftNosePoint = new Hardpoint(new Vector2D(30,-10), Math.PI/6);
+      leftNosePoint.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH) );
       v.hardpoints.add(leftNosePoint);
+      v.modulators.add(new ModulatorParabolic());
+      v.modulators.add(new ModulatorIdentity());
+      
+
+      v.sensorWires.add (new Wire(0,0, false, 1.0f));
+      v.controlWires.add (new Wire(0,0, true, 1.0f));
+      
+      v.sensorWires.add (new Wire(0,1, false, 1.0f));
+      v.controlWires.add(new Wire(1,2, true, .5f));
+      
+      // Right nose point:
+      Hardpoint rightNosePoint = new Hardpoint(new Vector2D(-30,-10), -Math.PI/6);
+      rightNosePoint.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH));
       v.hardpoints.add(rightNosePoint);
+      v.modulators.add(new ModulatorParabolic());
+      v.modulators.add(new ModulatorIdentity());
+      
+      v.sensorWires.add (new Wire(1,2, false, 1.0f));
+      v.controlWires.add (new Wire(2,1, true, 1.0f));
+      
+      v.sensorWires.add (new Wire(1,3, false, 1.0f));
+      v.controlWires.add(new Wire(3,2, true, .5f));
+      
+      // Speed point:
+      Hardpoint speedPoint = new Hardpoint(new Vector2D(0,0), 0);
+      speedPoint.addSensor(SensorFactory.makeShipSpeedSensor());
+      v.hardpoints.add(speedPoint);
+      
+      v.modulators.add(new ModulatorIdentity());
+      
+      v.sensorWires.add(new Wire(2,4, false, 1.0f));
+      v.controlWires.add(new Wire(4,3, false, 1.5f));
 
-      // Add a Modulator to the vehicle:
-      ModulatorParabolic leftMod = new ModulatorParabolic();
-      ModulatorParabolic rightMod = new ModulatorParabolic();
-      v.modulators.add(leftMod);
-      v.modulators.add(rightMod);
-
-      // Wire the hardpoints to Modulators:
-      Wire leftSensWire =   new Wire(0,0, true, 1.0f);
-      Wire rightSensWire =  new Wire(1,1, true, 1.0f);
-      v.sensorWires.add(leftSensWire);
-      v.sensorWires.add(rightSensWire);
-
-      // Wire the modulator to a Control Signal:
-      Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-      Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
-      Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-      Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
-
-      v.controlWires.add(leftThrustWire);
-      v.controlWires.add(leftSteerWire);
-      v.controlWires.add(rightThrustWire);
-      v.controlWires.add(rightSteerWire);
       
       return v;
   }
+  
+  BraitenbergVehicle makeVehicleFourBRadius () {
+    BraitenbergVehicle v = new BraitenbergVehicle(world);
+
+    // Left nose point:
+    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(35,-10), Math.PI/6);
+    leftNosePoint.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH) );
+    v.hardpoints.add(leftNosePoint);
+    v.modulators.add(new ModulatorParabolic());
+    v.modulators.add(new ModulatorIdentity());
+    
+
+    v.sensorWires.add (new Wire(0,0, true, 1.0f));
+    v.controlWires.add (new Wire(0,1, false, .5f));
+    
+    v.sensorWires.add (new Wire(0,1, false, 1.0f));
+    v.controlWires.add(new Wire(1,2, true, .2f));
+    
+    // Right nose point:
+    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(-35,-10), -Math.PI/6);
+    rightNosePoint.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH));
+    v.hardpoints.add(rightNosePoint);
+    v.modulators.add(new ModulatorParabolic());
+    v.modulators.add(new ModulatorIdentity());
+    
+    v.sensorWires.add (new Wire(1,2, true, 1.0f));
+    v.controlWires.add (new Wire(2,0, false, .5f));
+    
+    v.sensorWires.add (new Wire(1,3, false, 1.0f));
+    v.controlWires.add(new Wire(3,2, true, .2f));
+    
+    // Speed point:
+    Hardpoint speedPoint = new Hardpoint(new Vector2D(0,0), 0);
+    speedPoint.addSensor(SensorFactory.makeShipSpeedSensor());
+    v.hardpoints.add(speedPoint);
+    
+    v.modulators.add(new ModulatorIdentity());
+    
+    v.sensorWires.add(new Wire(2,4, false, 1.0f));
+    v.controlWires.add(new Wire(4,3, false, 1.6f));
+
+    
+    return v;
+}
   
   
   // A vehicle with sensors arranged to approximate a basic eye:
   BraitenbergVehicle makeVehicleRayEye () {
     BraitenbergVehicle v = new BraitenbergVehicle(world);
     
-    int numRays = 16; // Should be even number.
+    int numRays = 32; // Should be even number.
     double raySpread = 2 * Math.PI / numRays; 
     
     // Create HardPoints arranged like spokes on a wheel:
     for (int i = 0; i < numRays; i++ ) {
       Hardpoint h = new Hardpoint(new Vector2D(0,0), i * raySpread);
-      DistanceSensor sensor = SensorFactory.makeDistanceRaySensor(MEDIUM_LENGTH);
-      // Add a sensor to the hardpoint:
-      h.addSensor(sensor);
-      
-      // Add the hardpoint to the chassis:
-      v.hardpoints.add(h);
-      
-      // Add Modulators to the vehicle:
-      ModulatorIdentity mod = new ModulatorIdentity();
-      v.modulators.add(mod);
-      
-      // Wire the hardpoint to the Modulator:
-      Wire sensWire = new Wire(i,i, false, 1.0f);
-      v.sensorWires.add(sensWire);
-
+      h.addSensor(SensorFactory.makeDistanceRaySensor(MEDIUM_LENGTH)); // Add a sensor to the hardpoint:
+      v.hardpoints.add(h);                           // Add the hardpoint to the chassis:
+      v.modulators.add(new ModulatorIdentity());     // Add Modulators to the vehicle:
+      v.sensorWires.add(new Wire(i,i, false, 1.0f)); // Wire the hardpoint to the Modulator:
     }
     
     // We now have 16 sensors wired into the vehicle in a spoke-configuration.
     // The wire i maps to the sensor pointing to raySpread*i (counter-clockwise).
     
     // Flee from objects behind:
-    Wire wFlee = new Wire(numRays/2,2, false, 1f);
-    v.controlWires.add(wFlee);
+    v.controlWires.add(new Wire(numRays/2,2, false, 1f));
     
     // Thrust except when objects are near:
-    Wire wThrust1 = new Wire(0,        2, true, 5f);
-    Wire wThrust2 = new Wire(1,        2, true, 5f);
-    Wire wThrust3 = new Wire(numRays-1,2, true, 5f);
-    v.controlWires.add(wThrust1);
-    v.controlWires.add(wThrust2);
-    v.controlWires.add(wThrust3);
+    v.controlWires.add(new Wire(0,        2, true, 5f) );
+    v.controlWires.add(new Wire(1,        2, true, 5f) );
+    v.controlWires.add(new Wire(numRays-1,2, true, 5f) );
     
     // Shoot objects passing in front:
-    Wire wShoot1 = new Wire(0,        4, false, 1f);
-    Wire wShoot2 = new Wire(1,        4, false, 1f);
-    Wire wShoot3 = new Wire(numRays-1,4, false, 1f);
-    v.controlWires.add(wShoot1);
-    v.controlWires.add(wShoot2);
-    v.controlWires.add(wShoot3);
+    v.controlWires.add(new Wire(0,         4, false, 1f) );
+    v.controlWires.add(new Wire(1,         4, false, 1f) );
+    v.controlWires.add(new Wire(numRays-1, 4, false, 1f) );
+    
+    // Slow down when objects passing in front:
+    v.controlWires.add(new Wire(0,        3, false, 1.0f) );
+    v.controlWires.add(new Wire(1,        3, false, 1.0f) );
+    v.controlWires.add(new Wire(1,        3, false, 1.0f) );
+    v.controlWires.add(new Wire(numRays-1,3, false, 1.0f) );
+    v.controlWires.add(new Wire(numRays-2,3, false, 1.0f) );
     
     // Turn toward objects on the left:
     for (int k = 1; k < numRays/2; k++) {
-      Wire wLeft = new Wire(k,0, false, 1f);
-      v.controlWires.add(wLeft);
+      v.controlWires.add(new Wire(k,0, false, 1f));
     }
     
     // Turn toward objects on the right:
     for (int j = numRays/2+1; j < numRays; j++) {
-      Wire wLeft = new Wire(j,1, false, 1f);
-      v.controlWires.add(wLeft);
+      v.controlWires.add(new Wire(j,1, false, 1f));
     }
     
     return v;

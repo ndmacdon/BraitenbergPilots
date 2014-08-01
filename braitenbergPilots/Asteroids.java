@@ -264,6 +264,14 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   ArrayList<String> menuInfo = new ArrayList<String>();
   String menuInput;
   
+  // Tourney Information.
+  
+  boolean tourneyMode = false;
+  int gamesPerParticipant = 30;
+  int participants = 7;
+  int currentGame = 0;
+  int currentParticipant = 0;
+  
   
   // Copyright information.
 
@@ -281,8 +289,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   // Constants
 
-  static final int FRAME_LENGTH = 1000;     // Milliseconds in one frame.
-  static final int DELAY = 15;              // Milliseconds between screen and
+  static  int FRAME_LENGTH = 500; //1000    // Milliseconds in one frame.
+  static final int DELAY = 7;     //15      // Milliseconds between screen and
   static final int FPS   =                  // the resulting frame rate.
     Math.round(FRAME_LENGTH / DELAY);
 
@@ -443,13 +451,15 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     menuInfo.add("Braitenberg-Vehicles   |   Fit-Vehicles");
     menuInfo.add("Key   Pilot            |   Key   Pilot");
     menuInfo.add("-----------------------|--------------------");
-    menuInfo.add("1R    1  Radius        |   1F    Ray Eye");
-    menuInfo.add("1L    1  Laser         |   2F    Polar Hopper");
-    menuInfo.add("2A    2A Triangle      |   3F");
-    menuInfo.add("2B    2B Triangle      |   4F");
-    menuInfo.add("3A    3A Triangle      |   5F");
-    menuInfo.add("3B    3B Triangle      |   6F");
-    menuInfo.add("4A    4A Triangle      |   7F");
+    menuInfo.add("1R    D.N.O.-Radius    |   1F    Ray Eye");
+    menuInfo.add("1L    D.N.O.-Laser     |   2F    Polar Hopper");
+    menuInfo.add("2A    Coward           |   3F");
+    menuInfo.add("2B    Angry            |   4F");
+    menuInfo.add("3A    Admirer          |   5F");
+    menuInfo.add("3B    Explorer         |   6F");
+    menuInfo.add("3C    Anxious-Explorer |   6F");
+    menuInfo.add("4A    Dancer           |   7F");
+    menuInfo.add("4B    Orbiter          |   7F");
     menuInfo.add("");
     menuInfo.add("Press 'P' at any time to Pause.");
     menuInfo.add("Press 'K' at any time to End the current game.");
@@ -716,6 +726,23 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
               initAsteroids();
             }
         }
+        
+        // Execute the tournament:
+        if (tourneyMode && !playing) {
+          
+          if (currentParticipant < participants) {
+            if (currentGame < gamesPerParticipant) {
+                pilot = factory.makeVehicleRayEye();
+                currentGame++;
+                initGame();
+            }
+            else {
+              // Select next participant...
+              currentParticipant++;http://stackoverflow.com/questions/11224217/iterating-over-all-methods-that-have-name-starting-with-get-comparing-object
+            }
+          }
+          
+        }
   
         // Only Update the CurrentState && Pilot while the game is playing:
         if (playing && ship.active) {
@@ -727,7 +754,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
           // Record data every nth frame:
           if (pilot.lifetime % STATISTICS_POLLRATE == 0) {
             logStatistic(Stat.FRAME);
-            logStatistic(Stat.SENSOR0SIGNAL);
+            //logStatistic(Stat.SENSOR0SIGNAL);
           }
         }
   
@@ -962,6 +989,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
       lifeData.add(lifeRecord);
     }
+    
     
     ship.active = false;
     shipCounter = SCRAP_COUNT;
@@ -1453,10 +1481,16 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         pilot = factory.makeVehicleThreeACone();
       }
       else if (menuInput.contains("3B")) {
+        pilot = factory.makeVehicleThreeBRadius();
+      }
+      else if (menuInput.contains("3C")) {
         pilot = factory.makeVehicleThreeBCone();
       }
       else if (menuInput.contains("4A")) {
-        pilot = factory.makeVehicleFourACone();
+        pilot = factory.makeVehicleFourARadius();
+      }
+      else if (menuInput.contains("4B")) {
+        pilot = factory.makeVehicleFourBRadius();
       }
       else if (menuInput.contains("1F")) {
         pilot = factory.makeVehicleRayEye();
@@ -1466,6 +1500,10 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       }
       else if (menuInput.contains("1T")) {
         pilot = factory.makeVehicleSensorTestRadius();
+      }
+      else if (menuInput.contains("TOURNEY")) {
+        tourneyMode = true;
+        menuInput = "";
       } 
       else {
         menuInput = "";
@@ -1662,7 +1700,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         if (accBackward > 0) {
           offGraphics.drawPolygon(
               revThruster.sprite.xPoints(),
-              revThruster.sprite.xPoints(),
+              revThruster.sprite.yPoints(),
               revThruster.sprite.getNumPoints());
           
           offGraphics.drawLine( revThruster.sprite.xPoints()[revThruster.sprite.getNumPoints() - 1], 
@@ -1681,7 +1719,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         offGraphics.setColor(new Color(c, c, c));
         offGraphics.drawPolygon(
             explosions[i].sprite.xPoints(),
-            explosions[i].sprite.xPoints(),
+            explosions[i].sprite.yPoints(),
             explosions[i].sprite.getNumPoints());
       }
 
