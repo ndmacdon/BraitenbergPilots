@@ -267,10 +267,13 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   // Tourney Information.
   
   boolean tourneyMode = false;
-  int gamesPerParticipant = 30;
-  int participants = 7;
+  int gamesPerParticipant = 2;
+  int participants;
   int currentGame = 0;
   int currentParticipant = 0;
+  List<BraitenbergVehicle> tourneyRoster;
+  long tourneySeed = (long)(Long.MAX_VALUE * Math.random());
+  Random generator = new Random(42); // Use a single generator for reproducibility of results.
   
   
   // Copyright information.
@@ -313,7 +316,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   static final double MAX_ROCK_SPEED = 240.0 / FPS;
   static final double MAX_ROCK_SPIN  = Math.PI / FPS;
 
-  static final int MAX_SHIPS = 3;           // Starting number of ships for
+  static final int MAX_SHIPS = 1;           // Starting number of ships for
                                             // each game.
   static final int UFO_PASSES = 3;          // Number of passes for flying
                                             // saucer per appearance.
@@ -480,7 +483,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     addKeyListener(this);
     requestFocus();
     resizeScreen();
-
+    
     // Create shape for the ship sprite.
 
     ship = new AsteroidsSprite();
@@ -586,6 +589,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
                                   ufo);
     
     factory = new BRVFactory(currentState);
+    tourneyRoster = factory.makeRoster();
+    participants = tourneyRoster.size();
 
     highScore = 0;
     detail = true;
@@ -615,8 +620,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     for (int i = 0; i < numStars; i++) {
       stars[i] = SingleGeometryFactory.getFactory().createPoint(
           new Coordinate(
-              Math.random() * AsteroidsSprite.width, 
-              (Math.random() * AsteroidsSprite.height))
+              generator.nextDouble() * AsteroidsSprite.width, 
+              (generator.nextDouble() * AsteroidsSprite.height))
           );
     }
   }
@@ -730,15 +735,21 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         // Execute the tournament:
         if (tourneyMode && !playing) {
           
+          // Reset the random seed for the next participant:
+          if (currentGame == 0) {
+            generator.setSeed(tourneySeed);
+          }
+          
           if (currentParticipant < participants) {
             if (currentGame < gamesPerParticipant) {
-                pilot = factory.makeVehicleRayEye();
+                pilot = tourneyRoster.get(currentParticipant);
                 currentGame++;
                 initGame();
             }
             else {
               // Select next participant...
-              currentParticipant++;http://stackoverflow.com/questions/11224217/iterating-over-all-methods-that-have-name-starting-with-get-comparing-object
+              currentParticipant++;
+              currentGame = 0;
             }
           }
           
@@ -753,7 +764,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
           // TODO: CONFIGURE THE FOLLOWING FOR THE CURRENT TEST:
           // Record data every nth frame:
           if (pilot.lifetime % STATISTICS_POLLRATE == 0) {
-            logStatistic(Stat.FRAME);
+            //logStatistic(Stat.FRAME);
             //logStatistic(Stat.SENSOR0SIGNAL);
           }
         }
@@ -936,8 +947,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     // Warp ship into hyperspace by moving to a random location and
     // starting counter if the hyper signal is active:
     if (fireHyper && ship.active && hyperCounter <= 0) {
-      ship.x = Math.random() * AsteroidsSprite.width;
-      ship.y = Math.random() * AsteroidsSprite.height;
+      ship.x = generator.nextDouble() * AsteroidsSprite.width;
+      ship.y = generator.nextDouble() * AsteroidsSprite.height;
       hyperCounter = HYPER_COUNT;
     }
 
@@ -1029,12 +1040,12 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
     ufo.active = true;
     ufo.x = -AsteroidsSprite.width / 2;
-    ufo.y = Math.random() * 2 * AsteroidsSprite.height - AsteroidsSprite.height;
-    angle = Math.random() * Math.PI / 4 - Math.PI / 2;
-    speed = MAX_ROCK_SPEED / 2 + Math.random() * (MAX_ROCK_SPEED / 2);
+    ufo.y = generator.nextDouble() * 2 * AsteroidsSprite.height - AsteroidsSprite.height;
+    angle = generator.nextDouble() * Math.PI / 4 - Math.PI / 2;
+    speed = MAX_ROCK_SPEED / 2 + generator.nextDouble() * (MAX_ROCK_SPEED / 2);
     ufo.deltaX = speed * -Math.sin(angle);
     ufo.deltaY = speed *  Math.cos(angle);
-    if (Math.random() < 0.5) {
+    if (generator.nextDouble() < 0.5) {
       ufo.x = AsteroidsSprite.width / 2;
       ufo.deltaX = -ufo.deltaX;
     }
@@ -1075,7 +1086,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
           if (ship.active && hyperCounter <= 0 &&
               ufo.active && !missle.active &&
               d > MAX_ROCK_SPEED * FPS / 2 &&
-              Math.random() < MISSLE_PROBABILITY)
+              generator.nextDouble() < MISSLE_PROBABILITY)
             initMissle();
        }
     }
@@ -1189,11 +1200,11 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       // Create a jagged shape for the asteroid and give it a random rotation.
 
       
-      s = MIN_ROCK_SIDES + (int) (Math.random() * (MAX_ROCK_SIDES - MIN_ROCK_SIDES));
+      s = MIN_ROCK_SIDES + (int) (generator.nextDouble() * (MAX_ROCK_SIDES - MIN_ROCK_SIDES));
       Coordinate[] rockCoords = new Coordinate[s+1];
       for (j = 0; j < s; j ++) {
         theta = 2 * Math.PI / s * j;
-        r = MIN_ROCK_SIZE + (int) (Math.random() * (MAX_ROCK_SIZE - MIN_ROCK_SIZE));
+        r = MIN_ROCK_SIZE + (int) (generator.nextDouble() * (MAX_ROCK_SIZE - MIN_ROCK_SIZE));
         x = (int) -Math.round(r * Math.sin(theta));
         y = (int)  Math.round(r * Math.cos(theta));
         rockCoords[j] = new Coordinate(x, y);
@@ -1203,30 +1214,30 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       
       asteroids[i].active = true;
       asteroids[i].angle = 0.0;
-      asteroids[i].deltaAngle = Math.random() * 2 * MAX_ROCK_SPIN - MAX_ROCK_SPIN;
+      asteroids[i].deltaAngle = generator.nextDouble() * 2 * MAX_ROCK_SPIN - MAX_ROCK_SPIN;
 
       // Place the asteroid at one edge of the screen.
 
-      if (Math.random() < 0.5) {
+      if (generator.nextDouble() < 0.5) {
         asteroids[i].x = -AsteroidsSprite.width / 2;
-        if (Math.random() < 0.5)
+        if (generator.nextDouble() < 0.5)
           asteroids[i].x = AsteroidsSprite.width / 2;
-        asteroids[i].y = Math.random() * AsteroidsSprite.height;
+        asteroids[i].y = generator.nextDouble() * AsteroidsSprite.height;
       }
       else {
-        asteroids[i].x = Math.random() * AsteroidsSprite.width;
+        asteroids[i].x = generator.nextDouble() * AsteroidsSprite.width;
         asteroids[i].y = -AsteroidsSprite.height / 2;
-        if (Math.random() < 0.5)
+        if (generator.nextDouble() < 0.5)
           asteroids[i].y = AsteroidsSprite.height / 2;
       }
 
       // Set a random motion for the asteroid.
 
-      asteroids[i].deltaX = Math.random() * asteroidsSpeed;
-      if (Math.random() < 0.5)
+      asteroids[i].deltaX = generator.nextDouble() * asteroidsSpeed;
+      if (generator.nextDouble() < 0.5)
         asteroids[i].deltaX = -asteroids[i].deltaX;
-      asteroids[i].deltaY = Math.random() * asteroidsSpeed;
-      if (Math.random() < 0.5)
+      asteroids[i].deltaY = generator.nextDouble() * asteroidsSpeed;
+      if (generator.nextDouble() < 0.5)
         asteroids[i].deltaY = -asteroids[i].deltaY;
 
       asteroids[i].render();
@@ -1259,11 +1270,11 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     tempY = asteroids[n].y;
     do {
       if (!asteroids[i].active) {        
-        s = MIN_ROCK_SIDES + (int) (Math.random() * (MAX_ROCK_SIDES - MIN_ROCK_SIDES));
+        s = MIN_ROCK_SIDES + (int) (generator.nextDouble() * (MAX_ROCK_SIDES - MIN_ROCK_SIDES));
         Coordinate[] sRockCoords = new Coordinate[s+1];
         for (j = 0; j < s; j ++) {
           theta = 2 * Math.PI / s * j;
-          r = (MIN_ROCK_SIZE + (int) (Math.random() * (MAX_ROCK_SIZE - MIN_ROCK_SIZE))) / 2;
+          r = (MIN_ROCK_SIZE + (int) (generator.nextDouble() * (MAX_ROCK_SIZE - MIN_ROCK_SIZE))) / 2;
           x = (int) -Math.round(r * Math.sin(theta));
           y = (int)  Math.round(r * Math.cos(theta));
           sRockCoords[j] = new Coordinate(x, y);
@@ -1274,11 +1285,11 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         
         asteroids[i].active = true;
         asteroids[i].angle = 0.0;
-        asteroids[i].deltaAngle = Math.random() * 2 * MAX_ROCK_SPIN - MAX_ROCK_SPIN;
+        asteroids[i].deltaAngle = generator.nextDouble() * 2 * MAX_ROCK_SPIN - MAX_ROCK_SPIN;
         asteroids[i].x = tempX;
         asteroids[i].y = tempY;
-        asteroids[i].deltaX = Math.random() * 2 * asteroidsSpeed - asteroidsSpeed;
-        asteroids[i].deltaY = Math.random() * 2 * asteroidsSpeed - asteroidsSpeed;
+        asteroids[i].deltaX = generator.nextDouble() * 2 * asteroidsSpeed - asteroidsSpeed;
+        asteroids[i].deltaY = generator.nextDouble() * 2 * asteroidsSpeed - asteroidsSpeed;
         asteroids[i].render();
         asteroidIsSmall[i] = true;
         count++;
@@ -1390,9 +1401,9 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       explosions[explosionIndex].x = s.x + cx;
       explosions[explosionIndex].y = s.y + cy;
       explosions[explosionIndex].angle = s.angle;
-      explosions[explosionIndex].deltaAngle = 4 * (Math.random() * 2 * MAX_ROCK_SPIN - MAX_ROCK_SPIN);
-      explosions[explosionIndex].deltaX = (Math.random() * 2 * MAX_ROCK_SPEED - MAX_ROCK_SPEED + s.deltaX) / 2;
-      explosions[explosionIndex].deltaY = (Math.random() * 2 * MAX_ROCK_SPEED - MAX_ROCK_SPEED + s.deltaY) / 2;
+      explosions[explosionIndex].deltaAngle = 4 * (generator.nextDouble() * 2 * MAX_ROCK_SPIN - MAX_ROCK_SPIN);
+      explosions[explosionIndex].deltaX = (generator.nextDouble() * 2 * MAX_ROCK_SPEED - MAX_ROCK_SPEED + s.deltaX) / 2;
+      explosions[explosionIndex].deltaY = (generator.nextDouble() * 2 * MAX_ROCK_SPEED - MAX_ROCK_SPEED + s.deltaY) / 2;
       explosionCounter[explosionIndex] = SCRAP_COUNT;
       
     }*/
@@ -1685,7 +1696,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       // Draw thruster exhaust if thrusters are on. Do it randomly to get a
       // flicker effect.
 
-      if (!paused && detail && Math.random() < 0.5) {
+      if (!paused && detail && generator.nextDouble() < 0.5) {
         if (accForward > 0) {
           offGraphics.drawPolygon(
               fwdThruster.sprite.xPoints(),

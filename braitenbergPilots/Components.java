@@ -652,6 +652,8 @@ class BRVFactory {
   // wires.
   // Serves as the base for a 'model' or 'line' of similar vehicles.
   List<BraitenbergVehicle> chassisPile = new ArrayList<BraitenbergVehicle>();
+  
+  
 
   GameState world;
   
@@ -668,6 +670,18 @@ class BRVFactory {
 
     // Supply the chassis pile:
     chassisPile.add(makeStarfishChassis());
+  }
+  
+  // Populate the participants for a tournament:
+  List<BraitenbergVehicle> makeRoster() {
+    // Vehicles included in the tournament:
+    List<BraitenbergVehicle> tourneyRoster = new ArrayList<BraitenbergVehicle>();
+    
+    tourneyRoster.add(makeVehicleThreeACone());
+    tourneyRoster.add(makeVehiclePolarRegions());
+    tourneyRoster.add(makeVehicleRayEye());
+    
+    return tourneyRoster;
   }
 
   BraitenbergVehicle makeVehicleOneRay () {
