@@ -31,72 +31,133 @@
 
 <section markdown="1" id="main_content" class="inner">
 
-# Playing Asteroids with Vehicles
-
-
-
-TODO
+# Playing Asteroids with Braitenberg Vehicles
 
 ## Introduction
 
-GENERAL OVERIEW OF EVERYTHING
+~
 
 ## Introduction to Braitenberg Vehicles
 
-Braitenberg vehicles were created as a biologically inspired thought experiment by Valentino Braitenberg. Braitenberg's vehicles are, in essence reactive, agents with robot bodies. In his book, Vehicles~TITLE, Braitenberg develops 14 vehicles, each more sophisticated than the last. The early vehicles are constructed of a few simple components wired together in different configurations. The components and combinations of each vehicle are carried forward to subsequent vehicles. Later vehicles are built by an evolutionary process of duplication and mutation rather than being designed by hand. Braitenberg attributes lifelike qualities to his vehicles as they progress and they gain in turn: intincts, emotions, logic, concepts, ideas, foresight and egotism.
+Braitenberg vehicles are the main agents in a biologically inspired thought experiment by [Valentino Braitenberg](http://en.wikipedia.org/wiki/Valentino_Braitenberg) published in his book [*Vehicles*](http://mitpress.mit.edu/books/vehicles)~CITE. In *Vehicles*, Braitenberg develops a sequence of 14 increasingly sophisticated vehicles. The vehicles are constructed of a sensors, motors, wheels, wires and bodies. Braitenberg describes a tabletop world on which the vehicles operate. When Braitenberg's vehicles perish when they stray over the edges of this world. The vehicles may also harm or destroy each other. Later vehicles undergo evolutionary development wherein vehicles which survive for a time are duplicated with minor mutations. Braitenberg attributes lifelike qualities to his vehicles as they progress. For instance, vehicle one is said to like cold places and dislike hot ones while vehicle seven is said to be able to internalize concepts~CITEp.5. Over the sequence of 14 vehicles Braitenberg ascribes the following qualities to their observed behavior: instincts, emotions, logic, concepts, ideas, foresight and egotism.
 
-Braitenberg takes a relaxed approach to the realities of his vehicles but he does so with decades of experience working as a neuroscientist. The basic components of Braitenberg vehicles are very simple; sensors sensitive to some quality of the environment, wired-connections with various properties (e.g. signal inversion, temperature-variable resistance etc.) and threshold devices (circuits which output a signal only when fed certain inputs) which act as the building blocks of vehicle logic. Braitenberg casually introduces each component making Vehicles~TITLE feel like a creative exploration of ideas. Yet, each component has been carefully selected to approximate a real biological structure present in nature.
-~~~
+Braitenberg takes an informal approach to the realities of his vehicles. The basic components of Braitenberg's vehicles are; sensors tuned to some quality of the environment, wires which transmit information from sensors to motors and threshold devices which help grant basic logical facilities to the vehicles. Each component has been selected to mirror a real biological structure present in nature.
 
-Vehicles begins with a very simple design involving a single sensor and motor. Depicted in figure XXX, vehicle one senses the absolute temperature of its environment. The sensor sends signals to a single motor at the rear of the vehicle. The result is a vehicle that moves quickly through hot areas and slows down in cold ones. Braitenberg describes the motivations of his vehicle as follows:
+### Vehicle 1
 
-  It is restless, you would say, and does not like warm water. But it is quite stupid, since it is not able to turn back to the nice cold spot it overshot in its restlessness. Anyway you would say, it is ALIVE, since you have never seen a particle of dead matter move around like that.
-  Vehicles p. 5
+[![Vehicle 1](images/BRVehicle01.png)](images/BRVehicle01.png)
+**Figure 1** Braitenberg Vehicle 1
+{: class=image-block }
 
-Braitenberg develops his vehicles by introducing a new component and combining it with the advances of the existing vehicles. Each component is very simple on its own. Yet, this technique of compounded design results in complex behaviours attributable to living organisms.
+Vehicles begins with a design involving a single sensor and motor. Depicted in Figure 1, vehicle one senses the absolute temperature of its environment. The sensor (half circle on a stalk) sends signals to a single motor at the rear of the vehicle which drives a wheel. The result is a vehicle that moves quickly through hot areas and slows down in cold ones. Braitenberg describes the motivations of his vehicle as follows:
 
-VEHICLE 7
+> It is restless, you would say, and does not like warm water. But it is quite stupid, since it is not able to turn back to the nice cold spot it overshot in its restlessness. Anyway you would say, it is ALIVE, since you have never seen a particle of dead matter move around like that.
+> ~Vehicles p. 5
 
+Braitenberg develops his vehicles by introducing a new component and combining it with the advances of the existing vehicles. Each component is simple on its own. Yet, this technique of compounded design results in complex behaviors attributable to living organisms.
 
+### Vehicle 7
+
+Vehicle seven is able to form concepts and make generalizations. Vehicle seven can do this because, in addition to the logical faculties introduced in vehicle five includes Mnemotrix connections. These connections are placed between all components of the vehicle. Mnemotrix is initially very resistant to signals. However, when two connected components are excited simultaneously, the Mnemotrix connection between them has its resistance lowered. Braitenberg describes the consequences of such connections:
+
+> One consequence, we have already seen, is concept formation. When it happens between different categories of things (such as red color and aggression), we prefer to call it association.
+> ~Vehicles p. 29
+
+The vehicles following vehicle seven continue to grow in complexity and ability. Later vehicles even include earlier vehicles as encapsulated components providing primitive instincts to the later vehicles.
+
+~CONCLUSION
 
 ## Introduction To Asteroids
 
-[![Asteroids](images/vanilla-asteroids.gif)](images/vanilla-asteroids.gif)
+[![Asteroids](images/vanilla-asteroids.gif){: class=big-image }](images/vanilla-asteroids.gif)
+**Figure 2** The Asteroids Video Game
+{: class=big-image-block }
 
-Asteroids is a two-dimensional action video game. Players control a triangular ship inside a field of drifting asteroids. The ship can turn left and right, can fire forward and reverse thrusters (which apply force to the ship according to the direction it is facing), can shoot a cannon, and may teleport to a random location on the screen.
-
-Players are pitted against asteroids, UFOs and missiles. Asteroids are represented by  circular polygons. Each asteroid is created with a movement vector which is static, random and specific to that particular asteroid. Players can shoot an asteroid, UFO or missile with thier cannon to destroy it. Destroyed asteroids may fragment into multiple smaller asteroids. UFOs shoot missiles which home to the player's location. Colliding with an asteroid, UFO or missile is fatal to the player.
-
-Objects in Asteroids 'wrap' around the edges of the screen. So when an object passes out of the left boundary of the screen it appears on the right side of the screen. The same wrapping applies to the vertical direction. In this way we can imagine Asteroids as taking place on the surface of a sphere. 
-
-Players receive points for destroying asteroids with their cannon. Players start with three lives to try and obtain as many points as possible; points persist between lives but are reset to zero when lives are depleted. If the player earns 4000 points they receive another life, if the player earns 2750 points a UFO is spawned.
+Asteroids is a two-dimensional action video game where players control a triangular ship. For more information, see the description of Asteroids in the [appendix](#description-of-the-asteroids-video-game) or visit the game's [homepage](http://www.brainjar.com/java/games/asteroids/).
 
 ## Braitenberg Vehicles that Play Asteroids
 
-In my work, I apply Braitenberg's ideas to create an agent that effectively plays the classic video game Asteroids. The goal is to design a very general robot that is effective in the environment, not design an AI which is narrowly focused on the implementation details of this particular game. Braitenberg's book was designed as a thought experiment; free from the realities of an implementation. My work is implemented in an existing game engine. Because of this, there are some necessary differences between my work and Braitenberg's.
-
-Braitenberg's vehicles had rectangular bodies. However, the player ship in asteroids is a triangle. I retain the triangular ship of Asteroids because the shape affects the collision model. Changing this model has strategic implications for the gameplay and I wanted to stay as true to the original Asteroids game as possible.
-
-Developing appropriate sensors for my work was a major issue. Braitenberg describes the sensors of his vehicles with elegance and brevity but his descriptions lack the specificity required for a direct implementation. As a result my sensors are the product of many iterations.
-
-Two characteristics define the sensors in my work: the field of detection and the quality being detected.
+In my work, I apply Braitenberg's ideas to create agents capable of playing the video game Asteroids. My goal was to explore the capabilities of basic [reactive](http://en.wikipedia.org/wiki/Reactive_planning) agents, gain experience developing a real-time engine with reactive agents and to create a Braitenberg robot which could achieve the highest score possible in the Asteroids video game. I deviated from Braitenberg's designs because my work is implemented inside an existing game engine which was not capable of replicating all of his ideas. Braitenberg's vehicles have rectangular bodies, but my agents retain the triangular ship-body of Asteroids. Braitenberg's sensors were continuous but mine poll the environment at a fixed rate. I recreated the behavior of several of Braitenberg's vehicles despite these differences.
 
 ### Sensors
 
-#### Radius Sensor
+Developing sensors to help my agents attain a high score was difficult. It was not obvious what attributes of the environment should be measured or how they should be measured or even how the measured attributes should be communicated to each vehicles' motors. In general, I found greater success when I made changes which focused the vehicle's 'attention' on the single most important (i.e. dangerous) feature of the environment; the nearest object.
 
-[![Asteroids](images/plot-radius01.gif)](images/plot-radius01.gif)
+[![Aggregate Sensor](images/Sensor01_Aggregate.png)](images/Sensor01_Aggregate.png)
+**Figure 3** Early design of an aggregated distance sensor. The sensor returns the distance A+B since both asteroids are inside its detection area.
+{: class=image-block }
 
-## Some Designs of Vehicles that play Asteroids
+My early sensors took aggregated readings; accumulating data from all the asteroids in the sensor's range (e.g. returning the cumulative or averaged distance from the sensor to each detected asteroid as in figure 3). This was ineffective because it often caused agents to take action in regards to groups of distant objects when a single nearby-object was a much greater threat. Eventually it became clear that sensors should report on the nearest object they detected. This change lead to vehicles which behaved as if they understood that nearby objects were more important than distant ones (an important fact that human players utilize to achieve high scores).
 
+Choosing what attribute a sensor should measure was also a process of trial and error. Given an object, the obvious attributes we might report on are: speed, size, and distance. Measuring the speed of an object was not useful since something moving at high speed away-from or parallel-to the agent is not as dangerous as an object moving slowly toward the agent. Measuring the distance to the nearest asteroid proved very useful. It gave my agent's correct priorities: nearby objects require action and the severity of that action increases as the object gets closer. I found these distance-to-nearest-object (D.N.O.) sensors to be so superior to the other alternatives that all of my final vehicle designs incorporate D.N.O. sensors.
 
-## Evolving Vehicles that Play Asteroids
+[![Ray-Eye-Sensor](images/Sensor_SimpleEye.png)](images/Sensor_SimpleEye.png)
+**Figure 4** D.N.O.-Ray Sensors arranged to mimic a simple eye. The sensor returns the distance A.
+{: class=image-block }
 
+Although my final vehicles all use D.N.O. type sensors, I varied the detection area (i.e. the area that an object must intersect with to be sensed) to create several different sub-types (to see in detail how the sensors I created work refer to [Sensors](#sensors_1) in the Appendix). Differing the detection area of the sensor radically changed the influence it had on the vehicle. I began with a detection area defined by a line. D.N.O.-Line sensors were useful when used in bulk; arranged as in figure 4 they mirror the function of a primitive eye. However, smaller objects (especially missiles) could easily pass between the detection areas of D.N.R.-line sensors and go unnoticed until they were dangerously close to the agent. To correct this issue, I developed a D.N.O.-Radius sensor which detected objects in a radius centered around the sensor origin. This sensor never failed to detect objects but provided no information regarding the heading of the detected object. Finally I developed the D.N.O.-Cone sensor. These sensors balance the directional information of the D.N.O.-Line sensors with the dragnet approach of the D.N.O.-Radius sensor. This small set of sensors allows for a huge number of interesting and high-scoring behaviors.
 
-## Experiments with Vehicles that Play Asteroids
+## Designs of Asteroids Vehicles
 
+### 3B - Braitenberg Explorer
 
+The design of vehicle 3B is inspired by Braitenberg's vehicle 3B. My version is equipped with two D.N.O-Radius sensors located on the nose of the ship as seen in FIGURE~XXX. Vehicle 3B's connections are inverted (depicted as blue connections annotated with '-') such that, when a sensor has no stimulus, the connected Motor is fired at full capacity. When a sensor is excited, the connected motor is inhibited and acts with less (or no) force. Vehicle 3B acts in a manner similar to the one Braitenberg describes for his own vehicle 3B, 
 
+> ...an EXPLORER. It likes the nearby source all right, but keeps an eye open for other, perhaps stronger sources, which it will sail to, given a chance, in order to find a more permanent and gratifying appeasement. 
+> ~Vehicles p.12".
+
+### 4A - Braitenberg Companion
+
+Vehicle 4A resembles Braitenberg's vehicle 4A in design and behavior. This vehicle has two D.N.O-Radius sensors symmetrically set to the left and right of the vehicles center-line. These sensors feed into a  modulator. Braitenberg describes such a device as follows, 
+
+> The activation of a certain sensor will make the corresponding motor run faster, but only up to a point, where the speed of the motor reaches a maximum. Beyond this point, if the sensor is activated even more strongly, the speed will decrease again...> ~Vehicles p.15
+
+Vehicle 4A is equipped with two such modulators which cause it to alternately dive towards and away from the nearest asteroid in a fashion similar to the one depicted in Braitenberg's figure ~FIGURE 7 p. 16?-recreate. Vehicle 4A seeks proximity with an asteroid, it likes the presence of the asteroid but is a fickle companion; abandoning its orbit if another asteroid gets close.
+
+Vehicle 4B 
+
+### 1F - Hunter
+
+Vehicle 1F has an array of 32 sensors arranged as equally spaced spokes on a wheel. The arrangement is similar in concept to a primitive eye. The sensors are connected to the left and right turning motors such that vehicle 1F turns towards the nearest object it senses. Three forward sensors (highlighted in red in figure~XXX) are connected to the vehicles cannon. When two or more forward sensors are stimulated, the cannon is fired. These forward sensors are also connected to a reverse thruster such that when an object is in front of vehicle 1F the reverse thruster is fired.  Although the design of 1F is simple, its behavior is surprisingly complex. Vehicle 1F chases down the nearest object, fires a spray of bullets and stalks the object at a safe distance. If the object is destroyed, vehicle 1F flies away in search of its next victim. If the object survives, 1F continues to hover a short distance away from the target attacking until the target object is destroyed.
+
+### 2F - Polar Regions
+
+### 3F - Archer
+
+Vehicle 3F is composed of four D.N.O.-Cone sensors dividing the area around 3F into four regions. Figure~XXX depicts the arrangement of sensors and connections present in vehicle 3F. 3F features a slight turning bias to one side which causes the vehicle to slowly trace a large circle in the play area which helps 3F locate asteroids. 4F is also equipped with a small D.N.O-Radius sensor which connects to a binary modulator controlling the vehicle's hyper-jump. The prominent feature of 3F is a long, narrow D.N.O-Cone sensor controlling the vehicle's cannon. This sensor is offset counter-clockwise to compensate for 3F's natural clockwise patrol pattern. Vehicle 3F patrols a large circle of the play area taking shots at anything it senses with its cannon sensor. 3F turns away from approachers and escapes anything which gets too close with a hyper-jump. 3F appears to be passive-aggressive, fleeing from direct confrontation and taking shots and distant adversaries.
+
+### 4F - 
+
+### 5F - 
+
+## Asteroids Tournament
+
+### Description
+
+One of my project goals was to develop a Braitenberg vehicle which achieved the highest score possible in Asteroids. To evaluate my vehicles I implemented a tourney in the Asteroids engine. Participation is limited to vehicles which are capable of scoring points in Asteroids (i.e. they must be able to shoot and destroy some object). Each participant plays ~ten regular games of Asteroids (refer to Appendix ~LINKXXX for the details of a game). I logged the score, lifespan, and number of lives played to track the results of the tournament. I took precautions to the prevent pseudo random elements of Asteroids from skewing the results unfairly. A pseudo random number, called the tourney-seed is chosen before the tourney begins. The tourney-seed is used to seed Asteroid's pseudo random number generator directly before each participant begins playing its first game (refer to Appendix LINK~XXX for clarification). 
+
+### Results of Tournament
+
+~
+
+## Conclusion
+
+### Summary
+
+Reactive or Situated agents are bad prioritizers. They must have senses appropriate to their goals to have any chance of success. In this way they more closely resemble biological creatures than their Neat~LINK:http://en.wikipedia.org/wiki/Neats_vs._scruffies counterparts.
+
+The agents I developed are best described as situated~LINK:http://en.wikipedia.org/wiki/Artificial_intelligence,_situated_approach Scruffies~LINK:http://en.wikipedia.org/wiki/Neats_vs._scruffies. They exhibit some complex behaviors even though their individual implementation is simple. Being. They  are interesting to watch and they raise some questions for further consideration. Can situated agents like these be utilized in complex tasks? Are the more advanced Braitenberg vehicles really capable of all that Braitenberg described? What is the value in discriminating between scruffy agents which have sophisticated behavior and neat agents with similar behavior?
+
+### Ideas for Future Work
+
+1. Port the engine to JavaScript or another modern web-platform.
+1. Develop an evolutionary algorithm for generating new vehicles similar to the one described in Braitenberg's book.
+1. Create a commercial tablet game which tasks players to construct Braitenberg Vehicles to complete tasks.
+1. Applying Braitenberg agents as a subroutine in a more sophisticated agent to deal with complex, dynamic situations (e.g.crowd navigation).
+1. Integrate learning by association into the existing vehicles.
+1. Develop a toy similar to Lego's Mindstorms with interchangeable sensors, motors and bodies.
+
+Reactive agents like my pilots have complex reactive behavior patterns which make them excellent in dealing with unpredictable environments. They might be well suited to things like crowd navigation. However, this exact complex emergent behavior makes Braitenberg Pilots poorly suited to high stakes tasks like driving a vehicle. In such tasks, we prefer a robot which does not do anything unexpected and one which will perform consistently regardless of minor changes to its components. 
 
 
 ## Related Work
@@ -106,17 +167,47 @@ http://braitenbergsim.sourceforge.net/
 https://wiki.qut.edu.au/display/cyphy/Braitenberg+Vehicle+Simulator
 http://www.florajs.com/
 
-## Ideas for Future Work
+## Appendix
 
-First and foremost, the project needs a new technology platform. The Java Applet is a dying technology. It is poorly supported by modern browsers and is no longer seeing active developments. Porting to another more suitable platform should be the first priority of any efforts to continue the project (JavaScript being the obvious choice).
+### Using the Asteroids Software
 
-The agents developed here are interesting to watch but they pose some interesting questions for further consideration. Reactive agents like my pilots have complex dynamic behaviour patterns which make them excellent in dealing with unpredictable environments. They might be well suited to things like crowd navigation. We can imagine similar designs used in a courier-bot delivering packages through city streets. It uses a long term planning algorithm to reach its destination but switches on a reactive crowd-navigation sub-routine when surrounded by too many people. However, it is these complex emergent behaviours which make Braitenberg Pilots poorly suited to high stakes tasks like driving a vehicle. In such tasks, we prefer a robot which does not do anything unexpected and one which will perform consistently regardless of minor changes to its components. This unpredictability would however make Braitenberg Pilots an excellent childrens toy. With simple interchangeable components; a few simple motors, sensors and modulators, one could construct any number of curious, scurrying robotic creatures. By making slight changes to sensor or modulator knobs a vast array of behaviours would keep curious tinkerers endlessly busy. The primary attraction of such robots would be twofold: designing with intention and observing novel behaviours created by chance.
+### Description of The Asteroids Video Game
 
-## Summary
+Asteroids is a two-dimensional action video game. Players control a triangular ship inside a field of drifting asteroids. The ship can turn left and right, can fire forward and reverse thrusters (which apply force to the ship according to the direction it is facing), can shoot a cannon, and may teleport to a random location on the screen.
 
---
+Players are pitted against asteroids, UFOs and missiles. Asteroids are represented by  circular polygons. Each asteroid is created with a movement vector which is static, random and specific to that particular asteroid. Players can shoot an asteroid, UFO or missile with their cannon to destroy it. Destroyed asteroids may fragment into multiple smaller asteroids. UFOs shoot missiles which home to the player's location. Colliding with an asteroid, UFO or missile is fatal to the player.
 
-## Appendix 1: Using the Asteroids Software
+Objects in Asteroids 'wrap' around the edges of the screen. So when an object passes out of the left boundary of the screen it appears on the right side of the screen. The same wrapping applies to the vertical direction. In this way we can imagine Asteroids as taking place on the surface of a sphere. 
+
+Players receive points for destroying asteroids with their cannon. Players start with three lives to try and obtain as many points as possible; points persist between lives but are reset to zero when lives are depleted. If the player earns 4000 points they receive another life, if the player earns 2750 points a UFO is spawned.
+
+### Sensors
+
+#### Radius Sensor
+
+[![Asteroids](images/plot-radius01.gif)](images/plot-radius01.gif)
+
+### Tourney Random Seeding
+
+The best way to convey the procedure undertaken to seed the random data of the tourney is with an example:
+
+Given a tournament with three participants who each play X games:
+
+1. Program begins execution
+1. <Tourney-Seed> is assigned a pseudo random number
+1. Tourney Begins
+  1. Random number generator <Tourney-Generator> is seeded with <Tourney-Seed>
+  1. Participant 1 plays X games
+  1. Participant 1 is finished
+
+  1. Random number generator <Tourney-Generator> is seeded with <Tourney-Seed>
+  1. Participant 2 plays X games
+  1. Participant 2 is finished
+
+  1. Random number generator <Tourney-Generator> is seeded with <Tourney-Seed>
+  1. Participant 3 plays X games
+  1. Participant 3 is finished
+1. Tourney is over
 
 ### Adding A Security Exception To Java
 
