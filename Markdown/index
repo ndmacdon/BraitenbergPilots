@@ -52,6 +52,7 @@ Braitenberg takes an informal approach to the realities of his vehicles. The bas
 Vehicles begins with a design involving a single sensor and motor. Depicted in Figure 1, vehicle one senses the absolute temperature of its environment. The sensor (half circle on a stalk) sends signals to a single motor at the rear of the vehicle which drives a wheel. The result is a vehicle that moves quickly through hot areas and slows down in cold ones. Braitenberg describes the motivations of his vehicle as follows:
 
 > It is restless, you would say, and does not like warm water. But it is quite stupid, since it is not able to turn back to the nice cold spot it overshot in its restlessness. Anyway you would say, it is ALIVE, since you have never seen a particle of dead matter move around like that.
+
 > ~Vehicles p. 5
 
 Braitenberg develops his vehicles by introducing a new component and combining it with the advances of the existing vehicles. Each component is simple on its own. Yet, this technique of compounded design results in complex behaviors attributable to living organisms.
@@ -61,6 +62,7 @@ Braitenberg develops his vehicles by introducing a new component and combining i
 Vehicle seven is able to form concepts and make generalizations. Vehicle seven can do this because, in addition to the logical faculties introduced in vehicle five includes Mnemotrix connections. These connections are placed between all components of the vehicle. Mnemotrix is initially very resistant to signals. However, when two connected components are excited simultaneously, the Mnemotrix connection between them has its resistance lowered. Braitenberg describes the consequences of such connections:
 
 > One consequence, we have already seen, is concept formation. When it happens between different categories of things (such as red color and aggression), we prefer to call it association.
+
 > ~Vehicles p. 29
 
 The vehicles following vehicle seven continue to grow in complexity and ability. Later vehicles even include earlier vehicles as encapsulated components providing primitive instincts to the later vehicles.
@@ -92,7 +94,7 @@ My early sensors took aggregated readings; accumulating data from all the astero
 Choosing what attribute a sensor should measure was also a process of trial and error. Given an object, the obvious attributes we might report on are: speed, size, and distance. Measuring the speed of an object was not useful since something moving at high speed away-from or parallel-to the agent is not as dangerous as an object moving slowly toward the agent. Measuring the distance to the nearest asteroid proved very useful. It gave my agent's correct priorities: nearby objects require action and the severity of that action increases as the object gets closer. I found these distance-to-nearest-object (D.N.O.) sensors to be so superior to the other alternatives that all of my final vehicle designs incorporate D.N.O. sensors.
 
 [![Ray-Eye-Sensor](images/Sensor_SimpleEye.png)](images/Sensor_SimpleEye.png)
-**Figure 4** D.N.O.-Ray Sensors arranged to mimic a simple eye. The sensor returns the distance A.
+**Figure 4** D.N.O.-Ray Sensors arranged to mimic a simple eye. The sensor right of centre returns the distance A.
 {: class=image-block }
 
 Although my final vehicles all use D.N.O. type sensors, I varied the detection area (i.e. the area that an object must intersect with to be sensed) to create several different sub-types (to see in detail how the sensors I created work refer to [Sensors](#sensors_1) in the Appendix). Differing the detection area of the sensor radically changed the influence it had on the vehicle. I began with a detection area defined by a line. D.N.O.-Line sensors were useful when used in bulk; arranged as in figure 4 they mirror the function of a primitive eye. However, smaller objects (especially missiles) could easily pass between the detection areas of D.N.R.-line sensors and go unnoticed until they were dangerously close to the agent. To correct this issue, I developed a D.N.O.-Radius sensor which detected objects in a radius centered around the sensor origin. This sensor never failed to detect objects but provided no information regarding the heading of the detected object. Finally I developed the D.N.O.-Cone sensor. These sensors balance the directional information of the D.N.O.-Line sensors with the dragnet approach of the D.N.O.-Radius sensor. This small set of sensors allows for a huge number of interesting and high-scoring behaviors.
@@ -103,18 +105,21 @@ Although my final vehicles all use D.N.O. type sensors, I varied the detection a
 
 The design of vehicle 3B is inspired by Braitenberg's vehicle 3B. My version is equipped with two D.N.O-Radius sensors located on the nose of the ship as seen in FIGURE~XXX. Vehicle 3B's connections are inverted (depicted as blue connections annotated with '-') such that, when a sensor has no stimulus, the connected Motor is fired at full capacity. When a sensor is excited, the connected motor is inhibited and acts with less (or no) force. Vehicle 3B acts in a manner similar to the one Braitenberg describes for his own vehicle 3B, 
 
-> ...an EXPLORER. It likes the nearby source all right, but keeps an eye open for other, perhaps stronger sources, which it will sail to, given a chance, in order to find a more permanent and gratifying appeasement. 
+> ...an EXPLORER. It likes the nearby source all right, but keeps an eye open for other, perhaps stronger sources, which it will sail to, given a chance, in order to find a more permanent and gratifying appeasement.
+
 > ~Vehicles p.12".
+
+Creating this vehicle helped me understand the effects of inverting sensor stimuli. Inverted connections play an important role in all the fit vehicles I designed later.
 
 ### 4A - Braitenberg Companion
 
 Vehicle 4A resembles Braitenberg's vehicle 4A in design and behavior. This vehicle has two D.N.O-Radius sensors symmetrically set to the left and right of the vehicles center-line. These sensors feed into a  modulator. Braitenberg describes such a device as follows, 
 
-> The activation of a certain sensor will make the corresponding motor run faster, but only up to a point, where the speed of the motor reaches a maximum. Beyond this point, if the sensor is activated even more strongly, the speed will decrease again...> ~Vehicles p.15
+> The activation of a certain sensor will make the corresponding motor run faster, but only up to a point, where the speed of the motor reaches a maximum. Beyond this point, if the sensor is activated even more strongly, the speed will decrease again...
 
-Vehicle 4A is equipped with two such modulators which cause it to alternately dive towards and away from the nearest asteroid in a fashion similar to the one depicted in Braitenberg's figure ~FIGURE 7 p. 16?-recreate. Vehicle 4A seeks proximity with an asteroid, it likes the presence of the asteroid but is a fickle companion; abandoning its orbit if another asteroid gets close.
+> ~Vehicles p.15
 
-Vehicle 4B 
+Vehicle 4A is equipped with two such modulators which cause it to alternately dive towards and away from the nearest asteroid in a fashion similar to the one depicted in Braitenberg's figure ~FIGURE 7 p. 16?-recreate. Vehicle 4A seeks proximity with an asteroid, it likes the presence of the asteroid but is a fickle companion; abandoning its orbit if another asteroid gets close. I found parabolic modulators like the ones used in this vehicle difficult to utilize in competitive vehicles. They rely too heavily on exact calibration and often produce unreliable behavior in the dynamic environment of asteroids. My observations lead me to believe such modulators are  better suited to environments with stationary stimulus sources.
 
 ### 1F - Hunter
 
@@ -134,7 +139,7 @@ Vehicle 3F is composed of four D.N.O.-Cone sensors dividing the area around 3F i
 
 ### Description
 
-One of my project goals was to develop a Braitenberg vehicle which achieved the highest score possible in Asteroids. To evaluate my vehicles I implemented a tourney in the Asteroids engine. Participation is limited to vehicles which are capable of scoring points in Asteroids (i.e. they must be able to shoot and destroy some object). Each participant plays ~ten regular games of Asteroids (refer to Appendix ~LINKXXX for the details of a game). I logged the score, lifespan, and number of lives played to track the results of the tournament. I took precautions to the prevent pseudo random elements of Asteroids from skewing the results unfairly. A pseudo random number, called the tourney-seed is chosen before the tourney begins. The tourney-seed is used to seed Asteroid's pseudo random number generator directly before each participant begins playing its first game (refer to Appendix LINK~XXX for clarification). 
+One of my project goals was to develop a Braitenberg vehicle which achieved the highest score possible in Asteroids. To evaluate my vehicles I implemented a tourney in the Asteroids engine. Participation is limited to vehicles which are capable of scoring points in Asteroids (i.e. they must be able to shoot and destroy some object). Each participant plays ~ten regular games of Asteroids (refer to [Description of The Asteroids Video Game](#description-of-the-asteroids-video-game) for details). I logged the score, lifespan, and number of lives played to track the results of the tournament. I took precautions to the prevent pseudo random elements of Asteroids from skewing the results unfairly. A pseudo random number, called the tourney-seed is chosen before the tourney begins. The tourney-seed is used to seed Asteroid's pseudo random number generator directly before each participant begins playing its first game (refer to [Tourney Random Seeding](#tourney-random-seeding) for clarification). 
 
 ### Results of Tournament
 
@@ -193,22 +198,23 @@ The best way to convey the procedure undertaken to seed the random data of the t
 
 Given a tournament with three participants who each play X games:
 
+```
 1. Program begins execution
-1. <Tourney-Seed> is assigned a pseudo random number
-1. Tourney Begins
-  1. Random number generator <Tourney-Generator> is seeded with <Tourney-Seed>
-  1. Participant 1 plays X games
-  1. Participant 1 is finished
+2. <Tourney-Seed> is assigned a pseudo random number
+3. Tourney Begins
+    - Random number generator <Tourney-Generator> is seeded with <Tourney-Seed>
+    - Participant 1 plays X games
+    - Participant 1 is finished
 
-  1. Random number generator <Tourney-Generator> is seeded with <Tourney-Seed>
-  1. Participant 2 plays X games
-  1. Participant 2 is finished
+    - Random number generator <Tourney-Generator> is seeded with <Tourney-Seed>
+    - Participant 2 plays X games
+    - Participant 2 is finished
 
-  1. Random number generator <Tourney-Generator> is seeded with <Tourney-Seed>
-  1. Participant 3 plays X games
-  1. Participant 3 is finished
-1. Tourney is over
-
+    - Random number generator <Tourney-Generator> is seeded with <Tourney-Seed>
+    - Participant 3 plays X games
+    - Participant 3 is finished
+4. Tourney is over
+```
 ### Adding A Security Exception To Java
 
 This project uses an unsigned JAR file which may be disallowed by your default Java settings.
