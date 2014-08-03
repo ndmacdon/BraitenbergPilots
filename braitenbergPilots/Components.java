@@ -199,7 +199,9 @@ class SpeedSensor extends Sensor {
       // Normalize the speed of <nearest>:
       double speed = nearest.getSpeed();
       double fraction = speed / maxSpeed;
-      result = (fraction > 1.0) ? 0.0 : 1.0-fraction;
+      if (fraction > 1.0) { fraction = 1.0; }
+      if (fraction < 0) { fraction = 0; }
+      output = fraction;
     }
 
     output = result;
@@ -221,8 +223,11 @@ class ShipSpeedSensor extends Sensor {
   
   public void sense(Point loc, double rot, GameState world) {
     this.getNearestIntersected(loc, rot, world);
-    double result = world.ship.getSpeed();
-    output = result;
+    double speed = world.ship.getSpeed();
+    double fraction = speed / maxSpeed;
+    if (fraction > 1.0) { fraction = 1.0; }
+    if (fraction < 0) { fraction = 0; }
+    output = fraction;
   }
 }
 
@@ -682,11 +687,12 @@ class BRVFactory {
   }
   
   // Populate the participants for a tournament:
-  List<BraitenbergVehicle> makeRoster() {
+  List<BraitenbergVehicle> makeTourneyRoster() {
     // Vehicles included in the tournament:
     List<BraitenbergVehicle> tourneyRoster = new ArrayList<BraitenbergVehicle>();
     
-    tourneyRoster.add(makeVehicleThreeACone());
+    tourneyRoster.add(makeVehicleReverseCone());
+    tourneyRoster.add(makeVehicleStationary());
     tourneyRoster.add(makeVehiclePolarRegions());
     tourneyRoster.add(makeVehicleRayEye());
     
@@ -997,9 +1003,9 @@ class BRVFactory {
       v.sensorWires.add(new Wire(1,1, true, 1.0f));
 
       // Wire the modulator to a Control Signal:
-      v.controlWires.add(new Wire(0,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(0,FORWARD, false, .4f));
       v.controlWires.add(new Wire(0,RIGHT, false, 1.0f));
-      v.controlWires.add(new Wire(1,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(1,FORWARD, false, .4f));
       v.controlWires.add(new Wire(1,LEFT, false, 1.0f));
       
       return v;
@@ -1029,9 +1035,9 @@ class BRVFactory {
       v.sensorWires.add(new Wire(1,1, true, 1.0f));
 
       // Wire the modulator to a Control Signal:
-      v.controlWires.add(new Wire(0,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(0,FORWARD, false, 0.4f));
       v.controlWires.add(new Wire(0,LEFT, false, 1.0f));
-      v.controlWires.add(new Wire(1,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(1,FORWARD, false, 0.4f));
       v.controlWires.add(new Wire(1,RIGHT, false, 1.0f));
       
       return v;
@@ -1174,6 +1180,15 @@ class BRVFactory {
       v.controlWires.add(new Wire(j,RIGHT, false, 1f));
     }
     
+    // Add one hardpoint to control speed:
+    // Activated when the 
+    Hardpoint speedControl = new Hardpoint(new Vector2D(0,0), 0);
+    speedControl.addSensor(SensorFactory.makeShipSpeedSensor());
+    v.hardpoints.add(speedControl);
+    v.modulators.add(new ModulatorIdentity());
+    v.sensorWires.add(new Wire(numRays, numRays, false, 1.0f));
+    v.controlWires.add(new Wire(numRays, BACK, false, 1.5f));
+    
     return v;
   }
 
@@ -1221,12 +1236,12 @@ class BRVFactory {
     v.sensorWires.add(new Wire(5,5, false, 1.0f));
 
     // Wire the modulator to a Control Signal:
-    v.controlWires.add(new Wire(0,1, false, 3.0f));
-    v.controlWires.add(new Wire(1,3, false, 1.0f));
-    v.controlWires.add(new Wire(2,1, false, 1.0f));
-    v.controlWires.add(new Wire(3,2, false, 0.3f));
-    v.controlWires.add(new Wire(4,0, false, 1.0f));
-    v.controlWires.add(new Wire(5,5, false, 5.0f));
+    v.controlWires.add(new Wire(0,RIGHT,  false, 3.0f));
+    v.controlWires.add(new Wire(1,BACK,   false, 1.0f));
+    v.controlWires.add(new Wire(2,RIGHT,  false, 1.0f));
+    v.controlWires.add(new Wire(3,FORWARD,false, 0.3f));
+    v.controlWires.add(new Wire(4,LEFT,   false, 1.0f));
+    v.controlWires.add(new Wire(5,JUMP,   false, 5.0f));
     
     return v;
   }
@@ -1240,7 +1255,6 @@ class BRVFactory {
     Hardpoint rightProx   = new Hardpoint(new Vector2D(0,0), HALF_PI);
     Hardpoint rearProx    = new Hardpoint(new Vector2D(0,0), Math.PI);
     Hardpoint leftProx    = new Hardpoint(new Vector2D(0,0), -HALF_PI);
-    Hardpoint nearJump  = new Hardpoint(new Vector2D(0,0), 0);
 
     // Add sensors to the hardpoints:
     forwardNose.addSensor(SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH*3, QUARTER_PI/3));
@@ -1248,7 +1262,6 @@ class BRVFactory {
     rightProx.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, QUARTER_PI*3));
     rearProx.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, QUARTER_PI));
     leftProx.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, QUARTER_PI*3));
-    nearJump.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH/3));
 
     // Add the hardpoints to the ship:
     v.hardpoints.add(forwardNose);
@@ -1256,7 +1269,6 @@ class BRVFactory {
     v.hardpoints.add(rightProx);
     v.hardpoints.add(rearProx);
     v.hardpoints.add(leftProx);
-    v.hardpoints.add(nearJump);
 
     // Add Modulators to the vehicle:
     v.modulators.add(new ModulatorBinary());
@@ -1264,7 +1276,6 @@ class BRVFactory {
     v.modulators.add(new ModulatorIdentity());
     v.modulators.add(new ModulatorIdentity());
     v.modulators.add(new ModulatorIdentity());
-    v.modulators.add(new ModulatorBinary());
 
     // Wire the hardpoints to Modulators:
     v.sensorWires.add(new Wire(0,0, false, 1.0f));
@@ -1272,20 +1283,123 @@ class BRVFactory {
     v.sensorWires.add(new Wire(2,2, true, 1.0f));
     v.sensorWires.add(new Wire(3,3, true,  1.0f));
     v.sensorWires.add(new Wire(4,4, false, 1.0f));
-    v.sensorWires.add(new Wire(5,5, false, 1.0f));
 
     // Wire the modulator to a Control Signal:
-    v.controlWires.add(new Wire(0,4, false, 2.0f));
-    v.controlWires.add(new Wire(1,3, false, 1.0f));
-    v.controlWires.add(new Wire(2,1, true,  .85f));
-    v.controlWires.add(new Wire(3,2, false, 0.3f));
-    v.controlWires.add(new Wire(4,0, false, 1.15f));
-    v.controlWires.add(new Wire(5,5, false, 5.0f));
+    v.controlWires.add(new Wire(0,SHOOT,    false,2.0f));
+    v.controlWires.add(new Wire(1,BACK,    false, 1.0f));
+    v.controlWires.add(new Wire(2,RIGHT,   true,  0.95f));
+    v.controlWires.add(new Wire(3,FORWARD, false, 0.3f));
+    v.controlWires.add(new Wire(4,LEFT,    false, 1.15f));
     
     return v;
   }
   
-  // TODO: Improve comments here...
+  BraitenbergVehicle makeVehicleStationary() {
+    BraitenbergVehicle v = new BraitenbergVehicle(world);
+
+    // Hardpoints on the Vehicle:
+    Hardpoint rightTrackingCone = new Hardpoint(new Vector2D(0,-10), 0);
+    Hardpoint leftTrackingBeam = new Hardpoint(new Vector2D(0,-10), QUARTER_PI/6);
+    Hardpoint targetingCone = new Hardpoint(new Vector2D(0,-10), 0);
+    Hardpoint panicRadius = new Hardpoint(new Vector2D(0,0), 0);
+
+
+    // Add sensors to the hardpoints:
+    rightTrackingCone.addSensor(SensorFactory.makeDistanceConeSensor(LONG_LENGTH, QUARTER_PI/8));
+    leftTrackingBeam.addSensor(SensorFactory.makeDistanceRaySensor(LONG_LENGTH));
+    targetingCone.addSensor(SensorFactory.makeDistanceConeSensor(LONG_LENGTH, QUARTER_PI/8));
+    panicRadius.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH/2));
+
+    // Add the hardpoints to the ship:
+    v.hardpoints.add(rightTrackingCone);
+    v.hardpoints.add(leftTrackingBeam);
+    v.hardpoints.add(targetingCone);
+    v.hardpoints.add(panicRadius);
+
+    // Add Modulators to the vehicle:
+    v.modulators.add(new ModulatorIdentity());
+    v.modulators.add(new ModulatorBinary());
+    v.modulators.add(new ModulatorBinary());
+    v.modulators.add(new ModulatorBinary());
+
+    // Wire the hardpoints to Modulators:
+    v.sensorWires.add(new Wire(0,0, false, 1.0f)); // Rotate right to scan the play field
+    v.sensorWires.add(new Wire(0,0, true,  1.0f)); 
+    
+    v.sensorWires.add(new Wire(1,1, false, 5.0f)); // Rotate LEFT to keep target in sights
+    v.sensorWires.add(new Wire(2,2, false, 5.0f)); // Fire when a target is in the targeting cone
+
+    v.sensorWires.add(new Wire(3,3, false,  5.0f)); // Escape when objects come near.
+
+    // Wire the modulator to a Control Signal:
+    v.controlWires.add(new Wire(0,RIGHT, false, 0.3f));
+    v.controlWires.add(new Wire(1,LEFT,  false, 0.32f));
+    v.controlWires.add(new Wire(2,SHOOT, false, 1.0f));
+    v.controlWires.add(new Wire(3,JUMP,  false, 1.0f));
+    
+    return v;
+  }
+  
+  // TODO L FINISH THIS VEHICLE
+  BraitenbergVehicle makeVehicleReverseCone() {
+    BraitenbergVehicle v = new BraitenbergVehicle(world);
+    
+    // Create HardPoints fanned like spokes on a wheel:
+    // Which will be used to target objects
+    int numRays = 3;
+    double raySpread = (QUARTER_PI/16) / numRays; 
+    for (int i = 0; i < numRays; i++ ) {
+      Hardpoint h = new Hardpoint(new Vector2D(0,0), (i-1) * raySpread);
+      h.addSensor(SensorFactory.makeDistanceRaySensor(LONG_LENGTH)); // Add a sensor to the hardpoint:
+      v.hardpoints.add(h);                           // Add the hardpoint to the chassis:
+      v.modulators.add(new ModulatorIdentity());     // Add Modulators to the vehicle:
+      v.sensorWires.add(new Wire(i,i, false, 1.0f)); // Wire the hardpoint to the Modulator:
+      v.controlWires.add(new Wire(i, SHOOT, false, 1f) );
+    }
+    
+    
+    // Hardpoints on the Vehicle for steering:
+    Hardpoint leftNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI-QUARTER_PI/2);
+    Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), Math.PI+QUARTER_PI/2);
+    Hardpoint emergencyTurn = new Hardpoint(new Vector2D(0,-10), Math.PI);
+
+    // Add sensors to the hardpoints:
+    leftNosePoint.addSensor(SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI));
+    rightNosePoint.addSensor(SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI));
+    emergencyTurn.addSensor(SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH/3, Math.PI));
+    
+    // Add the hardpoints to the ship:
+    v.hardpoints.add(leftNosePoint);
+    v.hardpoints.add(rightNosePoint);
+    v.hardpoints.add(emergencyTurn);
+
+    // Add Modulators to the vehicle:
+    v.modulators.add(new ModulatorIdentity());
+    v.modulators.add(new ModulatorIdentity());
+    v.modulators.add(new ModulatorIdentity());
+    v.modulators.add(new ModulatorIdentity());
+
+    // Wire the hardpoints to Modulators:
+    v.sensorWires.add(new Wire(numRays + 0, numRays + 0, false, 1.0f));
+    v.sensorWires.add(new Wire(numRays + 0, numRays + 1, true, 1.0f));
+    v.sensorWires.add(new Wire(numRays + 1, numRays + 2, false, 1.0f));
+    v.sensorWires.add(new Wire(numRays + 2, numRays + 3, false, 1.0f));
+
+
+    // Wire the modulator to a Control Signal:
+    v.controlWires.add(new Wire(numRays + 0,LEFT, false, 0.9f)); // Bias turning to escape head-on collisions.
+    v.controlWires.add(new Wire(numRays + 1,BACK, false, 0.7f));
+    v.controlWires.add(new Wire(numRays + 1,LEFT, false, 0.0f));
+    v.controlWires.add(new Wire(numRays + 2,RIGHT, false, 1.0f));
+    v.controlWires.add(new Wire(numRays + 3,RIGHT, false, 2.0f));
+    
+
+
+    
+    return v;
+  }  
+
+  // TODO: Replace this section...
   // Make starfish...
   List<BraitenbergVehicle> makeStarfish() {
     List<BraitenbergVehicle> vehicles = equipSensors(chassisPile.get(0));
@@ -1365,7 +1479,7 @@ class BRVFactory {
     return vehicles;
   }
 
-  // TODO: Improve comments here...
+  // TODO: Replace this section...
   // Equip a list of vehicles with every combination of wires possible and return
   // the resulting list of BraitenbergVehicles:
   List<BraitenbergVehicle> equipWires(List<BraitenbergVehicle> vehicles) {
@@ -1398,7 +1512,7 @@ class BRVFactory {
     return wiredVehicles;
   }
 
-  // TODO: Improve comments here...
+  // TODO: Replace this section...
   // Return all permutations:
   static List<int[]> getPermutations(int digits, int base) {
     List<int[]> permutations = new ArrayList<int[]>();
@@ -1430,7 +1544,7 @@ class BRVFactory {
     return permutations;
   }
 
-  // TODO: Improve comments here...
+  // TODO: Replace this section...
   // Return all permutations in which no digit occurs more than once:
   // Perhaps inefficient but simple.
   static List<int[]> getPermutationsNoRepetions(int digits, int base) {

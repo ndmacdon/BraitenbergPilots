@@ -268,7 +268,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   
   boolean braitenbergPilot = false;
   boolean tourneyMode = false;
-  int gamesPerParticipant = 2;
+  int gamesPerParticipant = 10;
   int participants;
   int currentGame = 0;
   int currentParticipant = 0;
@@ -293,8 +293,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   // Constants
 
-  static  int FRAME_LENGTH = 1000; //1000    // Milliseconds in one frame.
-  static final int DELAY = 15;     //15      // Milliseconds between screen and
+  static  int FRAME_LENGTH = 500; //1000    // Milliseconds in one frame.
+  static final int DELAY = 7;     //15      // Milliseconds between screen and
   static final int FPS   =                  // the resulting frame rate.
     Math.round(FRAME_LENGTH / DELAY);
 
@@ -317,7 +317,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   static final double MAX_ROCK_SPEED = 240.0 / FPS;
   static final double MAX_ROCK_SPIN  = Math.PI / FPS;
 
-  static final int MAX_SHIPS = 1;           // Starting number of ships for
+  static final int MAX_SHIPS = 3;           // Starting number of ships for
                                             // each game.
   static final int UFO_PASSES = 3;          // Number of passes for flying
                                             // saucer per appearance.
@@ -456,14 +456,14 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     menuInfo.add("Key   Pilot            |   Key   Pilot");
     menuInfo.add("-----------------------|--------------------");
     menuInfo.add("1R    D.N.O.-Radius    |   1F    Hunter");
-    menuInfo.add("1L    D.N.O.-Laser     |   2F    Concentric Regions");
-    menuInfo.add("2A    Coward           |   3F    Archer");
-    menuInfo.add("2B    Angry            |   4F");
-    menuInfo.add("3A    Admirer          |   5F");
-    menuInfo.add("3B    Explorer         |   6F");
-    menuInfo.add("3C    Anxious-Explorer |   6F");
-    menuInfo.add("4A    Companion        |   7F");
-    menuInfo.add("4B    Orbiter          |   7F");
+    menuInfo.add("1L    D.N.O.-Laser     |   2F    Archer");
+    menuInfo.add("2A    Coward           |   3F    Hopper");
+    menuInfo.add("2B    Angry            |   4F    Backwards");
+    menuInfo.add("3A    Admirer          |   ");
+    menuInfo.add("3B    Explorer         |   ");
+    menuInfo.add("3C    Anxious-Explorer |   ");
+    menuInfo.add("4A    Companion        |   ");
+    menuInfo.add("4B    Orbiter          |   ");
     menuInfo.add("");
     menuInfo.add("Press 'P' at any time to Pause.");
     menuInfo.add("Press 'K' at any time to End the current game.");
@@ -590,7 +590,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
                                   ufo);
     
     factory = new BRVFactory(currentState);
-    tourneyRoster = factory.makeRoster();
+    tourneyRoster = factory.makeTourneyRoster();
     participants = tourneyRoster.size();
 
     highScore = 0;
@@ -767,6 +767,14 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
           }
         }
         
+        // End the game if a participant has gained
+        // so many lives it is unlikely they will ever
+        // lose.
+        if (tourneyMode && playing && shipsLeft >= 10) {
+          shipsLeft = 0;
+          endGame();
+        }
+        
 
   
         // Only Update the CurrentState && Pilot while the game is playing:
@@ -897,7 +905,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   // Interpret control-variables into <ship>-actions:
   public void updateShip() {
 
-    double dx, dy, speed;
+    double dx, dy;
 
     if (!playing) {
       return;
@@ -929,17 +937,6 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
     ship.deltaX -= accBackward * dx;
     ship.deltaY -= accBackward * dy;
-
-
-    // Don't let ship go past the speed limit.
-    speed = Math.sqrt(ship.deltaX * ship.deltaX + ship.deltaY * ship.deltaY);
-    if (speed > MAX_SHIP_SPEED) {
-      dx = MAX_SHIP_SPEED * -Math.sin(ship.angle);
-      dy = MAX_SHIP_SPEED *  Math.cos(ship.angle);
-      ship.deltaX = dx;
-      ship.deltaY = dy;
-    }
-
 
     // Fire photon if a fire signal is active:
     if (firePhoton && ship.active) {
@@ -1452,8 +1449,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     // Read <pilot>'s brain for control signals:
     turnLeft =    CONTROL_SCALING * pilot.getTurnLeft();
     turnRight =   CONTROL_SCALING * pilot.getTurnRight();
-    accForward =  CONTROL_SCALING * pilot.getAccForward();
-    accBackward = CONTROL_SCALING * pilot.getAccBackward();
+    accForward =   pilot.getAccForward();
+    accBackward =  pilot.getAccBackward();
     firePhoton =  (pilot.getFirePhoton() >= 1); // Convert the signal to a bool.
     fireHyper =   (pilot.getFireHyper() >= 1);  // Convert the signal to a bool.
   }
@@ -1535,10 +1532,13 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         pilot = factory.makeVehicleRayEye();
       }
       else if (menuInput.contains("2F")) {
-        pilot = factory.makeVehicleRadialRegions();
+        pilot = factory.makeVehiclePolarRegions();
       }
       else if (menuInput.contains("3F")) {
-        pilot = factory.makeVehiclePolarRegions();
+        pilot = factory.makeVehicleStationary();
+      }
+      else if (menuInput.contains("4F")) {
+        pilot = factory.makeVehicleReverseCone();
       }
       else if (menuInput.contains("1T")) {
         pilot = factory.makeVehicleSensorTestRadius();
