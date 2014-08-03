@@ -39,7 +39,7 @@
 
 ## Introduction to Braitenberg Vehicles
 
-Braitenberg vehicles are the main agents in a biologically inspired thought experiment by [Valentino Braitenberg](http://en.wikipedia.org/wiki/Valentino_Braitenberg) published in his book [*Vehicles*](http://mitpress.mit.edu/books/vehicles)~CITE. In *Vehicles*, Braitenberg develops a sequence of 14 increasingly sophisticated vehicles. The vehicles are constructed of a sensors, motors, wheels, wires and bodies. Braitenberg describes a tabletop world on which the vehicles operate. When Braitenberg's vehicles perish when they stray over the edges of this world. The vehicles may also harm or destroy each other. Later vehicles undergo evolutionary development wherein vehicles which survive for a time are duplicated with minor mutations. Braitenberg attributes lifelike qualities to his vehicles as they progress. For instance, vehicle one is said to like cold places and dislike hot ones while vehicle seven is said to be able to internalize concepts~CITEp.5. Over the sequence of 14 vehicles Braitenberg ascribes the following qualities to their observed behavior: instincts, emotions, logic, concepts, ideas, foresight and egotism.
+Braitenberg vehicles are the main agents in a biologically inspired thought experiment by [Valentino Braitenberg](http://en.wikipedia.org/wiki/Valentino_Braitenberg) published in his book [*Vehicles*](http://mitpress.mit.edu/books/vehicles)[(Braitenberg, 1984)](#bib-vehicles). In *Vehicles*, Braitenberg develops a sequence of 14 increasingly sophisticated vehicles. The vehicles are constructed of a sensors, motors, wheels, wires and bodies. Braitenberg describes a tabletop world on which the vehicles operate. When Braitenberg's vehicles perish when they stray over the edges of this world. The vehicles may also harm or destroy each other. Later vehicles undergo evolutionary development wherein vehicles which survive for a time are duplicated with minor mutations. Braitenberg attributes lifelike qualities to his vehicles as they progress. For instance, vehicle one is said to like cold places and dislike hot ones while vehicle seven is said to be able to internalize concepts. Over the sequence of 14 vehicles Braitenberg ascribes the following qualities to their observed behavior: instincts, emotions, logic, concepts, ideas, foresight and egotism[(Braitenberg, 1984)](#bib-vehicles).
 
 Braitenberg takes an informal approach to the realities of his vehicles. The basic components of Braitenberg's vehicles are; sensors tuned to some quality of the environment, wires which transmit information from sensors to motors and threshold devices which help grant basic logical facilities to the vehicles. Each component has been selected to mirror a real biological structure present in nature.
 
@@ -49,11 +49,11 @@ Braitenberg takes an informal approach to the realities of his vehicles. The bas
 **Figure 1** Braitenberg Vehicle 1
 {: class=image-block }
 
-Vehicles begins with a design involving a single sensor and motor. Depicted in Figure 1, vehicle one senses the absolute temperature of its environment. The sensor (half circle on a stalk) sends signals to a single motor at the rear of the vehicle which drives a wheel. The result is a vehicle that moves quickly through hot areas and slows down in cold ones. Braitenberg describes the motivations of his vehicle as follows:
+Vehicles begins with a design involving a single sensor and motor. Depicted in Figure 1, vehicle 1 senses the absolute temperature of its environment. The sensor (half circle on a stalk) sends signals to a single motor at the rear of the vehicle which drives a wheel. The result is a vehicle that moves quickly through hot areas and slows down in cold ones [(Braitenberg, 1984)](#bib-vehicles). Braitenberg describes the motivations of his vehicle as follows:
 
 > It is restless, you would say, and does not like warm water. But it is quite stupid, since it is not able to turn back to the nice cold spot it overshot in its restlessness. Anyway you would say, it is ALIVE, since you have never seen a particle of dead matter move around like that.
 
-> ~Vehicles p. 5
+> [~Braitenberg, 1984, p. 5](#bib-vehicles)
 
 Braitenberg develops his vehicles by introducing a new component and combining it with the advances of the existing vehicles. Each component is simple on its own. Yet, this technique of compounded design results in complex behaviors attributable to living organisms.
 
@@ -63,7 +63,7 @@ Vehicle seven is able to form concepts and make generalizations. Vehicle seven c
 
 > One consequence, we have already seen, is concept formation. When it happens between different categories of things (such as red color and aggression), we prefer to call it association.
 
-> ~Vehicles p. 29
+> [~Braitenberg, 1984, p. 29](#bib-vehicles)
 
 The vehicles following vehicle seven continue to grow in complexity and ability. Later vehicles even include earlier vehicles as encapsulated components providing primitive instincts to the later vehicles.
 
@@ -75,11 +75,11 @@ The vehicles following vehicle seven continue to grow in complexity and ability.
 **Figure 2** The Asteroids Video Game
 {: class=big-image-block }
 
-Asteroids is a two-dimensional action video game where players control a triangular ship. For more information, see the description of Asteroids in the [appendix](#description-of-the-asteroids-video-game) or visit the game's [homepage](http://www.brainjar.com/java/games/asteroids/).
+Asteroids is a two-dimensional action video game where players control a triangular ship. For more information, see the description of Asteroids in [Appendix A](#description-of-the-asteroids-video-game) or visit the game's [homepage](http://www.brainjar.com/java/games/asteroids/).
 
 ## Braitenberg Vehicles that Play Asteroids
 
-In my work, I apply Braitenberg's ideas to create agents capable of playing the video game Asteroids. My goal was to explore the capabilities of basic [reactive](http://en.wikipedia.org/wiki/Reactive_planning) agents, gain experience developing a real-time engine with reactive agents and to create a Braitenberg robot which could achieve the highest score possible in the Asteroids video game. I deviated from Braitenberg's designs because my work is implemented inside an existing game engine which was not capable of replicating all of his ideas. Braitenberg's vehicles have rectangular bodies, but my agents retain the triangular ship-body of Asteroids. Braitenberg's sensors were continuous but mine poll the environment at a fixed rate. I recreated the behavior of several of Braitenberg's vehicles despite these differences.
+In my work, I apply Braitenberg's ideas to create agents capable of playing the video game Asteroids. My goal was to explore the capabilities of basic [reactive](http://en.wikipedia.org/wiki/Reactive_planning) agents, gain experience developing a real-time [game engine](http://en.wikipedia.org/wiki/Game_engine) with reactive agents and to create a Braitenberg vehicle which could achieve the highest score possible in the Asteroids video game. I deviated from Braitenberg's designs because my work is implemented inside an existing game engine which was not capable of replicating all of his ideas. Braitenberg's vehicles have rectangular bodies, but my agents retain the triangular ship-body of Asteroids. Braitenberg's sensors were continuous but mine poll the environment at a fixed rate. I recreated the behavior of several of Braitenberg's vehicles despite these differences.
 
 ### Sensors
 
@@ -89,7 +89,7 @@ Developing sensors to help my agents attain a high score was difficult. It was n
 **Figure 3** Early design of an aggregated distance sensor. The sensor returns the distance A+B since both asteroids are inside its detection area.
 {: class=image-block }
 
-My early sensors took aggregated readings; accumulating data from all the asteroids in the sensor's range (e.g. returning the cumulative or averaged distance from the sensor to each detected asteroid as in figure 3). This was ineffective because it often caused agents to take action in regards to groups of distant objects when a single nearby-object was a much greater threat. Eventually it became clear that sensors should report on the nearest object they detected. This change lead to vehicles which behaved as if they understood that nearby objects were more important than distant ones (an important fact that human players utilize to achieve high scores).
+My early sensors took aggregated readings; accumulating data from all the asteroids in the sensor's range (e.g. returning the cumulative distance from the sensor to each detected asteroid as in figure 3). This was ineffective because it often caused agents to take action in regards to groups of distant objects when a single nearby-object was a much greater threat. Eventually it became clear that sensors should report on the nearest object they detected. This change lead to vehicles which behaved as if they understood that nearby objects were more important than distant ones (an important fact that human players utilize to achieve high scores).
 
 Choosing what attribute a sensor should measure was also a process of trial and error. Given an object, the obvious attributes we might report on are: speed, size, and distance. Measuring the speed of an object was not useful since something moving at high speed away-from or parallel-to the agent is not as dangerous as an object moving slowly toward the agent. Measuring the distance to the nearest asteroid proved very useful. It gave my agent's correct priorities: nearby objects require action and the severity of that action increases as the object gets closer. I found these distance-to-nearest-object (D.N.O.) sensors to be so superior to the other alternatives that all of my final vehicle designs incorporate D.N.O. sensors.
 
@@ -97,17 +97,23 @@ Choosing what attribute a sensor should measure was also a process of trial and 
 **Figure 4** D.N.O.-Ray Sensors arranged to mimic a simple eye. The sensor right of centre returns the distance A.
 {: class=image-block }
 
-Although my final vehicles all use D.N.O. type sensors, I varied the detection area (i.e. the area that an object must intersect with to be sensed) to create several different sub-types (to see in detail how the sensors I created work refer to [Sensors](#sensors_1) in the Appendix). Differing the detection area of the sensor radically changed the influence it had on the vehicle. I began with a detection area defined by a line. D.N.O.-Line sensors were useful when used in bulk; arranged as in figure 4 they mirror the function of a primitive eye. However, smaller objects (especially missiles) could easily pass between the detection areas of D.N.R.-line sensors and go unnoticed until they were dangerously close to the agent. To correct this issue, I developed a D.N.O.-Radius sensor which detected objects in a radius centered around the sensor origin. This sensor never failed to detect objects but provided no information regarding the heading of the detected object. Finally I developed the D.N.O.-Cone sensor. These sensors balance the directional information of the D.N.O.-Line sensors with the dragnet approach of the D.N.O.-Radius sensor. This small set of sensors allows for a huge number of interesting and high-scoring behaviors.
+Although my final vehicles all use D.N.O. type sensors, I varied the detection area (i.e. the area that an object must intersect with to be sensed) to create several different sub-types (for more details on all the sensors I created refer to [Appendix B](#sensors_1)). Differing the detection area of the sensor radically changed the influence it had on the vehicle. I began with a detection area defined by a line. D.N.O.-Line sensors were useful when used in bulk; arranged as in figure 4 they mirror the function of a primitive eye. However, smaller objects (especially missiles) could easily pass between the detection areas of D.N.R.-line sensors and go unnoticed until they were dangerously close to the agent. To correct this issue, I developed a D.N.O.-Radius sensor which detected objects in a radius centered around the sensor origin. This sensor never failed to detect objects but provided no information regarding the heading of the detected object. Finally I developed the D.N.O.-Cone sensor. These sensors balance the directional information of the D.N.O.-Line sensors with the dragnet approach of the D.N.O.-Radius sensor. This small set of sensors allows for a huge number of interesting and high-scoring behaviors.
 
 ## Designs of Asteroids Vehicles
 
 ### 3B - Braitenberg Explorer
 
-The design of vehicle 3B is inspired by Braitenberg's vehicle 3B. My version is equipped with two D.N.O-Radius sensors located on the nose of the ship as seen in FIGURE~XXX. Vehicle 3B's connections are inverted (depicted as blue connections annotated with '-') such that, when a sensor has no stimulus, the connected Motor is fired at full capacity. When a sensor is excited, the connected motor is inhibited and acts with less (or no) force. Vehicle 3B acts in a manner similar to the one Braitenberg describes for his own vehicle 3B, 
+[![Vehicle 3B](images/Vehicle03B.png)](images/Vehicle03B.png)
+**Figure 5** Asteroids Vehicle 3B
+{: class=image-block }
+
+The design of vehicle 3B is inspired by Braitenberg's vehicle 3B. My version is equipped with two D.N.O-Radius sensors located on the nose of the ship as seen in figure 5. Vehicle 3B's connections are inverted (depicted as blue connections annotated with '-') such that, when a sensor has no stimulus, the connected Motor is fired at full capacity. When a sensor is excited, the connected motor is inhibited and acts with less (or no) force. Vehicle 3B acts in a manner similar to the one Braitenberg describes for his own vehicle 3B, 
 
 > ...an EXPLORER. It likes the nearby source all right, but keeps an eye open for other, perhaps stronger sources, which it will sail to, given a chance, in order to find a more permanent and gratifying appeasement.
 
-> ~Vehicles p.12".
+> [~Braitenberg, 1984, p. 12](#bib-vehicles)
+
+~FIGURE RECORDING
 
 Creating this vehicle helped me understand the effects of inverting sensor stimuli. Inverted connections play an important role in all the fit vehicles I designed later.
 
@@ -117,7 +123,7 @@ Vehicle 4A resembles Braitenberg's vehicle 4A in design and behavior. This vehic
 
 > The activation of a certain sensor will make the corresponding motor run faster, but only up to a point, where the speed of the motor reaches a maximum. Beyond this point, if the sensor is activated even more strongly, the speed will decrease again...
 
-> ~Vehicles p.15
+> [~Braitenberg, 1984, p. 15](#bib-vehicles)
 
 Vehicle 4A is equipped with two such modulators which cause it to alternately dive towards and away from the nearest asteroid in a fashion similar to the one depicted in Braitenberg's figure ~FIGURE 7 p. 16?-recreate. Vehicle 4A seeks proximity with an asteroid, it likes the presence of the asteroid but is a fickle companion; abandoning its orbit if another asteroid gets close. I found parabolic modulators like the ones used in this vehicle difficult to utilize in competitive vehicles. They rely too heavily on exact calibration and often produce unreliable behavior in the dynamic environment of asteroids. My observations lead me to believe such modulators are  better suited to environments with stationary stimulus sources.
 
@@ -174,8 +180,6 @@ http://www.florajs.com/
 
 ## Appendix
 
-### Using the Asteroids Software
-
 ### Description of The Asteroids Video Game
 
 Asteroids is a two-dimensional action video game. Players control a triangular ship inside a field of drifting asteroids. The ship can turn left and right, can fire forward and reverse thrusters (which apply force to the ship according to the direction it is facing), can shoot a cannon, and may teleport to a random location on the screen.
@@ -215,6 +219,9 @@ Given a tournament with three participants who each play X games:
     - Participant 3 is finished
 4. Tourney is over
 ```
+
+### Using the Asteroids Software
+
 ### Adding A Security Exception To Java
 
 This project uses an unsigned JAR file which may be disallowed by your default Java settings.
@@ -238,6 +245,19 @@ EMBED-APPLET
 Visit the [Fullscreen Demo](fullscreen.html) page to see the program running in a larger window.
 
 ## Bibliography
+
+<a name="bib-vehicles"></a>Braitenberg, V. (1984). Vehicles. Cambridge, Massachusetts: The MIT Press.
+
+<a name="bib-sss"></a>Connell, J. H. (1992). SSS: A hybrid Architecture Applied to Robot Navigation. IEEE Conference on Robotics and Automation (pp. 2719-2724). New York: IBM T.J. Watson Research Center.
+
+<a name="bib-circuitSchematics"></a>Nilsson, N. J. (1992). Toward Agent Programs With Circuit Semantics. Stanford, California: Stanford University.
+
+<a name="bib-trAgent"></a>Nilsson, N. J. (1994). Teleo-Reactive Programs for Agent Control. Journal of Artificial Intelligence Research, 139-158.
+
+<a name="bib-artificialIntelligence"></a>Russell, S. J., & Norvig, P. (2003). Artificial Intelligence. New Jersey: Pearson Education Inc.
+
+
+
 
 </section>
 
