@@ -266,6 +266,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   
   // Tourney Information.
   
+  boolean braitenbergPilot = false;
   boolean tourneyMode = false;
   int gamesPerParticipant = 2;
   int participants;
@@ -292,13 +293,13 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   // Constants
 
-  static  int FRAME_LENGTH = 500; //1000    // Milliseconds in one frame.
-  static final int DELAY = 7;     //15      // Milliseconds between screen and
+  static  int FRAME_LENGTH = 1000; //1000    // Milliseconds in one frame.
+  static final int DELAY = 15;     //15      // Milliseconds between screen and
   static final int FPS   =                  // the resulting frame rate.
     Math.round(FRAME_LENGTH / DELAY);
 
   static final int MAX_SHOTS =  12;         // Maximum number of sprites
-  static final int MAX_ROCKS =  4;         // for photons, asteroids and
+  static final int MAX_ROCKS =  40;         // for photons, asteroids and
   static final int MAX_SCRAP = 40;          // explosions.
   
   int maxSpawnableRocks;
@@ -451,23 +452,23 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     menuInfo.add("Enter a two-character key and press 'Enter'");
     menuInfo.add("to see that vehicle play the game:");
     menuInfo.add("");
-    menuInfo.add("Braitenberg-Vehicles   |   Fit-Vehicles");
+    menuInfo.add("Braitenberg-Vehicles   |   Competitive-Vehicles");
     menuInfo.add("Key   Pilot            |   Key   Pilot");
     menuInfo.add("-----------------------|--------------------");
-    menuInfo.add("1R    D.N.O.-Radius    |   1F    Ray Eye");
-    menuInfo.add("1L    D.N.O.-Laser     |   2F    Polar Hopper");
-    menuInfo.add("2A    Coward           |   3F");
+    menuInfo.add("1R    D.N.O.-Radius    |   1F    Hunter");
+    menuInfo.add("1L    D.N.O.-Laser     |   2F    Concentric Regions");
+    menuInfo.add("2A    Coward           |   3F    Archer");
     menuInfo.add("2B    Angry            |   4F");
     menuInfo.add("3A    Admirer          |   5F");
     menuInfo.add("3B    Explorer         |   6F");
     menuInfo.add("3C    Anxious-Explorer |   6F");
-    menuInfo.add("4A    Dancer           |   7F");
+    menuInfo.add("4A    Companion        |   7F");
     menuInfo.add("4B    Orbiter          |   7F");
     menuInfo.add("");
     menuInfo.add("Press 'P' at any time to Pause.");
     menuInfo.add("Press 'K' at any time to End the current game.");
-    menuInfo.add("Press 'Enter' to begin or clear current input.");
     menuInfo.add("Press '.' to toggle sensor display.");
+    menuInfo.add("Press 'Enter' to begin or clear current input.");
     menuInfo.add("");
     menuInfo.add("Input:");
     menuInfo.add("");
@@ -612,6 +613,9 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     maxSpawnableRocks = Math.min(
                           (int) Math.pow(d.height * d.width / 10000, .56), 
                           MAX_ROCKS);
+    
+    // Reduce the number of rocks spawned when a braitenberg pilot is running.
+    if (braitenbergPilot) { maxSpawnableRocks = Math.max(maxSpawnableRocks/2, 3); }
 
     // Generate the starry background.
 
@@ -641,6 +645,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     initShip();
     initPhotons();
     stopUfo();
+    stopRocks();
     stopMissle();
     initAsteroids();
     initExplosions();
@@ -660,6 +665,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     // Stop ship, flying saucer, guided missile and associated sounds.
 
     playing = false;
+    stopRocks();
     stopShip();
     stopUfo();
     stopMissle();
@@ -740,6 +746,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
             generator.setSeed(tourneySeed);
           }
           
+          // Next participant plays <gamesPerParticipant> games:
           if (currentParticipant < participants) {
             if (currentGame < gamesPerParticipant) {
                 pilot = tourneyRoster.get(currentParticipant);
@@ -750,10 +757,17 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
               // Select next participant...
               currentParticipant++;
               currentGame = 0;
+              
+              // The tourney is over.
+              if (currentParticipant == participants) {
+                tourneyMode = false;
+                currentParticipant = 0;
+              }
             }
           }
-          
         }
+        
+
   
         // Only Update the CurrentState && Pilot while the game is playing:
         if (playing && ship.active) {
@@ -935,12 +949,13 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
       if (photonIndex >= MAX_SHOTS) {
         photonIndex = 0;
       }
-
-      photons[photonIndex].active = true;
-      photons[photonIndex].x = ship.x;
-      photons[photonIndex].y = ship.y;
-      photons[photonIndex].deltaX = 2 * MAX_ROCK_SPEED * -Math.sin(ship.angle);
-      photons[photonIndex].deltaY = 2 * MAX_ROCK_SPEED *  Math.cos(ship.angle);
+      if (!photons[photonIndex].active) {
+        photons[photonIndex].active = true;
+        photons[photonIndex].x = ship.x;
+        photons[photonIndex].y = ship.y;
+        photons[photonIndex].deltaX = 2 * MAX_ROCK_SPEED * -Math.sin(ship.angle);
+        photons[photonIndex].deltaY = 2 * MAX_ROCK_SPEED *  Math.cos(ship.angle);
+      }
     }
 
 
@@ -1338,6 +1353,12 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         }
     }
   }
+  
+  public void stopRocks() {
+    for (int i = 0; i < MAX_ROCKS; i++) {
+      asteroids[i].active = false;
+    }
+  }
 
   public void initExplosions() {
 
@@ -1473,6 +1494,13 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
     // 'Enter' key: start the game, if not already in progress.
     if (e.getKeyCode() == KeyEvent.VK_ENTER && !playing) {
       
+      if (menuInput.contains("F") || menuInput.contains("TOURNEY")) {
+        braitenbergPilot = false;
+      }
+      else {
+        braitenbergPilot = true;
+      }
+      
       if (menuInput.contains("1R")) {
         pilot = factory.makeVehicleOneRadius();
       }
@@ -1507,6 +1535,9 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
         pilot = factory.makeVehicleRayEye();
       }
       else if (menuInput.contains("2F")) {
+        pilot = factory.makeVehicleRadialRegions();
+      }
+      else if (menuInput.contains("3F")) {
         pilot = factory.makeVehiclePolarRegions();
       }
       else if (menuInput.contains("1T")) {

@@ -639,6 +639,15 @@ class BRVFactory {
   static final double HALF_PI = Math.PI / 2;
   static final double QUARTER_PI = Math.PI / 4;
   
+
+  static final int LEFT    = 0;
+  static final int RIGHT   = 1;
+  static final int FORWARD = 2;
+  static final int BACK    = 3;
+  static final int SHOOT   = 4;
+  static final int JUMP    = 5;
+  
+  
   // A pile of sensors we may draw from to equip a Hardpoint:
   List<Sensor> sensorPile = new ArrayList<Sensor>();
 
@@ -691,23 +700,19 @@ class BRVFactory {
       Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
 
       // Add a sensor to the nose hardpoint:
-      DistanceSensor sensor = SensorFactory.makeDistanceRaySensor(SHORT_LENGTH);
-      nosePoint.addSensor(sensor);
+      nosePoint.addSensor(SensorFactory.makeDistanceRaySensor(SHORT_LENGTH));
 
       // Add the hardpoint to the ship:
       v.hardpoints.add(nosePoint);
 
       // Add a Modulator to the vehicle:
-      ModulatorIdentity mod = new ModulatorIdentity();
-      v.modulators.add(mod);
+      v.modulators.add(new ModulatorIdentity());
 
       // Wire the hardpoint to the Modulator:
-      Wire sensWire = new Wire(0,0, false, 1.0f);
-      v.sensorWires.add(sensWire);
+      v.sensorWires.add(new Wire(0,0, false, 1.0f));
 
       // Wire the modulator to a Control Signal:
-      Wire contWire = new Wire(0,2, false, 1.0f);
-      v.controlWires.add(contWire);
+      v.controlWires.add(new Wire(0, FORWARD, false, 1.0f));
       
       return v;
   }
@@ -719,8 +724,7 @@ class BRVFactory {
     Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
 
     // Add a sensor to the nose hardpoint:
-    DistanceSensor sensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
-    nosePoint.addSensor(sensor);
+    nosePoint.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH));
 
     // Add the hardpoint to the ship:
     v.hardpoints.add(nosePoint);
@@ -735,23 +739,19 @@ class BRVFactory {
       Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
 
       // Add a sensor to the nose hardpoint:
-      DistanceSensor sensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
-      nosePoint.addSensor(sensor);
+      nosePoint.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH));
 
       // Add the hardpoint to the ship:
       v.hardpoints.add(nosePoint);
 
       // Add a Modulator to the vehicle:
-      ModulatorIdentity mod = new ModulatorIdentity();
-      v.modulators.add(mod);
+      v.modulators.add(new ModulatorIdentity());
 
       // Wire the hardpoint to the Modulator:
-      Wire sensWire = new Wire(0,0, false, 1.0f);
-      v.sensorWires.add(sensWire);
+      v.sensorWires.add(new Wire(0,0, false, 1.0f));
 
       // Wire the modulator to a Control Signal:
-      Wire contWire = new Wire(0,2, false, 1.0f);
-      v.controlWires.add(contWire);
+      v.controlWires.add(new Wire(0, FORWARD, false, 1.0f));
       
       return v;
   }
@@ -763,23 +763,19 @@ class BRVFactory {
       Hardpoint nosePoint = new Hardpoint(new Vector2D(0,-10), 0.0);
 
       // Add a sensor to the nose hardpoint:
-      DistanceSensor sensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
-      nosePoint.addSensor(sensor);
+      nosePoint.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6));
 
       // Add the hardpoint to the ship:
       v.hardpoints.add(nosePoint);
 
       // Add a Modulator to the vehicle:
-      ModulatorIdentity mod = new ModulatorIdentity();
-      v.modulators.add(mod);
+      v.modulators.add(new ModulatorIdentity());
 
       // Wire the hardpoint to the Modulator:
-      Wire sensWire = new Wire(0,0, false, 1.0f);
-      v.sensorWires.add(sensWire);
+      v.sensorWires.add(new Wire(0,0, false, 1.0f));
 
       // Wire the modulator to a Control Signal:
-      Wire contWire = new Wire(0,1, false, 1.0f);
-      v.controlWires.add(contWire);
+      v.controlWires.add(new Wire(0,LEFT, false, 1.0f));
       
       return v;
   }
@@ -792,37 +788,27 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
-      leftNosePoint.addSensor(leftSensor);
-      rightNosePoint.addSensor(rightSensor);
+      leftNosePoint.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH));
+      rightNosePoint.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH));
 
       // Add the hardpoint to the ship:
       v.hardpoints.add(leftNosePoint);
       v.hardpoints.add(rightNosePoint);
 
       // Add a Modulator to the vehicle:
-      ModulatorIdentity leftMod = new ModulatorIdentity();
-      ModulatorIdentity rightMod = new ModulatorIdentity();
-      v.modulators.add(leftMod);
-      v.modulators.add(rightMod);
+      v.modulators.add(new ModulatorIdentity());
+      v.modulators.add(new ModulatorIdentity());
 
       // Wire the hardpoints to Modulators:
-      Wire leftSensWire =   new Wire(0,0, false, 1.0f);
-      Wire rightSensWire =  new Wire(1,1, false, 1.0f);
-      v.sensorWires.add(leftSensWire);
-      v.sensorWires.add(rightSensWire);
+      v.sensorWires.add(new Wire(0,0, false, 1.0f));
+      v.sensorWires.add(new Wire(1,1, false, 1.0f));
 
       // Wire the modulator to a Control Signal:
-      Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-      Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
-      Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-      Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
 
-      v.controlWires.add(leftThrustWire);
-      v.controlWires.add(leftSteerWire);
-      v.controlWires.add(rightThrustWire);
-      v.controlWires.add(rightSteerWire);
+      v.controlWires.add(new Wire(0,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(0,RIGHT,   false, 1.0f));
+      v.controlWires.add(new Wire(1,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(1,LEFT,    false, 1.0f));
       
       return v;
   }
@@ -835,37 +821,26 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
-      leftNosePoint.addSensor(leftSensor);
-      rightNosePoint.addSensor(rightSensor);
+      leftNosePoint.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6));
+      rightNosePoint.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6));
 
       // Add the hardpoint to the ship:
       v.hardpoints.add(leftNosePoint);
       v.hardpoints.add(rightNosePoint);
 
       // Add a Modulator to the vehicle:
-      ModulatorIdentity leftMod = new ModulatorIdentity();
-      ModulatorIdentity rightMod = new ModulatorIdentity();
-      v.modulators.add(leftMod);
-      v.modulators.add(rightMod);
+      v.modulators.add(new ModulatorIdentity());
+      v.modulators.add(new ModulatorIdentity());
 
       // Wire the hardpoints to Modulators:
-      Wire leftSensWire =   new Wire(0,0, false, 1.0f);
-      Wire rightSensWire =  new Wire(1,1, false, 1.0f);
-      v.sensorWires.add(leftSensWire);
-      v.sensorWires.add(rightSensWire);
+      v.sensorWires.add(new Wire(0,0, false, 1.0f));
+      v.sensorWires.add(new Wire(1,1, false, 1.0f));
 
       // Wire the modulator to a Control Signal:
-      Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-      Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
-      Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-      Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
-
-      v.controlWires.add(leftThrustWire);
-      v.controlWires.add(leftSteerWire);
-      v.controlWires.add(rightThrustWire);
-      v.controlWires.add(rightSteerWire);
+      v.controlWires.add(new Wire(0,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(0,RIGHT,   false, 1.0f));
+      v.controlWires.add(new Wire(1,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(1,LEFT,    false, 1.0f));
       
       return v;
   }
@@ -878,37 +853,26 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
-      leftNosePoint.addSensor(leftSensor);
-      rightNosePoint.addSensor(rightSensor);
+      leftNosePoint.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH));
+      rightNosePoint.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH));
 
       // Add the hardpoint to the ship:
       v.hardpoints.add(leftNosePoint);
       v.hardpoints.add(rightNosePoint);
 
       // Add a Modulator to the vehicle:
-      ModulatorIdentity leftMod = new ModulatorIdentity();
-      ModulatorIdentity rightMod = new ModulatorIdentity();
-      v.modulators.add(leftMod);
-      v.modulators.add(rightMod);
+      v.modulators.add(new ModulatorIdentity());
+      v.modulators.add(new ModulatorIdentity());
 
       // Wire the hardpoints to Modulators:
-      Wire leftSensWire = new   Wire(0,0, false, 1.0f);
-      Wire rightSensWire = new  Wire(1,1, false, 1.0f);
-      v.sensorWires.add(leftSensWire);
-      v.sensorWires.add(rightSensWire);
+      v.sensorWires.add(new Wire(0,0, false, 1.0f));
+      v.sensorWires.add(new Wire(1,1, false, 1.0f));
 
       // Wire the modulator to a Control Signal:
-      Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-      Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
-      Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-      Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
-
-      v.controlWires.add(leftThrustWire);
-      v.controlWires.add(leftSteerWire);
-      v.controlWires.add(rightThrustWire);
-      v.controlWires.add(rightSteerWire);
+      v.controlWires.add(new Wire(0,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(0,LEFT, false, 1.0f));
+      v.controlWires.add(new Wire(1,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(1,RIGHT, false, 1.0f));
       
       return v;
   }
@@ -921,37 +885,26 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
-      leftNosePoint.addSensor(leftSensor);
-      rightNosePoint.addSensor(rightSensor);
+      leftNosePoint.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6));
+      rightNosePoint.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6));
 
       // Add the hardpoint to the ship:
       v.hardpoints.add(leftNosePoint);
       v.hardpoints.add(rightNosePoint);
 
       // Add a Modulator to the vehicle:
-      ModulatorIdentity leftMod = new ModulatorIdentity();
-      ModulatorIdentity rightMod = new ModulatorIdentity();
-      v.modulators.add(leftMod);
-      v.modulators.add(rightMod);
+      v.modulators.add(new ModulatorIdentity());
+      v.modulators.add(new ModulatorIdentity());
 
       // Wire the hardpoints to Modulators:
-      Wire leftSensWire = new   Wire(0,0, false, 1.0f);
-      Wire rightSensWire = new  Wire(1,1, false, 1.0f);
-      v.sensorWires.add(leftSensWire);
-      v.sensorWires.add(rightSensWire);
+      v.sensorWires.add(new Wire(0,0, false, 1.0f));
+      v.sensorWires.add(new Wire(1,1, false, 1.0f));
 
       // Wire the modulator to a Control Signal:
-      Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-      Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
-      Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-      Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
-
-      v.controlWires.add(leftThrustWire);
-      v.controlWires.add(leftSteerWire);
-      v.controlWires.add(rightThrustWire);
-      v.controlWires.add(rightSteerWire);
+      v.controlWires.add(new Wire(0,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(0,LEFT, false, 1.0f));
+      v.controlWires.add(new Wire(1,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(1,RIGHT, false, 1.0f));
       
       return v;
   }
@@ -963,38 +916,27 @@ class BRVFactory {
       Hardpoint leftNosePoint = new Hardpoint(new Vector2D(-25,-10), 0.0);
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(25,-10), 0.0);
 
-      // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH);
-      leftNosePoint.addSensor(leftSensor);
-      rightNosePoint.addSensor(rightSensor);
+      // Add a sensor to the nose hardpoints
+      leftNosePoint.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH));
+      rightNosePoint.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH));
 
       // Add the hardpoint to the ship:
       v.hardpoints.add(leftNosePoint);
       v.hardpoints.add(rightNosePoint);
 
       // Add a Modulator to the vehicle:
-      ModulatorIdentity leftMod = new ModulatorIdentity();
-      ModulatorIdentity rightMod = new ModulatorIdentity();
-      v.modulators.add(leftMod);
-      v.modulators.add(rightMod);
+      v.modulators.add(new ModulatorIdentity());
+      v.modulators.add(new ModulatorIdentity());
 
       // Wire the hardpoints to Modulators:
-      Wire leftSensWire =   new Wire(0,0, true, 1.0f);
-      Wire rightSensWire =  new Wire(1,1, true, 1.0f);
-      v.sensorWires.add(leftSensWire);
-      v.sensorWires.add(rightSensWire);
+      v.sensorWires.add(new Wire(0,0, true, 1.0f));
+      v.sensorWires.add(new Wire(1,1, true, 1.0f));
 
       // Wire the modulator to a Control Signal:
-      Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-      Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
-      Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-      Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
-
-      v.controlWires.add(leftThrustWire);
-      v.controlWires.add(leftSteerWire);
-      v.controlWires.add(rightThrustWire);
-      v.controlWires.add(rightSteerWire);
+      v.controlWires.add(new Wire(0,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(0,RIGHT, false, 1.0f));
+      v.controlWires.add(new Wire(1,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(1,LEFT, false, 1.0f));
       
       return v;
   }
@@ -1023,10 +965,10 @@ class BRVFactory {
       v.sensorWires.add(new Wire(1,1, false, 1f));
 
       // Wire the modulator to a Control Signal:
-      v.controlWires.add(new Wire(0,2, true, 1.35f)); // leftThrustWire
-      v.controlWires.add(new Wire(0,1, true, 1.0f)); // rightSteerWire
-      v.controlWires.add(new Wire(1,2, true, 1.35f)); // rightThrustWire
-      v.controlWires.add(new Wire(1,0, true, 1.0f)); // leftSteerWire
+      v.controlWires.add(new Wire(0,FORWARD, true, 1.35f));// leftThrustWire
+      v.controlWires.add(new Wire(0,RIGHT, true, 1.0f));   // rightSteerWire
+      v.controlWires.add(new Wire(1,FORWARD, true, 1.35f));// rightThrustWire
+      v.controlWires.add(new Wire(1,LEFT, true, 1.0f));    // leftSteerWire
       
       return v;
   }
@@ -1039,37 +981,26 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
-      leftNosePoint.addSensor(leftSensor);
-      rightNosePoint.addSensor(rightSensor);
+      leftNosePoint.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6));
+      rightNosePoint.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6));
 
       // Add the hardpoint to the ship:
       v.hardpoints.add(leftNosePoint);
       v.hardpoints.add(rightNosePoint);
 
       // Add a Modulator to the vehicle:
-      ModulatorIdentity leftMod = new ModulatorIdentity();
-      ModulatorIdentity rightMod = new ModulatorIdentity();
-      v.modulators.add(leftMod);
-      v.modulators.add(rightMod);
+      v.modulators.add(new ModulatorIdentity());
+      v.modulators.add(new ModulatorIdentity());
 
       // Wire the hardpoints to Modulators:
-      Wire leftSensWire =   new Wire(0,0, true, 1.0f);
-      Wire rightSensWire =  new Wire(1,1, true, 1.0f);
-      v.sensorWires.add(leftSensWire);
-      v.sensorWires.add(rightSensWire);
+      v.sensorWires.add(new Wire(0,0, true, 1.0f));
+      v.sensorWires.add(new Wire(1,1, true, 1.0f));
 
       // Wire the modulator to a Control Signal:
-      Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-      Wire leftSteerWire =    new Wire(0,1, false, 1.0f);
-      Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-      Wire rightSteerWire =   new Wire(1,0, false, 1.0f);
-
-      v.controlWires.add(leftThrustWire);
-      v.controlWires.add(leftSteerWire);
-      v.controlWires.add(rightThrustWire);
-      v.controlWires.add(rightSteerWire);
+      v.controlWires.add(new Wire(0,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(0,RIGHT, false, 1.0f));
+      v.controlWires.add(new Wire(1,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(1,LEFT, false, 1.0f));
       
       return v;
 }
@@ -1082,40 +1013,29 @@ class BRVFactory {
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(0,-10), -Math.PI/6);
 
       // Add a sensor to the nose hardpoints:
-      DistanceSensor leftSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
-      DistanceSensor rightSensor = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6);
-      leftNosePoint.addSensor(leftSensor);
-      rightNosePoint.addSensor(rightSensor);
+      leftNosePoint.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6));
+      rightNosePoint.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, Math.PI/6));
 
       // Add the hardpoint to the ship:
       v.hardpoints.add(leftNosePoint);
       v.hardpoints.add(rightNosePoint);
 
       // Add a Modulator to the vehicle:
-      ModulatorIdentity leftMod = new ModulatorIdentity();
-      ModulatorIdentity rightMod = new ModulatorIdentity();
-      v.modulators.add(leftMod);
-      v.modulators.add(rightMod);
+      v.modulators.add(new ModulatorIdentity());
+      v.modulators.add(new ModulatorIdentity());
 
       // Wire the hardpoints to Modulators:
-      Wire leftSensWire =   new Wire(0,0, true, 1.0f);
-      Wire rightSensWire =  new Wire(1,1, true, 1.0f);
-      v.sensorWires.add(leftSensWire);
-      v.sensorWires.add(rightSensWire);
+      v.sensorWires.add(new Wire(0,0, true, 1.0f));
+      v.sensorWires.add(new Wire(1,1, true, 1.0f));
 
       // Wire the modulator to a Control Signal:
-      Wire leftThrustWire =   new Wire(0,2, false, 1.0f);
-      Wire leftSteerWire =    new Wire(0,0, false, 1.0f);
-      Wire rightThrustWire =  new Wire(1,2, false, 1.0f);
-      Wire rightSteerWire =   new Wire(1,1, false, 1.0f);
-
-      v.controlWires.add(leftThrustWire);
-      v.controlWires.add(leftSteerWire);
-      v.controlWires.add(rightThrustWire);
-      v.controlWires.add(rightSteerWire);
+      v.controlWires.add(new Wire(0,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(0,LEFT, false, 1.0f));
+      v.controlWires.add(new Wire(1,FORWARD, false, 1.0f));
+      v.controlWires.add(new Wire(1,RIGHT, false, 1.0f));
       
       return v;
-}
+  }
   
   BraitenbergVehicle makeVehicleFourARadius () {
       BraitenbergVehicle v = new BraitenbergVehicle(world);
@@ -1128,11 +1048,11 @@ class BRVFactory {
       v.modulators.add(new ModulatorIdentity());
       
 
-      v.sensorWires.add (new Wire(0,0, false, 1.0f));
-      v.controlWires.add (new Wire(0,0, true, 1.0f));
+      v.sensorWires.add  (new Wire(0,0, false, 1.0f));
+      v.controlWires.add (new Wire(0,LEFT, true, 1.0f));
       
-      v.sensorWires.add (new Wire(0,1, false, 1.0f));
-      v.controlWires.add(new Wire(1,2, true, .5f));
+      v.sensorWires.add  (new Wire(0,1, false, 1.0f));
+      v.controlWires.add (new Wire(1,FORWARD, true, .5f));
       
       // Right nose point:
       Hardpoint rightNosePoint = new Hardpoint(new Vector2D(-30,-10), -Math.PI/6);
@@ -1142,10 +1062,10 @@ class BRVFactory {
       v.modulators.add(new ModulatorIdentity());
       
       v.sensorWires.add (new Wire(1,2, false, 1.0f));
-      v.controlWires.add (new Wire(2,1, true, 1.0f));
+      v.controlWires.add (new Wire(2,RIGHT, true, 1.0f));
       
       v.sensorWires.add (new Wire(1,3, false, 1.0f));
-      v.controlWires.add(new Wire(3,2, true, .5f));
+      v.controlWires.add(new Wire(3,FORWARD, true, .5f));
       
       // Speed point:
       Hardpoint speedPoint = new Hardpoint(new Vector2D(0,0), 0);
@@ -1155,7 +1075,7 @@ class BRVFactory {
       v.modulators.add(new ModulatorIdentity());
       
       v.sensorWires.add(new Wire(2,4, false, 1.0f));
-      v.controlWires.add(new Wire(4,3, false, 1.5f));
+      v.controlWires.add(new Wire(4,BACK, false, 1.7f));
 
       
       return v;
@@ -1172,11 +1092,11 @@ class BRVFactory {
     v.modulators.add(new ModulatorIdentity());
     
 
-    v.sensorWires.add (new Wire(0,0, true, 1.0f));
-    v.controlWires.add (new Wire(0,1, false, .5f));
+    v.sensorWires.add (new Wire(0,0, false, 1.0f));
+    v.controlWires.add (new Wire(0,LEFT, true, .5f));
     
     v.sensorWires.add (new Wire(0,1, false, 1.0f));
-    v.controlWires.add(new Wire(1,2, true, .2f));
+    v.controlWires.add(new Wire(1,FORWARD, true, .2f));
     
     // Right nose point:
     Hardpoint rightNosePoint = new Hardpoint(new Vector2D(-35,-10), -Math.PI/6);
@@ -1185,11 +1105,11 @@ class BRVFactory {
     v.modulators.add(new ModulatorParabolic());
     v.modulators.add(new ModulatorIdentity());
     
-    v.sensorWires.add (new Wire(1,2, true, 1.0f));
-    v.controlWires.add (new Wire(2,0, false, .5f));
+    v.sensorWires.add (new Wire(1,2, false, 1.0f));
+    v.controlWires.add (new Wire(2,RIGHT, true, .5f));
     
     v.sensorWires.add (new Wire(1,3, false, 1.0f));
-    v.controlWires.add(new Wire(3,2, true, .2f));
+    v.controlWires.add(new Wire(3,FORWARD, true, .2f));
     
     // Speed point:
     Hardpoint speedPoint = new Hardpoint(new Vector2D(0,0), 0);
@@ -1199,9 +1119,8 @@ class BRVFactory {
     v.modulators.add(new ModulatorIdentity());
     
     v.sensorWires.add(new Wire(2,4, false, 1.0f));
-    v.controlWires.add(new Wire(4,3, false, 1.6f));
+    v.controlWires.add(new Wire(4,BACK, false, 1.7f));
 
-    
     return v;
 }
   
@@ -1226,63 +1145,110 @@ class BRVFactory {
     // The wire i maps to the sensor pointing to raySpread*i (counter-clockwise).
     
     // Flee from objects behind:
-    v.controlWires.add(new Wire(numRays/2,2, false, 1f));
+    v.controlWires.add(new Wire(numRays/2,FORWARD, false, 1f));
     
     // Thrust except when objects are near:
-    v.controlWires.add(new Wire(0,        2, true, 5f) );
-    v.controlWires.add(new Wire(1,        2, true, 5f) );
-    v.controlWires.add(new Wire(numRays-1,2, true, 5f) );
+    v.controlWires.add(new Wire(0,        FORWARD, true, 5f) );
+    v.controlWires.add(new Wire(1,        FORWARD, true, 5f) );
+    v.controlWires.add(new Wire(numRays-1,FORWARD, true, 5f) );
     
     // Shoot objects passing in front:
-    v.controlWires.add(new Wire(0,         4, false, 1f) );
-    v.controlWires.add(new Wire(1,         4, false, 1f) );
-    v.controlWires.add(new Wire(numRays-1, 4, false, 1f) );
+    v.controlWires.add(new Wire(0,         SHOOT, false, 1f) );
+    v.controlWires.add(new Wire(1,         SHOOT, false, 1f) );
+    v.controlWires.add(new Wire(numRays-1, SHOOT, false, 1f) );
     
     // Slow down when objects passing in front:
-    v.controlWires.add(new Wire(0,        3, false, 1.0f) );
-    v.controlWires.add(new Wire(1,        3, false, 1.0f) );
-    v.controlWires.add(new Wire(1,        3, false, 1.0f) );
-    v.controlWires.add(new Wire(numRays-1,3, false, 1.0f) );
-    v.controlWires.add(new Wire(numRays-2,3, false, 1.0f) );
+    v.controlWires.add(new Wire(0,        BACK, false, 1.0f) );
+    v.controlWires.add(new Wire(1,        BACK, false, 1.0f) );
+    v.controlWires.add(new Wire(1,        BACK, false, 1.0f) );
+    v.controlWires.add(new Wire(numRays-1,BACK, false, 1.0f) );
+    v.controlWires.add(new Wire(numRays-2,BACK, false, 1.0f) );
     
     // Turn toward objects on the left:
     for (int k = 1; k < numRays/2; k++) {
-      v.controlWires.add(new Wire(k,0, false, 1f));
+      v.controlWires.add(new Wire(k,LEFT, false, 1f));
     }
     
     // Turn toward objects on the right:
     for (int j = numRays/2+1; j < numRays; j++) {
-      v.controlWires.add(new Wire(j,1, false, 1f));
+      v.controlWires.add(new Wire(j,RIGHT, false, 1f));
     }
     
     return v;
   }
 
+  BraitenbergVehicle makeVehicleRadialRegions() {
+    BraitenbergVehicle v = new BraitenbergVehicle(world);
+
+    // Hardpoints on the Vehicle:
+    Hardpoint layer0 = new Hardpoint(new Vector2D(0,0), 0);
+    Hardpoint layer1 = new Hardpoint(new Vector2D(0,0), 0);
+    Hardpoint layer2 = new Hardpoint(new Vector2D(0,0), 0);
+    Hardpoint layer3 = new Hardpoint(new Vector2D(0,0), 0);
+    Hardpoint layer4 = new Hardpoint(new Vector2D(0,0), 0);
+    Hardpoint layer5 = new Hardpoint(new Vector2D(0,0), 0);
+
+    // Add sensors to the hardpoints:
+    layer0.addSensor(SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH/4));
+    layer1.addSensor(SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH/3));
+    layer2.addSensor(SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH/2));
+    layer3.addSensor(SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH));
+    layer4.addSensor(SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH*1.25));
+    layer5.addSensor(SensorFactory.makeDistanceRadiusSensor(MEDIUM_LENGTH*1.5));
+
+    // Add the hardpoints to the ship:
+    v.hardpoints.add(layer0);
+    v.hardpoints.add(layer1);
+    v.hardpoints.add(layer2);
+    v.hardpoints.add(layer3);
+    v.hardpoints.add(layer4);
+    v.hardpoints.add(layer5);
+
+    // Add Modulators to the vehicle:
+    v.modulators.add(new ModulatorIdentity());
+    v.modulators.add(new ModulatorIdentity());
+    v.modulators.add(new ModulatorIdentity());
+    v.modulators.add(new ModulatorIdentity());
+    v.modulators.add(new ModulatorIdentity());
+    v.modulators.add(new ModulatorIdentity());
+
+    // Wire the hardpoints to Modulators:
+    v.sensorWires.add(new Wire(0,0, false, 1.0f));
+    v.sensorWires.add(new Wire(1,1, false, 1.0f));
+    v.sensorWires.add(new Wire(2,2, false, 1.0f));
+    v.sensorWires.add(new Wire(3,3, true,  1.0f));
+    v.sensorWires.add(new Wire(4,4, false, 1.0f));
+    v.sensorWires.add(new Wire(5,5, false, 1.0f));
+
+    // Wire the modulator to a Control Signal:
+    v.controlWires.add(new Wire(0,1, false, 3.0f));
+    v.controlWires.add(new Wire(1,3, false, 1.0f));
+    v.controlWires.add(new Wire(2,1, false, 1.0f));
+    v.controlWires.add(new Wire(3,2, false, 0.3f));
+    v.controlWires.add(new Wire(4,0, false, 1.0f));
+    v.controlWires.add(new Wire(5,5, false, 5.0f));
+    
+    return v;
+  }
   
   BraitenbergVehicle makeVehiclePolarRegions() {
     BraitenbergVehicle v = new BraitenbergVehicle(world);
 
     // Hardpoints on the Vehicle:
-    Hardpoint forwardNose = new Hardpoint(new Vector2D(0,-10), 0);
+    Hardpoint forwardNose = new Hardpoint(new Vector2D(0,-10), QUARTER_PI/8);
     Hardpoint forwardProx = new Hardpoint(new Vector2D(0,0), 0);
     Hardpoint rightProx   = new Hardpoint(new Vector2D(0,0), HALF_PI);
     Hardpoint rearProx    = new Hardpoint(new Vector2D(0,0), Math.PI);
-    Hardpoint leftProx    = new Hardpoint(new Vector2D(0,0), Math.PI + HALF_PI);
+    Hardpoint leftProx    = new Hardpoint(new Vector2D(0,0), -HALF_PI);
     Hardpoint nearJump  = new Hardpoint(new Vector2D(0,0), 0);
 
     // Add sensors to the hardpoints:
-    DistanceSensor sensor0 = SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH, QUARTER_PI);
-    DistanceSensor sensor1 = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, HALF_PI);
-    DistanceSensor sensor2 = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, HALF_PI);
-    DistanceSensor sensor3 = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, HALF_PI);
-    DistanceSensor sensor4 = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, HALF_PI);
-    DistanceSensor sensor5 = SensorFactory.makeDistanceConeSensor(SHORT_LENGTH/3, 2*Math.PI);
-    forwardNose.addSensor(sensor0);
-    forwardProx.addSensor(sensor1);
-    rightProx.addSensor(sensor2);
-    rearProx.addSensor(sensor3);
-    leftProx.addSensor(sensor4);
-    nearJump.addSensor(sensor5);
+    forwardNose.addSensor(SensorFactory.makeDistanceConeSensor(MEDIUM_LENGTH*3, QUARTER_PI/3));
+    forwardProx.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, QUARTER_PI));
+    rightProx.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, QUARTER_PI*3));
+    rearProx.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, QUARTER_PI));
+    leftProx.addSensor(SensorFactory.makeDistanceConeSensor(SHORT_LENGTH, QUARTER_PI*3));
+    nearJump.addSensor(SensorFactory.makeDistanceRadiusSensor(SHORT_LENGTH/3));
 
     // Add the hardpoints to the ship:
     v.hardpoints.add(forwardNose);
@@ -1293,48 +1259,28 @@ class BRVFactory {
     v.hardpoints.add(nearJump);
 
     // Add Modulators to the vehicle:
-    ModulatorBinary mod0 = new ModulatorBinary();
-    ModulatorIdentity mod1 = new ModulatorIdentity();
-    ModulatorIdentity mod2 = new ModulatorIdentity();
-    ModulatorIdentity mod3 = new ModulatorIdentity();
-    ModulatorIdentity mod4 = new ModulatorIdentity();
-    ModulatorBinary mod5 = new ModulatorBinary();
-    v.modulators.add(mod0);
-    v.modulators.add(mod1);
-    v.modulators.add(mod2);
-    v.modulators.add(mod3);
-    v.modulators.add(mod4);
-    v.modulators.add(mod5);
+    v.modulators.add(new ModulatorBinary());
+    v.modulators.add(new ModulatorIdentity());
+    v.modulators.add(new ModulatorIdentity());
+    v.modulators.add(new ModulatorIdentity());
+    v.modulators.add(new ModulatorIdentity());
+    v.modulators.add(new ModulatorBinary());
 
     // Wire the hardpoints to Modulators:
-    Wire sensWire0 =   new Wire(0,0, false, 1.0f);
-    Wire sensWire1 =   new Wire(1,1, false, 1.0f);
-    Wire sensWire2 =   new Wire(2,2, false, 1.0f);
-    Wire sensWire3 =   new Wire(3,3, true, 1.0f);
-    Wire sensWire4 =   new Wire(4,4, false, 1.0f);
-    Wire sensWire5 =   new Wire(5,5, false, 1.0f);
-    v.sensorWires.add(sensWire0);
-    v.sensorWires.add(sensWire1);
-    v.sensorWires.add(sensWire2);
-    v.sensorWires.add(sensWire3);
-    v.sensorWires.add(sensWire4);
-    v.sensorWires.add(sensWire5);
+    v.sensorWires.add(new Wire(0,0, false, 1.0f));
+    v.sensorWires.add(new Wire(1,1, false, 1.0f));
+    v.sensorWires.add(new Wire(2,2, true, 1.0f));
+    v.sensorWires.add(new Wire(3,3, true,  1.0f));
+    v.sensorWires.add(new Wire(4,4, false, 1.0f));
+    v.sensorWires.add(new Wire(5,5, false, 1.0f));
 
     // Wire the modulator to a Control Signal:
-    Wire shootWire      = new Wire(0,4, false, 3.0f);
-    Wire reverseWire    = new Wire(1,3, false, 1.0f);
-    Wire steerRightWire = new Wire(2,1, false, 1.0f);
-    Wire forwardWire    = new Wire(3,2, false, .3f);
-    Wire steerLeftWire  = new Wire(4,0, false, 1.0f);
-    Wire jumpWire       = new Wire(5,5, false, 5.0f);
-    
-
-    v.controlWires.add(shootWire);
-    v.controlWires.add(forwardWire);
-    v.controlWires.add(steerRightWire);
-    v.controlWires.add(reverseWire);
-    v.controlWires.add(steerLeftWire);
-    v.controlWires.add(jumpWire);
+    v.controlWires.add(new Wire(0,4, false, 2.0f));
+    v.controlWires.add(new Wire(1,3, false, 1.0f));
+    v.controlWires.add(new Wire(2,1, true,  .85f));
+    v.controlWires.add(new Wire(3,2, false, 0.3f));
+    v.controlWires.add(new Wire(4,0, false, 1.15f));
+    v.controlWires.add(new Wire(5,5, false, 5.0f));
     
     return v;
   }
