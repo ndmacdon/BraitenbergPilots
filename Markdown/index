@@ -35,18 +35,18 @@
 
 ## Introduction
 
-~
+Braitenberg Pilots is an implementation of [Valentino Braitenberg's](http://en.wikipedia.org/wiki/Valentino_Braitenberg) [*Vehicles*](http://mitpress.mit.edu/books/vehicles) in the Asteroids video game. In Braitenberg Pilots I attempt to bridge the gap from Braitenberg's famous thought experiment to a practical implementation. In my work I recreated some of Braitenberg's original vehicles and created some vehicles of my own. With the recreated vehicles, I wanted to duplicate the original behavior described by Braitenberg as closely as possible. With my own vehicles I sought to create interesting, efficient automated players of the Asteroids video game. To evaluate the efficacy of my agents I executed a tournament of agents and compared the performances of the vehicles. 
 
 ## Introduction to Braitenberg Vehicles
 
-Braitenberg vehicles are the main agents in a biologically inspired thought experiment by [Valentino Braitenberg](http://en.wikipedia.org/wiki/Valentino_Braitenberg) published in his book [*Vehicles*](http://mitpress.mit.edu/books/vehicles)[(Braitenberg, 1984)](#bib-vehicles). In *Vehicles*, Braitenberg develops a sequence of 14 increasingly sophisticated vehicles. The vehicles are constructed of a sensors, motors, wheels, wires and bodies. Braitenberg describes a tabletop world on which the vehicles operate. When Braitenberg's vehicles perish when they stray over the edges of this world. The vehicles may also harm or destroy each other. Later vehicles undergo evolutionary development wherein vehicles which survive for a time are duplicated with minor mutations. Braitenberg attributes lifelike qualities to his vehicles as they progress. For instance, vehicle one is said to like cold places and dislike hot ones while vehicle seven is said to be able to internalize concepts. Over the sequence of 14 vehicles Braitenberg ascribes the following qualities to their observed behavior: instincts, emotions, logic, concepts, ideas, foresight and egotism[(Braitenberg, 1984)](#bib-vehicles).
+Braitenberg vehicles are the main agents in a biologically inspired thought experiment by Valentino Braitenberg published in his book *Vehicles*[(Braitenberg, 1984)](#bib-vehicles). In *Vehicles*, Braitenberg develops a sequence of 14 increasingly sophisticated vehicles. The vehicles are constructed of a sensors, motors, wheels, wires and bodies. Braitenberg describes a tabletop world on which the vehicles operate. When Braitenberg's vehicles perish when they stray over the edges of this world. The vehicles may also harm or destroy each other. Later vehicles undergo evolutionary development wherein vehicles which survive for a time are duplicated with minor mutations. Braitenberg attributes lifelike qualities to his vehicles as they progress. For instance, vehicle one is said to like cold places and dislike hot ones while vehicle seven is said to be able to internalize concepts. Over the sequence of 14 vehicles Braitenberg ascribes the following qualities to their observed behavior: instincts, emotions, logic, concepts, ideas, foresight and egotism[(Braitenberg, 1984)](#bib-vehicles).
 
 Braitenberg takes an informal approach to the realities of his vehicles. The basic components of Braitenberg's vehicles are; sensors tuned to some quality of the environment, wires which transmit information from sensors to motors and threshold devices which help grant basic logical facilities to the vehicles. Each component has been selected to mirror a real biological structure present in nature.
 
 ### Vehicle 1
 
 [![Vehicle 1](images/BRVehicle01.png)](images/BRVehicle01.png)
-**Figure 1** Braitenberg Vehicle 1
+**Figure 1** Braitenberg Vehicle 1 [(Braitenberg, 1984, pg. 4)](#bib-vehicles)
 {: class=image-block }
 
 Vehicles begins with a design involving a single sensor and motor. Depicted in Figure 1, vehicle 1 senses the absolute temperature of its environment. The sensor (half circle on a stalk) sends signals to a single motor at the rear of the vehicle which drives a wheel. The result is a vehicle that moves quickly through hot areas and slows down in cold ones [(Braitenberg, 1984)](#bib-vehicles). Braitenberg describes the motivations of his vehicle as follows:
@@ -67,15 +67,13 @@ Vehicle seven is able to form concepts and make generalizations. Vehicle seven c
 
 The vehicles following vehicle seven continue to grow in complexity and ability. Later vehicles even include earlier vehicles as encapsulated components providing primitive instincts to the later vehicles.
 
-~CONCLUSION
-
 ## Introduction To Asteroids
 
 [![Asteroids](images/vanilla-asteroids.gif){: class=big-image }](images/vanilla-asteroids.gif)
 **Figure 2** The Asteroids Video Game
 {: class=big-image-block }
 
-Asteroids is a two-dimensional action video game where players control a triangular ship. For more information, see the description of Asteroids in [Appendix A](#description-of-the-asteroids-video-game) or visit the game's [homepage](http://www.brainjar.com/java/games/asteroids/).
+Asteroids is a two-dimensional action video game where players control a triangular ship. For more information, see the description of Asteroids in [Appendix A](#appendix-a-description-of-the-asteroids-video-game) or visit the game's [homepage](http://www.brainjar.com/java/games/asteroids/).
 
 ## Braitenberg Vehicles that Play Asteroids
 
@@ -97,21 +95,25 @@ Choosing what attribute a sensor should measure was also a process of trial and 
 **Figure 4** D.N.O.-Ray Sensors arranged to mimic a simple eye. The sensor right of center returns the distance A.
 {: class=image-block }
 
-Although my final vehicles all use D.N.O. type sensors, I varied the detection area (i.e. the area that an object must intersect with to be sensed) to create several different sub-types (for more details on all the sensors I created refer to [Appendix B](#sensors_1)). Differing the detection area of the sensor radically changed the influence it had on the vehicle. I began with a detection area defined by a line. D.N.O.-Line sensors were useful when used in bulk; arranged as in figure 4 they mirror the function of a primitive eye. However, smaller objects (especially missiles) could easily pass between the detection areas of D.N.R.-line sensors and go unnoticed until they were dangerously close to the agent. To correct this issue, I developed a D.N.O.-Radius sensor which detected objects in a radius centered around the sensor origin. This sensor never failed to detect objects but provided no information regarding the heading of the detected object. Finally I developed the D.N.O.-Cone sensor. These sensors balance the directional information of the D.N.O.-Line sensors with the dragnet approach of the D.N.O.-Radius sensor. This small set of sensors allows for a huge number of interesting and high-scoring behaviors.
+Although my final vehicles all use D.N.O. type sensors, I varied the detection area (i.e. the area that an object must intersect with to be sensed) to create several different sub-types (for more details on how D.N.O. sensor operate refer to [Appendix B](#appendix-b-sensors)). Differing the detection area of the sensor radically changed the influence it had on the vehicle. I began with a detection area defined by a line. D.N.O.-Line sensors were useful when used in bulk; arranged as in figure 4 they mirror the function of a primitive eye. However, smaller objects (especially missiles) could easily pass between the detection areas of D.N.R.-line sensors and go unnoticed until they were dangerously close to the agent. To correct this issue, I developed a D.N.O.-Radius sensor which detected objects in a radius centered around the sensor origin. This sensor never failed to detect objects but provided no information regarding the heading of the detected object. Finally I developed the D.N.O.-Cone sensor. These sensors balance the directional information of the D.N.O.-Line sensors with the dragnet approach of the D.N.O.-Radius sensor. This small set of sensors allows for a huge number of interesting and high-scoring behaviors.
 
 ## Designs of Asteroids Vehicles
 
 ### 3B - Braitenberg Explorer
 
+[![Vehicle 2B](images/BRVehicle03B.png)](images/BRVehicle03B.png)
+**Figure 5** Braitenberg Vehicle 3B [(Braitenberg, 1984, p. 11)](#bib-vehicles)
+{: class=image-block }
+
 [![Vehicle 3B](images/Vehicle03B.png)](images/Vehicle03B.png)
-**Figure 5** Asteroids Vehicle 3B
+**Figure 6** Asteroids Vehicle 3B
 {: class=image-block }
 
 [![Vehicle 3B](images/3b_demo.gif)](images/3b_demo.gif)
-**Figure 6** A demonstration of Asteroids Vehicle 3B.
+**Figure 7** A demonstration of Asteroids Vehicle 3B.
 {: class=image-block }
 
-The design of vehicle 3B is inspired by Braitenberg's vehicle 3B. My version is equipped with two D.N.O-Radius sensors located on the nose of the ship as seen in figure 5. Vehicle 3B's connections are inverted (depicted as blue connections annotated with '-') such that, when a sensor has no stimulus, the connected Motor is fired at full capacity. When a sensor is excited, the connected motor is inhibited and acts with less (or no) force. Vehicle 3B acts in a manner similar to the one Braitenberg describes for his own vehicle 3B, 
+The design of vehicle 3B is inspired by Braitenberg's vehicle 3B. My version is equipped with two D.N.O-Radius sensors located on the nose of the ship as seen in figure 6. Vehicle 3B's connections are inverted (depicted as blue connections annotated with '-') such that, when a sensor has no stimulus, the connected Motor is fired at full capacity. When a sensor is excited, the connected motor is inhibited and acts with less (or no) force. Vehicle 3B acts in a manner similar to the one Braitenberg describes for his own vehicle 3B, 
 
 > ...an EXPLORER. It likes the nearby source all right, but keeps an eye open for other, perhaps stronger sources, which it will sail to, given a chance, in order to find a more permanent and gratifying appeasement.
 
@@ -121,83 +123,81 @@ Creating this vehicle helped me understand the effects of inverting sensor stimu
 
 ### 4A - Braitenberg Companion
 
-[![Vehicle 4A](images/Vehicle03B.png)](images/Vehicle03B.png)
-**Figure 7** Asteroids Vehicle 4A
+[![Vehicle 4A](images/Vehicle04A.png)](images/Vehicle04A.png)
+**Figure 8** Asteroids Vehicle 4A
 {: class=image-block }
 
 [![Vehicle 4A](images/4a_demo.gif)](images/4a_demo.gif)
-**Figure 8** A demonstration of Asteroids Vehicle 4A.
+**Figure 9** A demonstration of Asteroids Vehicle 4A.
 {: class=image-block }
 
 Vehicle 4A resembles Braitenberg's vehicle 4A in design and behavior. This vehicle has two D.N.O-Radius sensors symmetrically set to the left and right of the vehicles center-line. These sensors feed into a  modulator. Braitenberg describes such a device as follows, 
 
 > The activation of a certain sensor will make the corresponding motor run faster, but only up to a point, where the speed of the motor reaches a maximum. Beyond this point, if the sensor is activated even more strongly, the speed will decrease again...
 
-> [~Braitenberg, 1984, p. 15](#bib-vehicles)
+> [Braitenberg, 1984, p. 15](#bib-vehicles)
 
 Vehicle 4A is equipped with two such modulators which cause it to alternately dive towards and away from the nearest asteroid in a fashion similar to the one described by Braitenberg, "A 4A vehicle might navigate toward a source  (as vehicle 2B would) and then turn away when the stimulus becomes strong, circle back and then turn away over and over again..." [(Braitenberg, 1984, p. 15)](#bib-vehicles). Vehicle 4A seeks proximity with an asteroid, it seems to like the presence of the asteroid but is a fickle companion; abandoning its orbit if another asteroid gets close. I found parabolic modulators like the ones used in this vehicle difficult to utilize in competitive vehicles. They rely too heavily on exact calibration and often produce unreliable behavior in the dynamic environment of asteroids. My observations lead me to believe such modulators are  better suited to environments with stationary stimulus sources.
 
 ### 1F - Hunter
 
-[![Vehicle 1F](images/Vehicle03B.png)](images/Vehicle03B.png)
-**Figure 9** Asteroids Vehicle 1F
+[![Vehicle 1F](images/Vehicle1F.png)](images/Vehicle1F.png)
+**Figure 10** Asteroids Vehicle 1F
 {: class=image-block }
 
 [![Vehicle 1F](images/1f_demo.gif)](images/1f_demo.gif)
-**Figure 10** A demonstration of Asteroids Vehicle 1F.
+**Figure 11** A demonstration of Asteroids Vehicle 1F.
 {: class=image-block }
 
-Vehicle 1F has an array of 32 D.N.O-Line sensors arranged as equally spaced spokes on a wheel. The arrangement is similar in concept to a primitive eye. The sensors are connected to the left and right turning motors such that vehicle 1F turns towards the nearest object it senses. Three forward sensors (highlighted in red in figure 9) are connected to the vehicle's cannon. When two or more forward sensors are stimulated, the cannon is fired. These forward sensors are also connected to a reverse thruster such that when an object is in front of vehicle 1F the reverse thruster is fired.  Although the design of 1F is simple, its behavior is surprisingly complex. Vehicle 1F chases down the nearest object, fires a spray of bullets and stalks the object at a safe distance. If the object is destroyed, vehicle 1F flies away in search of its next victim. If the object survives, 1F continues to hover a short distance away from the target attacking until the target object is destroyed.
+Vehicle 1F has an array of 32 D.N.O-Line sensors arranged as equally spaced spokes on a wheel. The arrangement is similar in concept to a primitive eye. The sensors are connected to the left and right turning motors such that vehicle 1F turns towards the nearest object it senses. Three forward sensors (highlighted in red in figure 10) are connected to the vehicle's cannon. When two or more forward sensors are stimulated, the cannon is fired. These forward sensors are also connected to a reverse thruster such that when an object is in front of vehicle 1F the reverse thruster is fired.  Although the design of 1F is simple, its behavior is surprisingly complex. Vehicle 1F chases down the nearest object, fires a spray of bullets and stalks the object at a safe distance. If the object is destroyed, vehicle 1F flies away in search of its next victim. If the object survives, 1F continues to hover a short distance away from the target attacking until the target object is destroyed.
 
 Vehicle 1F exhibits extremely aggressive behavior. This behavior allows it to clear a screen of asteroids faster than any other vehicle I built. Unfortunately, 1F's tendency to chase down asteroids occasionally leads it to crash into its target if the target crosses a screen edge. This happens because, like all of my sensors, D.N.O-Line sensors cannot detect objects across the edge of the screen which causes 1F to lose track of its target and accelerate forward directly into it.
 
 ### 2F - Archer
 
-[![Vehicle 2F](images/Vehicle03B.png)](images/Vehicle03B.png)
-**Figure 11** Asteroids Vehicle 2F
+[![Vehicle 2F](images/Vehicle2F.png)](images/Vehicle2F.png)
+**Figure 12** Asteroids Vehicle 2F
 {: class=image-block }
 
 [![Vehicle 2F](images/2f_demo.gif)](images/2f_demo.gif)
-**Figure 12** A demonstration of Asteroids Vehicle 2F.
+**Figure 13** A demonstration of Asteroids Vehicle 2F.
 {: class=image-block }
 
-Vehicle 2F is composed of four D.N.O.-Cone sensors dividing the area around 2F into four regions. Figure 11 depicts the arrangement of sensors and connections present in vehicle 2F. 2F features a slight turning bias to the right leading the vehicle to trace a large circle in the play area. This helps 2F locate asteroids. 2F is also equipped with a small D.N.O-Radius sensor which connects to a binary modulator controlling the vehicle's hyper-jump. The prominent feature of 2F is a long, narrow D.N.O-Cone sensor controlling the vehicle's cannon. This sensor is offset counter-clockwise to compensate for 2F's natural clockwise patrol pattern.
+Vehicle 2F is composed of four D.N.O.-Cone sensors dividing the area around 2F into four regions. Figure 12 depicts the arrangement of sensors and connections present in vehicle 2F. 2F features a slight turning bias to the right leading the vehicle to trace a large circle in the play area. This helps 2F locate asteroids. 2F is also equipped with a small D.N.O-Radius sensor which connects to a binary modulator controlling the vehicle's hyper-jump. The prominent feature of 2F is a long, narrow D.N.O-Cone sensor controlling the vehicle's cannon. This sensor is offset counter-clockwise to compensate for 2F's natural clockwise patrol pattern.
 
 Vehicle 2F patrols a large circle of the play area taking shots at anything it senses with its cannon sensor. Unlike 1F, 2F turns away from approachers and escapes anything which gets too close with a quick about-face turn. 2F appears to be passive-aggressive, fleeing from direct confrontation preferring to take shots at distant adversaries.
 
 ### 3F - Hopper
 
-[![Vehicle 3F](images/Vehicle03B.png)](images/Vehicle03B.png)
-**Figure 13** Asteroids Vehicle 3F
+[![Vehicle 3F](images/Vehicle3F.png)](images/Vehicle3F.png)
+**Figure 14** Asteroids Vehicle 3F
 {: class=image-block }
 
 [![Vehicle 3F](images/3f_demo.gif)](images/3f_demo.gif)
-**Figure 14** A demonstration of Asteroids Vehicle 3F.
+**Figure 15** A demonstration of Asteroids Vehicle 3F.
 {: class=image-block }
 
-Vehicle 3F was designed to mimic a strategy used by humans to play asteroids: remain in place and rotate, shooting any asteroids crossing the ship's sights. 3F achieves this behavior by utilizing the turning-bias concept from vehicle 2F. 3F does not simply turn without regard however; a D.N.O-Line sensor rotated slightly to the left of 3F's center line excites a left-turn gyroscope which causes 3F to track any sufficiently large target it comes across. A stationary player cannot hope to last long in asteroids and so 3F is equipped with a D.N.O.-Radius sensor for evasion. When triggered by an approaching asteroid the sensor excites the hyper-jump motor. All of these behaviors are demonstrated in figure 14.
+Vehicle 3F was designed to mimic a strategy used by humans to play asteroids: remain in place and rotate, shooting any asteroids crossing the ship's sights. 3F achieves this behavior by utilizing the turning-bias concept from vehicle 2F. 3F does not simply turn without regard however; a D.N.O-Line sensor rotated slightly to the left of 3F's center line excites a left-turn gyroscope which causes 3F to track any sufficiently large target it comes across. A stationary player cannot hope to last long in asteroids and so 3F is equipped with a D.N.O.-Radius sensor for evasion. When triggered by an approaching asteroid the sensor excites the hyper-jump motor. These behaviors are demonstrated in figure 15.
 
 Despite its simple strategy, 3F is extremely effective. By not accelerating it avoids the two most common killers of my asteroids vehicles: crossing the screen edges and building up too much speed to avoid a collision. It does have trouble finishing off the last one or two asteroids in later levels; they move too quickly for 3F to establish a target lock. Human players employing this strategy have great difficulty in aiming their shots and reacting quickly enough to be successful. This typically makes the strategy very low scoring for them. Yet, 3F was one of the highest scoring vehicles I tested.
 
 ### 4F - Bomber
 
-[![Vehicle 3F](images/Vehicle03B.png)](images/Vehicle03B.png)
-**Figure 15** Asteroids Vehicle 4F
+[![Vehicle 3F](images/Vehicle4F.png)](images/Vehicle4F.png)
+**Figure 16** Asteroids Vehicle 4F
 {: class=image-block }
 
 [![Vehicle 4F](images/4f_demo.gif)](images/4f_demo.gif)
-**Figure 16** A demonstration of Asteroids Vehicle 4F.
+**Figure 17** A demonstration of Asteroids Vehicle 4F.
 {: class=image-block }
 
 I designed 4F (figure 16) after asteroid vehicle 3C. I picked 3C because it was excellent at safely racing through cramped fields of asteroids. 4F uses 2 backwards-facing D.N.O-Cone sensors with inverted connections to steer away from imminent collisions. I originally designed 4F to fly and shoot forward but the ship's cannon is fixed and so early versions of 4F would turn away from their target even as they were shooting. To rectify this I turned the sensors around and added a rear-facing set of three D.N.O-Line sensors to detect objects behind 4F and excite the cannon. Another issue with the original 3C design was its handling of objects directly ahead of the ship. When 3C is facing an asteroid head-on both turn sensors are activated and their gyroscopes counteract eachother. This leads 3C to occasionally crash into asteroids. To prevent this I added a small forward-facing D.N.O.-Cone sensor connected to 4F's left-turn gyro. This causes 4F to perform a rapid about face when an object approaches from the front.
-
-~DESCRIPTION...
 
 ## Asteroids Tournament
 
 ### Description
 
-One of my goals was to develop a Braitenberg vehicle which achieved the highest score possible in Asteroids. To evaluate my vehicles I implemented a tourney in the Asteroids engine. Participation is limited to vehicles which are capable of scoring points in Asteroids (i.e. they must be able to shoot and destroy some object). Each participant plays ten regular games of Asteroids (refer to [Appendix A](#description-of-the-asteroids-video-game) for details about what constitutes a game). I logged the score, lifespan, and number of lives played to track the results of the tournament. I took precautions to the prevent pseudo random elements of Asteroids from skewing the results unfairly. A pseudo random number, called the tourney-seed is chosen before the tourney begins. The tourney-seed is used to seed Asteroid's pseudo random number generator directly before each participant begins playing its first game (refer to [Appendix C](#tourney-random-seeding) for clarifications on the procedure).
+One of my goals was to develop a Braitenberg vehicle which achieved the highest score possible in Asteroids. To evaluate my vehicles I implemented a tourney in the Asteroids engine. Participation is limited to vehicles which are capable of scoring points in Asteroids (i.e. they must be able to shoot and destroy some object). Each participant plays ten regular games of Asteroids (refer to [Appendix A](#appendix-a-description-of-the-asteroids-video-game) for details about what constitutes a game). I logged the score, lifespan, and number of lives played to track the results of the tournament. I took precautions to the prevent pseudo random elements of Asteroids from skewing the results unfairly. A pseudo random number, called the tourney-seed is chosen before the tourney begins. The tourney-seed is used to seed Asteroid's pseudo random number generator directly before each participant begins playing its first game (refer to [Appendix C](#appendix-c-tourney-random-seeding) for clarifications on the procedure).
 
 ### Participants
 
@@ -212,15 +212,24 @@ Rankings are based on highest mean score across games played per participant. In
 
 ### Results of Tournament
 
+Vehicle      | Mean Score | High Score
+-------------|------------|-----------
+1F - Hunter  | 10,641.67  | 15300
+2F - Archer  | 2,584.38   | 3400
+3F - Hopper  | 46,543.75  | 62375
+4F - Bomber  | 3,500      | 6500
 
+For a full listing of results refer to Appendix 
 
 ## Conclusion
 
 ### Summary
 
-Reactive or Situated agents are bad prioritizers. They must have senses appropriate to their goals to have any chance of success. In this way they more closely resemble biological creatures than their Neat~LINK:http://en.wikipedia.org/wiki/Neats_vs._scruffies counterparts.
+Braitenberg vehicles are both Reactive and Situated agents. Reactive agents are not well suited to long term planning but they excell in highly dynamic environments like the Asteroids game. Braitenberg vehicles are excellent short term prioritizers and their analog sensors make them very flexible in dynamic situations. They must have senses appropriate to their goals to have any chance of success. Braitenberg vehicles tend to be [Scruffy](http://en.wikipedia.org/wiki/Neats_vs._scruffies) agents also; they require plenty of fine tuning gained via trial and error. In this way they more closely resemble biological creatures than their [Neat](http://en.wikipedia.org/wiki/Neats_vs._scruffies) counterparts.
 
-The agents I developed are best described as situated~LINK:http://en.wikipedia.org/wiki/Artificial_intelligence,_situated_approach Scruffies~LINK:http://en.wikipedia.org/wiki/Neats_vs._scruffies. They exhibit some complex behaviors even though their individual implementation is simple. Being. They  are interesting to watch and they raise some questions for further consideration. Can situated agents like these be utilized in complex tasks? Are the more advanced Braitenberg vehicles really capable of all that Braitenberg described? What is the value in discriminating between scruffy agents which have sophisticated behavior and neat agents with similar behavior?
+The agents I developed exhibit some complex behaviors even though their individual implementations are simple. Some of them (4F in particular) can even achieve arbitrarily high scores at Asteroids.
+
+My vehicles are interesting to watch and they raise some questions for further consideration. Can situated agents like these be utilized in complex tasks? Are the more advanced Braitenberg vehicles really capable of all that Braitenberg described? What exactly is the value in discriminating between scruffy agents which have sophisticated behavior and neat agents with similar behavior?
 
 ### Ideas for Future Work
 
@@ -236,10 +245,10 @@ Reactive agents like my pilots have complex reactive behavior patterns which mak
 
 ## Related Work
 
-http://people.cs.uchicago.edu/~wiseman/vehicles/
-http://braitenbergsim.sourceforge.net/
-https://wiki.qut.edu.au/display/cyphy/Braitenberg+Vehicle+Simulator
-http://www.florajs.com/
+- [Braitenberg Vehicles](http://people.cs.uchicago.edu/~wiseman/vehicles/)
+- [Braitenberg Vehicle Simulator](http://braitenbergsim.sourceforge.net/)
+- [FloraJS](http://www.florajs.com/)
+- [Braitenberg Vehicle Simulator](https://wiki.qut.edu.au/display/cyphy/Braitenberg+Vehicle+Simulator)
 
 ## Appendix
 
@@ -257,7 +266,11 @@ Players receive points for destroying asteroids with their cannon. Players start
 
 #### Radius Sensor
 
-[![Asteroids](images/plot-radius01.gif)](images/plot-radius01.gif)
+[![Vehicle 4A](images/plot_radius01.gif)](images/plot_radius01.gif)
+**Figure 18** A demonstration of the Distance To Nearest Object Radius sensor. Sensor's detection area is indicated by a red circle.
+{: class=image-block }
+
+To help describe exactly how my sensors sense and signal information I've combined the output from a D.N.O.-Radius sensor with a recording of the simulation which produced the output (figure 18). The X-axis represents time (in game frames) and the Y-axis represents the output value of the sensor. The sensors field of detection is demarcated by a red circle. The sensor reports the nearest point on any object inside its field of detection. The distance reported is normalize such that objects on top of the sensor origin would register a zero. Objects very near the outer edge of the sensor's detection area register a value close to one. Notice how the reported value is inconsistent even though the asteroids being detected have a constant speed. This is caused by a combination of the rotation of the asteroid and its uneven surface. From frame 0 to around frame 11,000 the asteroid in the lower-right is being tracked. However around frame 11,000 the pair of asteroids on the left side of the screen drift closer to the sensor and become its target.
 
 ### Appendix C: Tourney Random Seeding
 
@@ -306,6 +319,20 @@ EMBED-APPLET
 #### Fullscreen Demonstration
 
 Visit the [Fullscreen Demo](fullscreen.html) page to see the program running in a larger window.
+
+### Appendix G: Tournament Results
+
+
+### Appendix H: Applet
+<embed
+  class="applet"
+  type="application/x-java-applet;version=1.6"
+  archive="applets/braitenoids_selection.jar,applets/lib/jts-1.13.jar"
+  code="braitenbergPilots.Asteroids.class"
+  pluginspage="http://java.com/download/"
+  myParam="" />
+
+....
 
 ## Bibliography
 
