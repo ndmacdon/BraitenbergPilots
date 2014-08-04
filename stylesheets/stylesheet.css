@@ -391,6 +391,7 @@ Full-Width Styles
   margin: .75em;
   padding: .75em;
   overflow: hidden;
+  font-size: 14px;
 
   border: 1px solid #ddd;
   box-shadow: 0 0 10px #ddd;
@@ -408,7 +409,7 @@ Full-Width Styles
 .toc li {
   display: block;
   position: relative;
-  margin-left: .5em;
+  margin-left: .25em;
 }
 
 .toc li:before {
@@ -465,8 +466,9 @@ a>img {
 
 .image-block {
   padding: 0 0 0 15px;
-  max-width: 22em;
+  max-width: 28em;
   float: right;
+  clear: right;
 
   font-size: 12px;
   color:#151515;
