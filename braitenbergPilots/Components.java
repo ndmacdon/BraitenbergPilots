@@ -1381,7 +1381,7 @@ class BRVFactory {
 
     // Wire the hardpoints to Modulators:
     v.sensorWires.add(new Wire(numRays + 0, numRays + 0, false, 1.0f));
-    v.sensorWires.add(new Wire(numRays + 0, numRays + 1, true, 1.0f));
+    v.sensorWires.add(new Wire(numRays + 0, numRays + 1, true,  1.0f));
     v.sensorWires.add(new Wire(numRays + 1, numRays + 2, false, 1.0f));
     v.sensorWires.add(new Wire(numRays + 2, numRays + 3, false, 1.0f));
 
@@ -1389,9 +1389,9 @@ class BRVFactory {
     // Wire the modulator to a Control Signal:
     v.controlWires.add(new Wire(numRays + 0,LEFT, false, 0.9f)); // Bias turning to escape head-on collisions.
     v.controlWires.add(new Wire(numRays + 1,BACK, false, 0.7f));
-    v.controlWires.add(new Wire(numRays + 1,LEFT, false, 0.0f));
-    v.controlWires.add(new Wire(numRays + 2,RIGHT, false, 1.0f));
-    v.controlWires.add(new Wire(numRays + 3,RIGHT, false, 2.0f));
+    v.controlWires.add(new Wire(numRays + 1,LEFT, false, 0.05f));
+    v.controlWires.add(new Wire(numRays + 2,RIGHT,false, 1.0f));
+    v.controlWires.add(new Wire(numRays + 3,RIGHT,false, 2.0f));
     
 
 

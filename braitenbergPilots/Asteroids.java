@@ -293,8 +293,8 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
 
   // Constants
 
-  static  int FRAME_LENGTH = 1000; //1000    // Milliseconds in one frame.
-  static final int DELAY = 15;     //15      // Milliseconds between screen and
+  static  int FRAME_LENGTH = 500; //1000    // Milliseconds in one frame.
+  static final int DELAY = 7;     //15      // Milliseconds between screen and
   static final int FPS   =                  // the resulting frame rate.
     Math.round(FRAME_LENGTH / DELAY);
 
@@ -732,7 +732,7 @@ public class Asteroids extends Applet implements Runnable, KeyListener {
   
         // If all asteroids have been destroyed create a new batch.
   
-        if (asteroidsLeft <= 0) {
+        if (asteroidsLeft <= 1) {
             if (--asteroidsCounter <= 0) {
               initAsteroids();
             }
