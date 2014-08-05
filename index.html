@@ -65,7 +65,7 @@
 </ul>
 </li>
 <li><a href="#related-work">Related Work</a></li>
-<li><a href="#appendix">Appendix</a><ul>
+<li><a href="#appendices">Appendices</a><ul>
 <li><a href="#appendix-a-description-of-the-asteroids-video-game">Appendix A: Description of The Asteroids Video Game</a></li>
 <li><a href="#appendix-b-sensors">Appendix B: Sensors</a><ul>
 <li><a href="#distance-to-nearest-object-sensor">Distance To Nearest Object Sensor</a></li>
@@ -116,6 +116,7 @@
 <p>Asteroids is a two-dimensional action video game where players control a triangular ship. For more information, see the description of Asteroids in <a href="#appendix-a-description-of-the-asteroids-video-game">Appendix A</a> or visit the game&rsquo;s <a href="http://www.brainjar.com/java/games/asteroids/">homepage</a>.</p>
 <h2 id="braitenberg-vehicles-that-play-asteroids">Braitenberg Vehicles that Play Asteroids</h2>
 <p>In my work, I apply Braitenberg&rsquo;s ideas to create agents capable of playing the video game Asteroids. My goal was to explore the capabilities of basic <a href="http://en.wikipedia.org/wiki/Reactive_planning">reactive</a> agents, gain experience developing a real-time <a href="http://en.wikipedia.org/wiki/Game_engine">game engine</a> with reactive agents and to create a Braitenberg vehicle which could achieve the highest score possible in the Asteroids video game. I deviated from Braitenberg&rsquo;s designs because my work is implemented inside an existing game engine which was not capable of replicating all of his ideas. Braitenberg&rsquo;s vehicles have rectangular bodies, but my agents retain the triangular ship-body of Asteroids. Braitenberg&rsquo;s sensors were continuous but mine poll the environment at a fixed rate. I recreated the behavior of several of Braitenberg&rsquo;s vehicles despite these differences.</p>
+<p>The vehicle schematics in the following sections are intended to convey the high level design of the vehicles. In simpler vehicles the schematics are extremely accurate to the actual implementation. Some connections have been ommitted in more complex vehicles because there would simply be too many connections to legibly depict in this format. Also, the exact placement of sensors in vehicles with many sensors has been altered for clarity (usually because many sensors overlapped).</p>
 <h3 id="sensors">Sensors</h3>
 <p>Developing sensors to help my agents attain a high score was difficult. It was not obvious what attributes of the environment should be measured or how they should be measured or even how the measured attributes should be communicated to each vehicles&rsquo; motors. In general, I found greater success when I made changes which focused the vehicle&rsquo;s &lsquo;attention&rsquo; on the single most important (i.e. dangerous) feature of the environment; the nearest object.</p>
 <p class="image-block"><a href="images/Sensor01_Aggregate.png"><img alt="Aggregate Sensor" src="images/Sensor01_Aggregate.png" /></a>
@@ -138,7 +139,7 @@
 <p>&hellip;an EXPLORER. It likes the nearby source all right, but keeps an eye open for other, perhaps stronger sources, which it will sail to, given a chance, in order to find a more permanent and gratifying appeasement.</p>
 <p><a href="#bib-vehicles">Braitenberg, 1984, p. 12</a></p>
 </blockquote>
-<p>Creating this vehicle helped me understand the effects of inverting sensor stimuli. Inverted connections play an important role in all the fit vehicles I designed later.</p>
+<p>Creating this vehicle helped me understand the effects of inverting sensor stimuli which can be hard to predict in a vehicle with many competing sensors and motors. Inverted connections play an important role in all the F-series vehicles I designed later.</p>
 <h3 id="4a-braitenberg-companion">4A - Braitenberg Companion</h3>
 <p class="image-block"><a href="images/Vehicle04A.png"><img alt="Vehicle 4A" src="images/Vehicle04A.png" /></a>
 <strong>Figure 8</strong> Asteroids Vehicle 4A</p>
@@ -246,7 +247,7 @@
 <li><a href="http://www.florajs.com/">FloraJS</a></li>
 <li><a href="https://wiki.qut.edu.au/display/cyphy/Braitenberg+Vehicle+Simulator">Braitenberg Vehicle Simulator</a></li>
 </ul>
-<h2 id="appendix">Appendix</h2>
+<h2 id="appendices">Appendices</h2>
 <h3 id="appendix-a-description-of-the-asteroids-video-game">Appendix A: Description of The Asteroids Video Game</h3>
 <p>Asteroids is a two-dimensional action video game. Players control a triangular ship inside a field of drifting asteroids. The ship can turn left and right, can fire forward and reverse thrusters (which apply force to the ship according to the direction it is facing), can shoot a cannon, and may teleport to a random location on the screen.</p>
 <p>Players are pitted against asteroids, UFOs and missiles. Asteroids are represented by  circular polygons. Each asteroid is created with a movement vector which is static, random and specific to that particular asteroid. Players can shoot an asteroid, UFO or missile with their cannon to destroy it. Destroyed asteroids may fragment into multiple smaller asteroids. UFOs shoot missiles which home to the player&rsquo;s location. Colliding with an asteroid, UFO or missile is fatal to the player.</p>
@@ -292,13 +293,7 @@
 <p><a href="https://www.java.com/en/download/help/java_blocked.xml">~Java Security Settings</a></p>
 </blockquote>
 <h3 id="appendix-f-program-demonstration">Appendix F: Program Demonstration</h3>
-<embed
-  class="applet"
-  type="application/x-java-applet;version=1.6"
-  archive="applets/braitenoids_selection.jar,applets/lib/jts-1.13.jar"
-  code="braitenbergPilots.Asteroids.class"
-  pluginspage="http://java.com/download/"
-  myParam="" />
+<p>EMBED~APPLET</p>
 <h4 id="fullscreen-demonstration">Fullscreen Demonstration</h4>
 <p>Visit the <a href="fullscreen.html">Fullscreen Demo</a> page to see the program running in a larger window.</p>
 <h3 id="appendix-g-tournament-results">Appendix G: Tournament Results</h3>

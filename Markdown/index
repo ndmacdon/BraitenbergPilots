@@ -81,6 +81,8 @@ Asteroids is a two-dimensional action video game where players control a triangu
 
 In my work, I apply Braitenberg's ideas to create agents capable of playing the video game Asteroids. My goal was to explore the capabilities of basic [reactive](http://en.wikipedia.org/wiki/Reactive_planning) agents, gain experience developing a real-time [game engine](http://en.wikipedia.org/wiki/Game_engine) with reactive agents and to create a Braitenberg vehicle which could achieve the highest score possible in the Asteroids video game. I deviated from Braitenberg's designs because my work is implemented inside an existing game engine which was not capable of replicating all of his ideas. Braitenberg's vehicles have rectangular bodies, but my agents retain the triangular ship-body of Asteroids. Braitenberg's sensors were continuous but mine poll the environment at a fixed rate. I recreated the behavior of several of Braitenberg's vehicles despite these differences.
 
+The vehicle schematics in the following sections are intended to convey the high level design of the vehicles. In simpler vehicles the schematics are extremely accurate to the actual implementation. Some connections have been ommitted in more complex vehicles because there would simply be too many connections to legibly depict in this format. Also, the exact placement of sensors in vehicles with many sensors has been altered for clarity (usually because many sensors overlapped).
+
 ### Sensors
 
 Developing sensors to help my agents attain a high score was difficult. It was not obvious what attributes of the environment should be measured or how they should be measured or even how the measured attributes should be communicated to each vehicles' motors. In general, I found greater success when I made changes which focused the vehicle's 'attention' on the single most important (i.e. dangerous) feature of the environment; the nearest object.
@@ -121,7 +123,7 @@ The design of vehicle 3B is inspired by Braitenberg's vehicle 3B. My version is 
 
 > [Braitenberg, 1984, p. 12](#bib-vehicles)
 
-Creating this vehicle helped me understand the effects of inverting sensor stimuli. Inverted connections play an important role in all the fit vehicles I designed later.
+Creating this vehicle helped me understand the effects of inverting sensor stimuli which can be hard to predict in a vehicle with many competing sensors and motors. Inverted connections play an important role in all the F-series vehicles I designed later.
 
 ### 4A - Braitenberg Companion
 
@@ -256,7 +258,7 @@ Reactive agents like my pilots have complex reactive behavior patterns which mak
 - [FloraJS](http://www.florajs.com/)
 - [Braitenberg Vehicle Simulator](https://wiki.qut.edu.au/display/cyphy/Braitenberg+Vehicle+Simulator)
 
-## Appendix
+## Appendices
 
 ### Appendix A: Description of The Asteroids Video Game
 
