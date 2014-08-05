@@ -35,13 +35,13 @@
 
 ## Introduction
 
-Braitenberg Pilots is an implementation of [Valentino Braitenberg's](http://en.wikipedia.org/wiki/Valentino_Braitenberg) [*Vehicles*](http://mitpress.mit.edu/books/vehicles) in the Asteroids video game. In Braitenberg Pilots I attempt to bridge the gap from Braitenberg's famous thought experiment to a practical implementation. In my work I recreated some of Braitenberg's original vehicles and created some vehicles of my own. With the recreated vehicles, I wanted to duplicate the original behavior described by Braitenberg as closely as possible. With my own vehicles I sought to create interesting, efficient automated players of the Asteroids video game. To evaluate the efficacy of my agents I executed a tournament of agents and compared the performances of the vehicles. 
+Braitenberg Pilots is an implementation of [Valentino Braitenberg's](http://en.wikipedia.org/wiki/Valentino_Braitenberg) [*Vehicles*](http://mitpress.mit.edu/books/vehicles) in the [Asteroids](http://en.wikipedia.org/wiki/Asteroids_(video_game)) video game. In Braitenberg Pilots I attempt to bridge the gap from Braitenberg's famous thought experiment to a practical implementation. In my work I recreated some of Braitenberg's original vehicles and created some vehicles of my own. With the recreated vehicles, I wanted to duplicate the original behavior described by Braitenberg as closely as possible. With my own vehicles I sought to create interesting, capable automated players of the Asteroids video game. To evaluate the efficacy of my agents I executed a tournament of agents and compared the performances of the vehicles.
 
 ## Introduction to Braitenberg Vehicles
 
-Braitenberg vehicles are the main agents in a biologically inspired thought experiment by Valentino Braitenberg published in his book *Vehicles*[(Braitenberg, 1984)](#bib-vehicles). In *Vehicles*, Braitenberg develops a sequence of 14 increasingly sophisticated vehicles. The vehicles are constructed of a sensors, motors, wheels, wires and bodies. Braitenberg describes a tabletop world on which the vehicles operate. When Braitenberg's vehicles perish when they stray over the edges of this world. The vehicles may also harm or destroy each other. Later vehicles undergo evolutionary development wherein vehicles which survive for a time are duplicated with minor mutations. Braitenberg attributes lifelike qualities to his vehicles as they progress. For instance, vehicle one is said to like cold places and dislike hot ones while vehicle seven is said to be able to internalize concepts. Over the sequence of 14 vehicles Braitenberg ascribes the following qualities to their observed behavior: instincts, emotions, logic, concepts, ideas, foresight and egotism[(Braitenberg, 1984)](#bib-vehicles).
+Braitenberg vehicles are the main agents in a biologically inspired thought experiment by Valentino Braitenberg published in his book *Vehicles*[(Braitenberg, 1984)](#bib-vehicles). In *Vehicles*, Braitenberg develops a sequence of 14 increasingly sophisticated vehicles. The vehicles are constructed of sensors, motors, wheels, wires and bodies. Braitenberg also describes a tabletop world on which the vehicles operate. Vehicles perish when they stray over the edges of this world. Vehicles may harm or destroy each other. Later vehicles undergo evolutionary development wherein vehicles which survive for a time are duplicated with minor mutations. Braitenberg attributes lifelike qualities to his vehicles as they progress. For instance, vehicle one is said to have likes and dislikes while vehicle seven is said to be able to internalize concepts. Over the sequence of 14 vehicles Braitenberg ascribes the following qualities to their observed behavior: instincts, emotions, logic, concepts, ideas, foresight and egotism[(Braitenberg, 1984)](#bib-vehicles).
 
-Braitenberg takes an informal approach to the realities of his vehicles. The basic components of Braitenberg's vehicles are; sensors tuned to some quality of the environment, wires which transmit information from sensors to motors and threshold devices which help grant basic logical facilities to the vehicles. Each component has been selected to mirror a real biological structure present in nature.
+Braitenberg takes an informal approach to the realities of his vehicles. His building blocks for creating vehicles are; sensors tuned to some quality of the environment, wires which transmit information from sensors to motors and threshold devices which help grant basic logical facilities to the vehicles. Each component is selected to mirror a real biological structure present in nature. Braitenberg's vehicles are easy to understand and yet their behaviour is amazingly sophistocated.
 
 ### Vehicle 1
 
@@ -55,17 +55,19 @@ Vehicles begins with a design involving a single sensor and motor. Depicted in F
 
 > [Braitenberg, 1984, p. 5](#bib-vehicles)
 
-Braitenberg develops his vehicles by introducing a new component and combining it with the advances of the existing vehicles. Each component is simple on its own. Yet, this technique of compounded design results in complex behaviors attributable to living organisms.
+Braitenberg develops the subsequent vehicles by introducing a new component and combining it with the advances of the existing vehicles. This process of incremental development hints at the evolutionary techniques Braitenberg introduces in later sections. The technique of compounded design also results in complex behaviors reminiscient of living organisms.
 
 ### Vehicle 7
 
-Vehicle seven is able to form concepts and make generalizations. Vehicle seven can do this because, in addition to the logical faculties introduced in vehicle five includes Mnemotrix connections. These connections are placed between all components of the vehicle. Mnemotrix is initially very resistant to signals. However, when two connected components are excited simultaneously, the Mnemotrix connection between them has its resistance lowered. Braitenberg describes the consequences of such connections:
+Vehicle seven is able to form concepts and make generalizations. Vehicle seven gains this ability via an addition to  its logical facilities; Mnemotrix connections. Mnemotrix connections are placed between all components of the vehicle. Mnemotrix is initially very resistant to signals. However, when two connected components are excited simultaneously, the Mnemotrix connection between them has its resistance lowered. Braitenberg describes the consequences of such connections:
 
 > One consequence, we have already seen, is concept formation. When it happens between different categories of things (such as red color and aggression), we prefer to call it association.
 
 > [Braitenberg, 1984, p. 29](#bib-vehicles)
 
 The vehicles following vehicle seven continue to grow in complexity and ability. Later vehicles even include earlier vehicles as encapsulated components providing primitive instincts to the later vehicles.
+
+Braitenberg's *Vehicles* reveals some of the common mechanisms of complex behavior. It demonstrates a practical implementation of evolution and dissects the results of that implementation. *Vehicles* does not distinguish between intention and accident; it grants observation the authority of truth. Overall, *Vehicles* conveys an intuitive understanding of behavior and agent design.
 
 ## Introduction To Asteroids
 
@@ -219,6 +221,10 @@ Vehicle      | Mean Score | High Score
 3F - Hopper  | 46,543.75  | 62,375
 4F - Bomber  | 3,500      | 6,500
 
+### Analysis of Results
+
+Surprisingly, the simplest agent, with the simplest strategy won. Vehicle 3F almost never died because the implementation of Asteroids I worked with grants vehicles a moment of invulnerability after hyper-space jumps. This left vehicle 3F vulnerable for only a breif moment: after it made a hyper-space jump and before its hyper-space jump engine had recharged. I did not foresee this flaw in the game's balance when designing 3F. Of the remaining vehicles, 1F attained significantly higher scores despite its wrecklessly aggressive strategy. 1F also scored much faster than any other vehicle. Modifying 1F to avoid crossing the screen threshold might allow it to score enough points to gain new lives faster than it loses them. This would bring 1F's score in line with 3F and it would reach such scores much more quicky than 3F.
+
 For a full listing of results refer to Appendix 
 
 ## Conclusion
@@ -264,13 +270,13 @@ Players receive points for destroying asteroids with their cannon. Players start
 
 ### Appendix B: Sensors
 
-#### Radius Sensor
+#### Distance To Nearest Object Sensor
 
 [![Vehicle 4A](images/plot_radius01.gif)](images/plot_radius01.gif)
 **Figure 18** A demonstration of the Distance To Nearest Object Radius sensor. Sensor's detection area is indicated by a red circle.
 {: class=image-block }
 
-To help describe exactly how my sensors sense and signal information I've combined the output from a D.N.O.-Radius sensor with a recording of the simulation which produced the output (figure 18). The X-axis represents time (in game frames) and the Y-axis represents the output value of the sensor. The sensors field of detection is demarcated by a red circle. The sensor reports the nearest point on any object inside its field of detection. The distance reported is normalize such that objects on top of the sensor origin would register a zero. Objects very near the outer edge of the sensor's detection area register a value close to one. Notice how the reported value is inconsistent even though the asteroids being detected have a constant speed. This is caused by a combination of the rotation of the asteroid and its uneven surface. From frame 0 to around frame 11,000 the asteroid in the lower-right is being tracked. However around frame 11,000 the pair of asteroids on the left side of the screen drift closer to the sensor and become its target.
+To help describe exactly how my sensors sense and report information I've combined the output from a D.N.O.-Radius sensor with a recording of the simulation which produced the output (figure 18). The X-axis represents time (in game frames) and the Y-axis represents the output value of the sensor. The sensors field of detection is demarcated by a red circle. The sensor reports the nearest point on any object inside its field of detection. The distance reported is normalize such that objects on top of the sensor origin would register a zero. Objects very near the outer edge of the sensor's detection area register a value close to one. Notice how the reported value is irregular even though the asteroids being detected have a constant speed. This is caused by a combination of the rotation of the asteroid and its uneven surface. From frame 0 to around frame 11,000 the asteroid in the lower-right is being tracked. However around frame 11,000 the pair of asteroids on the left side of the screen drift closer to the sensor and become its target.
 
 ### Appendix C: Tourney Random Seeding
 
@@ -298,6 +304,8 @@ Given a tournament with three participants who each play X games:
 
 ### Appendix D: Using the Asteroids Software
 
+~upload
+
 ### Appendix E: Adding A Security Exception To Java
 
 This project uses an unsigned JAR file which may be disallowed by your default Java settings.
@@ -314,7 +322,7 @@ If you are not presented with a dialog asking for permission to run the Applets 
 
 ### Appendix F: Program Demonstration
 
-EMBED-APPLET
+EMBED~APPLET
 
 #### Fullscreen Demonstration
 
@@ -322,17 +330,7 @@ Visit the [Fullscreen Demo](fullscreen.html) page to see the program running in 
 
 ### Appendix G: Tournament Results
 
-
-### Appendix H: Applet
-<embed
-  class="applet"
-  type="application/x-java-applet;version=1.6"
-  archive="applets/braitenoids_selection.jar,applets/lib/jts-1.13.jar"
-  code="braitenbergPilots.Asteroids.class"
-  pluginspage="http://java.com/download/"
-  myParam="" />
-
-....
+~upload
 
 ## Bibliography
 
